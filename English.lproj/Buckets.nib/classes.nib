@@ -1,0 +1,24 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {
+                add = id; 
+                cancelSheet = id; 
+                closeSheet = id; 
+                open = id; 
+                refresh = id; 
+                remove = id; 
+            }; 
+            CLASS = S3BucketListController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                "_bucketsController" = NSArrayController; 
+                addSheet = NSWindow; 
+                nameField = NSTextField; 
+            }; 
+            SUPERCLASS = NSWindowController; 
+        }
+    ); 
+    IBVersion = 1; 
+}

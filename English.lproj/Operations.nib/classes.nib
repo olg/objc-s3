@@ -1,0 +1,19 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {add = id; open = id; refresh = id; remove = id; }; 
+            CLASS = S3Connection; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {"_bucketsController" = NSArrayController; }; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {
+            CLASS = S3OperationController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {"_infoPanel" = NSWindow; "_operationsArrayController" = NSArrayController; }; 
+            SUPERCLASS = NSWindowController; 
+        }
+    ); 
+    IBVersion = 1; 
+}

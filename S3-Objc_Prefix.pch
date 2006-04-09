@@ -1,0 +1,7 @@
+//
+// Prefix header for all source files of the 'S3-Objc' target in the 'S3-Objc' project
+//
+
+#ifdef __OBJC__
+    #import <Cocoa/Cocoa.h>
+#endif
