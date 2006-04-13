@@ -1,0 +1,13 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {connect = id; openHelpPage = id; }; 
+            CLASS = S3LoginController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {"_defaultButton" = NSButton; }; 
+            SUPERCLASS = NSWindowController; 
+        }
+    ); 
+    IBVersion = 1; 
+}

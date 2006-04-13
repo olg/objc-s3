@@ -1,0 +1,22 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {CLASS = NSDatePicker; LANGUAGE = ObjC; SUPERCLASS = NSControl; }, 
+        {
+            ACTIONS = {
+                cancelSheet = id; 
+                closeSheet = id; 
+                download = id; 
+                refresh = id; 
+                remove = id; 
+                upload = id; 
+            }; 
+            CLASS = S3BucketContentController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {"_objectsController" = NSArrayController; uploadSheet = NSWindow; }; 
+            SUPERCLASS = NSWindowController; 
+        }, 
+        {CLASS = S3ClickableURLField; LANGUAGE = ObjC; SUPERCLASS = NSTextField; }
+    ); 
+    IBVersion = 1; 
+}
