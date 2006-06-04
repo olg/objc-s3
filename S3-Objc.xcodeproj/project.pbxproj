@@ -26,6 +26,7 @@
 		777CB08009E550AF003E37C9 /* app.icns in Resources */ = {isa = PBXBuildFile; fileRef = 777CB07F09E550AF003E37C9 /* app.icns */; };
 		777CB09D09E5E4F1003E37C9 /* S3LoginController.m in Sources */ = {isa = PBXBuildFile; fileRef = 777CB09C09E5E4F1003E37C9 /* S3LoginController.m */; };
 		777CB0AC09E5E85C003E37C9 /* Authentication.nib in Resources */ = {isa = PBXBuildFile; fileRef = 777CB0AA09E5E85C003E37C9 /* Authentication.nib */; };
+		777D0D2D0A332CB4003CABA0 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 777D0D2C0A332CB4003CABA0 /* Security.framework */; };
 		77852D3E09E95E3B002826E7 /* S3ObjectOperations.m in Sources */ = {isa = PBXBuildFile; fileRef = 77852D3D09E95E3B002826E7 /* S3ObjectOperations.m */; };
 		778B5CBC09E1568A002AF32D /* S3BucketContentController.m in Sources */ = {isa = PBXBuildFile; fileRef = 778B5CBB09E1568A002AF32D /* S3BucketContentController.m */; };
 		778B5D2809E170EA002AF32D /* Objects.nib in Resources */ = {isa = PBXBuildFile; fileRef = 778B5D2609E170EA002AF32D /* Objects.nib */; };
@@ -41,21 +42,6 @@
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXBuildStyle section */
-		4A9504CCFFE6A4B311CA0CBA /* Debug */ = {
-			isa = PBXBuildStyle;
-			buildSettings = {
-			};
-			name = Debug;
-		};
-		4A9504CDFFE6A4B311CA0CBA /* Release */ = {
-			isa = PBXBuildStyle;
-			buildSettings = {
-			};
-			name = Release;
-		};
-/* End PBXBuildStyle section */
 
 /* Begin PBXFileReference section */
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -93,6 +79,7 @@
 		777CB09B09E5E4F1003E37C9 /* S3LoginController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3LoginController.h; sourceTree = "<group>"; };
 		777CB09C09E5E4F1003E37C9 /* S3LoginController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3LoginController.m; sourceTree = "<group>"; };
 		777CB0AB09E5E85C003E37C9 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/Authentication.nib; sourceTree = "<group>"; };
+		777D0D2C0A332CB4003CABA0 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = /System/Library/Frameworks/Security.framework; sourceTree = "<absolute>"; };
 		77852D3C09E95E3B002826E7 /* S3ObjectOperations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3ObjectOperations.h; sourceTree = "<group>"; };
 		77852D3D09E95E3B002826E7 /* S3ObjectOperations.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3ObjectOperations.m; sourceTree = "<group>"; };
 		778B5CBA09E1568A002AF32D /* S3BucketContentController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3BucketContentController.h; sourceTree = "<group>"; };
@@ -122,6 +109,7 @@
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
 				7765E31409E726830075B66B /* libssl.dylib in Frameworks */,
 				7765E31809E726CA0075B66B /* libcrypto.dylib in Frameworks */,
+				777D0D2D0A332CB4003CABA0 /* Security.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -154,6 +142,7 @@
 		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				777D0D2C0A332CB4003CABA0 /* Security.framework */,
 				7765E31709E726CA0075B66B /* libcrypto.dylib */,
 				7765E31309E726830075B66B /* libssl.dylib */,
 				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
@@ -266,8 +255,6 @@
 			);
 			buildRules = (
 			);
-			buildSettings = {
-			};
 			dependencies = (
 			);
 			name = "S3 Browser";
@@ -282,12 +269,6 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "S3-Objc" */;
-			buildSettings = {
-			};
-			buildStyles = (
-				4A9504CCFFE6A4B311CA0CBA /* Debug */,
-				4A9504CDFFE6A4B311CA0CBA /* Release */,
-			);
 			hasScannedForEncodings = 1;
 			mainGroup = 29B97314FDCFA39411CA2CEA /* S3-Objc */;
 			projectDirPath = "";

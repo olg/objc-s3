@@ -15,12 +15,18 @@
 	S3Connection* _connection;
 	S3Operation* _operation;
 	IBOutlet NSButton* _defaultButton;
+	IBOutlet NSButton* _keychainCheckbox;
 }
 
 - (IBAction)connect:(id)sender;
 - (IBAction)openHelpPage:(id)sender;
+- (IBAction)flippedKeychainSupport:(id)sender;
 
 - (void)setConnection:(S3Connection *)aConnection;
 - (void)setOperation:(S3Operation *)operation;
+- (void)checkPasswordInKeychain;
+
+- (NSString*)getS3KeyFromKeychainForUser:(NSString *)username;
+- (BOOL)setS3KeyToKeychainForUser:(NSString *)username password:(NSString*)password;
 
 @end

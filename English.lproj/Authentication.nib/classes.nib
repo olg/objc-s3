@@ -1,11 +1,12 @@
 {
     IBClasses = (
+        {CLASS = AGKeychain; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
         {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
         {
-            ACTIONS = {connect = id; openHelpPage = id; }; 
+            ACTIONS = {connect = id; flippedKeychainSupport = id; openHelpPage = id; }; 
             CLASS = S3LoginController; 
             LANGUAGE = ObjC; 
-            OUTLETS = {"_defaultButton" = NSButton; }; 
+            OUTLETS = {"_defaultButton" = NSButton; "_keychainCheckbox" = NSButton; }; 
             SUPERCLASS = NSWindowController; 
         }
     ); 
