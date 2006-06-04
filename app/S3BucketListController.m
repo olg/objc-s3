@@ -20,7 +20,7 @@
 
 @implementation S3BucketListController
 
-#pragma mark - 
+#pragma mark -
 #pragma mark Toolbar management
 
 -(void)awakeFromNib
