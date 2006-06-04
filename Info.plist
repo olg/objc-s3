@@ -19,6 +19,8 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
+	<string>15</string>
+	<key>CFBundleShortVersionString</key>
 	<string>0.2</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
