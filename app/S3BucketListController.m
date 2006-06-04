@@ -241,4 +241,15 @@
     _currentOperations = [aCurrentOperations retain];
 }
 
+-(void)dealloc
+{
+	[self setName:nil];
+	[self setConnection:nil];
+	[self setBucketsOwner:nil];
+	[self setBuckets:nil];
+	[self setCurrentOperations:nil];
+	
+	[super dealloc];
+}
+
 @end

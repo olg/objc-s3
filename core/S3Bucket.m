@@ -34,6 +34,13 @@
 		return nil;
 }
 
+- (void)dealloc
+{
+    [_creationDate release];
+    [_name release];
+    [super dealloc];
+}
+
 - (NSDate *)creationDate
 {
     return _creationDate; 

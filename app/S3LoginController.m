@@ -132,6 +132,13 @@
     _operation = [operation retain];
 }
 
+-(void)dealloc
+{
+	[self setOperation:nil];
+	[self setConnection:nil];
+	[super dealloc];
+}
+
 #pragma mark -
 #pragma mark Keychain integration
 

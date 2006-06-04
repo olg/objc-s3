@@ -334,5 +334,21 @@
     _uploadSize = [anUploadSize retain];
 }
 
+-(void)dealloc
+{
+	[self setObjects:nil];
+	[self setObjectsInfo:nil];
+	[self setBucket:nil];
+
+	[self setConnection:nil];
+	[self setCurrentOperations:nil];
+
+	[self setUploadKey:nil];
+	[self setUploadACL:nil];
+	[self setUploadFilename:nil];
+	[self setCurrentOperations:nil];
+	
+	[super dealloc];
+}
 
 @end

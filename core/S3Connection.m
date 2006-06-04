@@ -21,6 +21,15 @@
 	return self;
 }
 
+- (void)dealloc
+{
+    [self setAccessKeyID:nil];
+    [self setSecretAccessKey:nil];
+    [_host release];
+    [_operations release];
+	[super dealloc];
+}
+
 - (NSString *)accessKeyID
 {
     return _accessKeyID; 

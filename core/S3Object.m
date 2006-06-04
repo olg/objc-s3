@@ -25,6 +25,14 @@
 	return self;
 }
 
+-(void)dealloc
+{
+	[_data release];
+	[_metadata release];
+	[_bucket release];
+	[super dealloc];
+}
+
 +(S3Object*)objectWithXMLNode:(NSXMLElement*)element
 {
 	NSMutableDictionary* d = [NSMutableDictionary dictionary];

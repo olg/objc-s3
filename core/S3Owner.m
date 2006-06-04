@@ -19,6 +19,13 @@
 	return self;
 }
 
+-(void)dealloc
+{
+	[_id release];
+	[_displayName release];
+	[super dealloc];
+}
+
 - (NSString *)ID
 {
     return _id; 
