@@ -31,6 +31,6 @@
 - (NSMutableURLRequest*)makeRequestForMethod:(NSString*)method withResource:(NSString*)resource subResource:(NSString*)s  headers:(NSDictionary*)d;
 - (NSMutableURLRequest*)makeRequestForMethod:(NSString*)method withResource:(NSString*)resource headers:(NSDictionary*)d;
 
--(NSString*)urlForBucket:(NSString*)b resource:(NSString*)r qualifier:(NSString*)q;
+- (NSString*)urlForBucket:(NSString*)b resource:(NSString*)r qualifier:(NSString*)q;
 
 @end
