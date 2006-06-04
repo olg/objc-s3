@@ -142,7 +142,9 @@
 		NSData* d = [(S3ObjectDownloadOperation*)op data];
 		NSSavePanel* sp = [NSSavePanel savePanel];
 		int runResult;
-		runResult = [sp runModalForDirectory:nil file:@""];
+		NSString* n = [[(S3ObjectDownloadOperation*)op object] key];
+		if (n==nil) n = @"Untitled";
+		runResult = [sp runModalForDirectory:nil file:n];
 		
 		if (runResult == NSOKButton) {
 			if (![d writeToFile:[sp filename] atomically:YES])

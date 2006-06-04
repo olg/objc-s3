@@ -15,10 +15,16 @@
 @class S3Connection;
 
 
-@interface S3ObjectDownloadOperation : S3Operation
+@interface S3ObjectDownloadOperation : S3Operation 
+{
+	S3Object* _object;
+}
 
 +(S3ObjectDownloadOperation*)objectDownloadWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b object:(S3Object*)o;
 -(NSData*)data;
+
+- (S3Object *)object;
+- (void)setObject:(S3Object *)anObject;
 
 @end
 

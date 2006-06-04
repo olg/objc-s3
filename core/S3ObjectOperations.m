@@ -33,6 +33,12 @@
 
 @implementation S3ObjectDownloadOperation
 
+-(void)dealloc
+{
+	[_object release];
+	[super dealloc];
+}
+
 -(NSString*)kind
 {
 	return @"Object download";
@@ -42,12 +48,24 @@
 {
 	NSURLRequest* rootConn = [c makeRequestForMethod:@"GET" withResource:[b name] subResource:[o key]];
 	S3ObjectDownloadOperation* op = [[[S3ObjectDownloadOperation alloc] initWithRequest:rootConn delegate:d] autorelease];
+	[op setObject:o];
 	return op;
 }
 
 -(NSData*)data
 {
 	return _data;
+}
+
+- (S3Object *)object
+{
+    return _object; 
+}
+
+- (void)setObject:(S3Object *)anObject
+{
+    [_object release];
+    _object = [anObject retain];
 }
 
 @end
@@ -123,17 +141,16 @@
 	NSXMLElement* n;
 	
 	NSEnumerator* e = [[root nodesForXPath:@"//Contents" error:&_error] objectEnumerator];
-		NSMutableArray* result = [NSMutableArray array];
-		while (n=[e nextObject])
-		{
-			S3Object* b = [S3Object objectWithXMLNode:n];
-			if (b!=nil) {
-				[result addObject:b];
-				[b setBucket:_bucket];
-			}
+	NSMutableArray* result = [NSMutableArray array];
+	while (n=[e nextObject])
+	{
+		S3Object* b = [S3Object objectWithXMLNode:n];
+		if (b!=nil) {
+			[result addObject:b];
+			[b setBucket:_bucket];
 		}
-		return result;
-		
+	}
+	return result;
 }
 
 @end
