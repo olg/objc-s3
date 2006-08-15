@@ -27,12 +27,11 @@ typedef enum _S3OperationState {
 -(void)operationDidFail:(S3Operation*)o;
 @end
 
+
 @interface S3Operation : NSObject {
 	NSHTTPURLResponse* _response;
-	NSURLConnection* _connection;
 	NSURLRequest* _request;
 	NSString* _status;
-	NSMutableData* _data;
 	NSError* _error;
 	NSObject<S3OperationDelegate>* _delegate;	
 	BOOL _active;
@@ -49,5 +48,12 @@ typedef enum _S3OperationState {
 - (void)setStatus:(NSString *)aStatus;
 - (id)initWithRequest:(NSURLRequest*)connection delegate:(id)delegate;
 - (void)stop:(id)sender;
+
+@end
+
+@interface S3NSURLConnectionOperation : S3Operation {
+	NSURLConnection* _connection;
+	NSMutableData* _data;
+}
 
 @end

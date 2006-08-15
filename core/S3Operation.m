@@ -8,7 +8,6 @@
 
 #import "S3Operation.h"
 
-
 @implementation S3Operation
 
 -(id)initWithRequest:(NSURLRequest*)request delegate:(id)delegate
@@ -16,50 +15,18 @@
 	[super init];
 	[self setActive:YES];
 	_request = [request retain];
-    _connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
 	_delegate = delegate;
-	_data = [[NSMutableData alloc] init];
 	_status = @"Active";
 	return self;
 }
 
 -(void)dealloc
 {
-	[_connection release];
 	[_request release];
 	[_response release];
-	[_data release];
 	[_status release];
 	[_error release];
 	[super dealloc];
-}
-
-
--(BOOL)operationSuccess
-{
-	int status = [_response statusCode];
-	if (status/100==2)
-		return TRUE;
-	
-	// Houston, we have a problem 
-	NSMutableDictionary* dictionary = [NSMutableDictionary dictionary];
-	NSArray* a;
-	NSXMLDocument* d = [[[NSXMLDocument alloc] initWithData:_data options:NSXMLDocumentTidyXML error:&_error] autorelease];
-	
-	a = [[d rootElement] nodesForXPath:@"//Code" error:&_error];
-	if ([a count]==1)
-		[dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:NSLocalizedDescriptionKey];
-	a = [[d rootElement] nodesForXPath:@"//Message" error:&_error];
-	if ([a count]==1)
-		[dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:NSLocalizedRecoverySuggestionErrorKey];
-	a = [[d rootElement] nodesForXPath:@"//Resource" error:&_error];
-	if ([a count]==1)
-		[dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:S3_ERROR_RESOURCE_KEY];
-	
-	[dictionary setObject:[NSNumber numberWithInt:status] forKey:S3_ERROR_HTTP_STATUS_KEY];
-	
-	[self setError:[NSError errorWithDomain:S3_ERROR_DOMAIN code:[_response statusCode] userInfo:dictionary]];
-	return FALSE;
 }
 
 - (NSString *)status
@@ -105,6 +72,72 @@
     _response = [aResponse retain];
 }
 
+-(BOOL)operationSuccess
+{
+	return FALSE;
+}
+
+-(void)stop:(id)sender
+{	
+	NSDictionary* d = [NSDictionary dictionaryWithObjectsAndKeys:@"Cancel",NSLocalizedDescriptionKey,
+		@"This operation has been cancelled",NSLocalizedDescriptionKey,nil];
+	[self setError:[NSError errorWithDomain:S3_ERROR_DOMAIN code:-1 userInfo:d]];
+	[self setStatus:@"Cancelled"];
+	[self setActive:NO];
+	[_delegate operationDidFail:self];
+}
+
+@end
+
+@implementation S3NSURLConnectionOperation
+
+-(id)initWithRequest:(NSURLRequest*)request delegate:(id)delegate
+{
+	[super initWithRequest:request delegate:delegate];
+    _connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
+	_data = [[NSMutableData alloc] init];
+	return self;
+}
+
+-(void)dealloc
+{
+	[_connection release];
+	[_data release];
+	[super dealloc];
+}
+
+-(BOOL)operationSuccess
+{
+	int status = [_response statusCode];
+	if (status/100==2)
+		return TRUE;
+	
+	// Houston, we have a problem 
+	NSMutableDictionary* dictionary = [NSMutableDictionary dictionary];
+	NSArray* a;
+	NSXMLDocument* d = [[[NSXMLDocument alloc] initWithData:_data options:NSXMLDocumentTidyXML error:&_error] autorelease];
+	
+	a = [[d rootElement] nodesForXPath:@"//Code" error:&_error];
+	if ([a count]==1)
+		[dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:NSLocalizedDescriptionKey];
+	a = [[d rootElement] nodesForXPath:@"//Message" error:&_error];
+	if ([a count]==1)
+		[dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:NSLocalizedRecoverySuggestionErrorKey];
+	a = [[d rootElement] nodesForXPath:@"//Resource" error:&_error];
+	if ([a count]==1)
+		[dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:S3_ERROR_RESOURCE_KEY];
+	
+	[dictionary setObject:[NSNumber numberWithInt:status] forKey:S3_ERROR_HTTP_STATUS_KEY];
+	
+	[self setError:[NSError errorWithDomain:S3_ERROR_DOMAIN code:[_response statusCode] userInfo:dictionary]];
+	return FALSE;
+}
+
+-(void)stop:(id)sender
+{	
+	[_connection cancel];
+	[super stop:sender];
+}
 
 -(NSURLRequest *)connection:(NSURLConnection *)connection willSendRequest:(NSURLRequest *)request redirectResponse:(NSURLResponse *)redirectResponse
 {
@@ -147,20 +180,8 @@
 	[_delegate operationDidFail:self];
 }
 
--(void)stop:(id)sender
-{	
-	NSDictionary* d = [NSDictionary dictionaryWithObjectsAndKeys:@"Cancel",NSLocalizedDescriptionKey,
-		@"This operation has been cancelled",NSLocalizedDescriptionKey,nil];
-	[_connection cancel];
-	[self setError:[NSError errorWithDomain:S3_ERROR_DOMAIN code:-1 userInfo:d]];
-	[self setStatus:@"Cancelled"];
-	[self setActive:NO];
-	[_delegate operationDidFail:self];
-}
-
 - (NSCachedURLResponse *)connection:(NSURLConnection *)connection willCacheResponse:(NSCachedURLResponse *)cachedResponse {
     return nil; // Don't cache
 }
-
 
 @end

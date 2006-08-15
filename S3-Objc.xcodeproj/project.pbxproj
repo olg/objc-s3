@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		30BA790B0A91F0D100E4E2A9 /* S3ObjectDownloadOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 30BA790A0A91F0D100E4E2A9 /* S3ObjectDownloadOperation.m */; };
 		7737F80C09EDA1EB0015B80B /* upload.icns in Resources */ = {isa = PBXBuildFile; fileRef = 7737F80A09EDA1EB0015B80B /* upload.icns */; };
 		7737F80D09EDA1EB0015B80B /* download.icns in Resources */ = {isa = PBXBuildFile; fileRef = 7737F80B09EDA1EB0015B80B /* download.icns */; };
 		77538C0C09EB36E80024FB3B /* stop.icns in Resources */ = {isa = PBXBuildFile; fileRef = 77538C0809EB36E80024FB3B /* stop.icns */; };
@@ -51,6 +52,8 @@
 		29B97319FDCFA39411CA2CEA /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/MainMenu.nib; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		30BA79090A91F0D100E4E2A9 /* S3ObjectDownloadOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3ObjectDownloadOperation.h; sourceTree = "<group>"; };
+		30BA790A0A91F0D100E4E2A9 /* S3ObjectDownloadOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3ObjectDownloadOperation.m; sourceTree = "<group>"; };
 		32CA4F630368D1EE00C91783 /* S3-Objc_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "S3-Objc_Prefix.pch"; sourceTree = "<group>"; };
 		7737F80A09EDA1EB0015B80B /* upload.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = upload.icns; path = Resources/upload.icns; sourceTree = "<group>"; };
 		7737F80B09EDA1EB0015B80B /* download.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = download.icns; path = Resources/download.icns; sourceTree = "<group>"; };
@@ -98,7 +101,7 @@
 		77BC334D09E852D90055FD75 /* S3ClickableURLField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3ClickableURLField.h; sourceTree = "<group>"; };
 		77BC334E09E852D90055FD75 /* S3ClickableURLField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3ClickableURLField.m; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		8D1107320486CEB800E47090 /* S3 Browser.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "S3 Browser.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107320486CEB800E47090 /* S3 Browser.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "S3 Browser.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -133,6 +136,8 @@
 				775D392E09DF2BB900B16BE3 /* S3BucketOperations.m */,
 				77852D3C09E95E3B002826E7 /* S3ObjectOperations.h */,
 				77852D3D09E95E3B002826E7 /* S3ObjectOperations.m */,
+				30BA79090A91F0D100E4E2A9 /* S3ObjectDownloadOperation.h */,
+				30BA790A0A91F0D100E4E2A9 /* S3ObjectDownloadOperation.m */,
 				775D396409DF44BF00B16BE3 /* S3Connection.h */,
 				775D396509DF44BF00B16BE3 /* S3Connection.m */,
 			);
@@ -323,6 +328,7 @@
 				77BC334F09E852D90055FD75 /* S3ClickableURLField.m in Sources */,
 				77852D3E09E95E3B002826E7 /* S3ObjectOperations.m in Sources */,
 				77538C6909EB3DCB0024FB3B /* S3AppKitExtensions.m in Sources */,
+				30BA790B0A91F0D100E4E2A9 /* S3ObjectDownloadOperation.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

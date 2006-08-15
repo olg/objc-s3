@@ -12,6 +12,7 @@
 #import "S3Bucket.h"
 #import "S3ObjectOperations.h"
 #import "S3Application.h"
+#import "S3ObjectDownloadOperation.h"
 
 #define SHEET_CANCEL 0
 #define SHEET_OK 1
@@ -137,7 +138,8 @@
 		[self operationDidFail:op];
 		return;
 	}
-
+	
+#ifdef S3_DOWNLOADS_NSURLCONNECTION
 	if ([op isKindOfClass:[S3ObjectDownloadOperation class]]) {
 		NSData* d = [(S3ObjectDownloadOperation*)op data];
 		NSSavePanel* sp = [NSSavePanel savePanel];
@@ -151,6 +153,7 @@
 				NSBeep();
 		}
 	}
+#endif
 	if ([op isKindOfClass:[S3ObjectListOperation class]]) {
 		[self setObjects:[(S3ObjectListOperation*)op objects]];
 		[self setObjectsInfo:[(S3ObjectListOperation*)op metadata]];
@@ -190,9 +193,22 @@
 	NSEnumerator* e = [[_objectsController selectedObjects] objectEnumerator];
 	while (b = [e nextObject])
 	{
+#ifdef S3_DOWNLOADS_NSURLCONNECTION
 		S3ObjectDownloadOperation* op = [S3ObjectDownloadOperation objectDownloadWithConnection:_connection delegate:self bucket:_bucket object:b];
 		[(S3Application*)NSApp logOperation:op];
 		[ops addObject:op];
+#else
+		NSSavePanel* sp = [NSSavePanel savePanel];
+		int runResult;
+		NSString* n = [b key];
+		if (n==nil) n = @"Untitled";
+		runResult = [sp runModalForDirectory:nil file:n];
+		if (runResult == NSOKButton) {
+			S3ObjectDownloadOperation* op = [S3ObjectDownloadOperation objectDownloadWithConnection:_connection delegate:self bucket:_bucket object:b toPath:[sp filename]];
+			[(S3Application*)NSApp logOperation:op];
+			[ops addObject:op];
+		}
+#endif
 	}
 	[self setCurrentOperations:ops];
 }

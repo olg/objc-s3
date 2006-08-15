@@ -31,44 +31,6 @@
 
 @end
 
-@implementation S3ObjectDownloadOperation
-
--(void)dealloc
-{
-	[_object release];
-	[super dealloc];
-}
-
--(NSString*)kind
-{
-	return @"Object download";
-}
-
-+(S3ObjectDownloadOperation*)objectDownloadWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b object:(S3Object*)o;
-{
-	NSURLRequest* rootConn = [c makeRequestForMethod:@"GET" withResource:[b name] subResource:[o key]];
-	S3ObjectDownloadOperation* op = [[[S3ObjectDownloadOperation alloc] initWithRequest:rootConn delegate:d] autorelease];
-	[op setObject:o];
-	return op;
-}
-
--(NSData*)data
-{
-	return _data;
-}
-
-- (S3Object *)object
-{
-    return _object; 
-}
-
-- (void)setObject:(S3Object *)anObject
-{
-    [_object release];
-    _object = [anObject retain];
-}
-
-@end
 
 @implementation S3ObjectUploadOperation
 

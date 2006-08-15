@@ -13,7 +13,7 @@
 @class S3Bucket;
 @class S3Connection;
 
-@interface S3BucketListOperation : S3Operation 
+@interface S3BucketListOperation : S3NSURLConnectionOperation 
 
 +(S3BucketListOperation*)bucketListOperationWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d;
 
@@ -22,13 +22,13 @@
 
 @end
 
-@interface S3BucketDeleteOperation : S3Operation
+@interface S3BucketDeleteOperation : S3NSURLConnectionOperation
 
 +(S3BucketDeleteOperation*)bucketDeletionWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b;
 
 @end
 
-@interface S3BucketAddOperation : S3Operation
+@interface S3BucketAddOperation : S3NSURLConnectionOperation
 
 +(S3BucketAddOperation*)bucketAddWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d name:(NSString*)name;
 
