@@ -33,6 +33,7 @@ Object is stored.
 - (id)initWithData:(NSData*)d metaData:(NSDictionary*)d;
 
 - (NSString*)key;
+- (long long)size;
 
 - (NSData *)data;
 - (void)setData:(NSData *)aData;

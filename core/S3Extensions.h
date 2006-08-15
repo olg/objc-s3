@@ -9,6 +9,13 @@
 #import <Cocoa/Cocoa.h>
 
 
+@interface NSString (Comfort)
+
+- (long long)longLongValue;
+
+@end
+
+
 @interface NSMutableDictionary (Comfort)
 
 -(void)safeSetObject:(id)o forKey:(NSString*)k;
@@ -19,7 +26,7 @@
 @interface NSXMLElement (Comfort)
 
 -(NSXMLElement*)elementForName:(NSString*)n;
--(NSNumber*)intNumber;
+-(NSNumber*)longLongNumber;
 -(NSNumber*)boolNumber;
 -(NSCalendarDate*)dateValue;
 

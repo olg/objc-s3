@@ -10,6 +10,21 @@
 #import <openssl/ssl.h>
 #import <openssl/hmac.h>
 
+@implementation NSString (Comfort)
+
+- (long long)longLongValue {
+	long long v;
+	
+	NSScanner* scanner = [[NSScanner alloc] initWithString:self];
+	if(![scanner scanLongLong:&v])
+		v = 0;
+	
+	[scanner release];	
+	return v;
+}
+
+@end
+
 
 @implementation NSMutableDictionary (Comfort)
 
@@ -34,9 +49,9 @@
 		return nil;
 }
 
--(NSNumber*)intNumber
+-(NSNumber*)longLongNumber
 {
-	return [NSNumber numberWithInt:[[self stringValue] intValue]];
+	return [NSNumber numberWithLongLong:[[self stringValue] longLongValue]];
 }
 
 -(NSNumber*)boolNumber

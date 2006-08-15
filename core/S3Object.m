@@ -40,11 +40,20 @@
 	[d safeSetObject:[[element elementForName:@"Key"] stringValue] forKey:@"key"];
 	[d safeSetObject:[[element elementForName:@"LastModified"] dateValue] forKey:@"lastModified"];
 	[d safeSetObject:[[element elementForName:@"ETag"] stringValue] forKey:@"etag"];
-	[d safeSetObject:[[element elementForName:@"Size"] intNumber] forKey:@"size"];
+	[d safeSetObject:[[element elementForName:@"Size"] longLongNumber] forKey:@"size"];
 	[d safeSetObject:[[element elementForName:@"StorageClass"] stringValue] forKey:@"storageClass"];
 	[d safeSetObject:[S3Owner ownerWithXMLNode:[element elementForName:@"Owner"]] forKey:@"owner"];
 
 	return [[[S3Object alloc] initWithData:nil metaData:d] autorelease];
+}
+
+-(long long)size
+{
+	NSNumber* n = [_metadata objectForKey:@"size"];
+	if (n==nil)
+		return -1;
+	else
+		return [n longLongValue];
 }
 
 -(NSString*)key
