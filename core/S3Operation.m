@@ -10,11 +10,10 @@
 
 @implementation S3Operation
 
--(id)initWithRequest:(NSURLRequest*)request delegate:(id)delegate
+-(id)initWithDelegate:(id)delegate
 {
 	[super init];
 	[self setActive:YES];
-	_request = [request retain];
 	_delegate = delegate;
 	_status = @"Active";
 	return self;
@@ -22,8 +21,6 @@
 
 -(void)dealloc
 {
-	[_request release];
-	[_response release];
 	[_status release];
 	[_error release];
 	[super dealloc];
@@ -60,18 +57,6 @@
     _error = [anError retain];
 }
 
-
-- (NSHTTPURLResponse *)response
-{
-    return _response; 
-}
-
-- (void)setResponse:(NSHTTPURLResponse *)aResponse
-{
-    [_response release];
-    _response = [aResponse retain];
-}
-
 -(BOOL)operationSuccess
 {
 	return FALSE;
@@ -93,7 +78,8 @@
 
 -(id)initWithRequest:(NSURLRequest*)request delegate:(id)delegate
 {
-	[super initWithRequest:request delegate:delegate];
+	[super initWithDelegate:delegate];
+	_request = [request retain];
     _connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
 	_data = [[NSMutableData alloc] init];
 	return self;
@@ -101,9 +87,17 @@
 
 -(void)dealloc
 {
+	[_request release];
+	[_response release];
 	[_connection release];
 	[_data release];
 	[super dealloc];
+}
+
+- (void)setResponse:(NSHTTPURLResponse *)aResponse
+{
+    [_response release];
+    _response = [aResponse retain];
 }
 
 -(BOOL)operationSuccess

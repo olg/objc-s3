@@ -11,6 +11,7 @@
 
 #define DEFAULT_HOST @"s3.amazonaws.com"
 #define READ_TIMEOUT 30
+#define XAMZACL @"x-amz-acl"
 
 @interface S3Connection : NSObject {
 	NSString* _host;
@@ -32,5 +33,7 @@
 - (NSMutableURLRequest*)makeRequestForMethod:(NSString*)method withResource:(NSString*)resource headers:(NSDictionary*)d;
 
 - (NSString*)urlForBucket:(NSString*)b resource:(NSString*)r qualifier:(NSString*)q;
+
+- (CFDataRef)createHeaderDataForMethod:(NSString*)method withResource:(NSString*)resource subResource:(NSString*)s headers:(NSDictionary*)d;
 
 @end

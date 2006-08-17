@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		30BA790B0A91F0D100E4E2A9 /* S3ObjectDownloadOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 30BA790A0A91F0D100E4E2A9 /* S3ObjectDownloadOperation.m */; };
+		30BA7C7F0A93A92800E4E2A9 /* S3ObjectUploadOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 30BA7C7E0A93A92800E4E2A9 /* S3ObjectUploadOperation.m */; };
 		7737F80C09EDA1EB0015B80B /* upload.icns in Resources */ = {isa = PBXBuildFile; fileRef = 7737F80A09EDA1EB0015B80B /* upload.icns */; };
 		7737F80D09EDA1EB0015B80B /* download.icns in Resources */ = {isa = PBXBuildFile; fileRef = 7737F80B09EDA1EB0015B80B /* download.icns */; };
 		77538C0C09EB36E80024FB3B /* stop.icns in Resources */ = {isa = PBXBuildFile; fileRef = 77538C0809EB36E80024FB3B /* stop.icns */; };
@@ -54,6 +55,8 @@
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		30BA79090A91F0D100E4E2A9 /* S3ObjectDownloadOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3ObjectDownloadOperation.h; sourceTree = "<group>"; };
 		30BA790A0A91F0D100E4E2A9 /* S3ObjectDownloadOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3ObjectDownloadOperation.m; sourceTree = "<group>"; };
+		30BA7C7D0A93A92800E4E2A9 /* S3ObjectUploadOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3ObjectUploadOperation.h; sourceTree = "<group>"; };
+		30BA7C7E0A93A92800E4E2A9 /* S3ObjectUploadOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3ObjectUploadOperation.m; sourceTree = "<group>"; };
 		32CA4F630368D1EE00C91783 /* S3-Objc_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "S3-Objc_Prefix.pch"; sourceTree = "<group>"; };
 		7737F80A09EDA1EB0015B80B /* upload.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = upload.icns; path = Resources/upload.icns; sourceTree = "<group>"; };
 		7737F80B09EDA1EB0015B80B /* download.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = download.icns; path = Resources/download.icns; sourceTree = "<group>"; };
@@ -140,6 +143,8 @@
 				30BA790A0A91F0D100E4E2A9 /* S3ObjectDownloadOperation.m */,
 				775D396409DF44BF00B16BE3 /* S3Connection.h */,
 				775D396509DF44BF00B16BE3 /* S3Connection.m */,
+				30BA7C7D0A93A92800E4E2A9 /* S3ObjectUploadOperation.h */,
+				30BA7C7E0A93A92800E4E2A9 /* S3ObjectUploadOperation.m */,
 			);
 			path = core;
 			sourceTree = "<group>";
@@ -329,6 +334,7 @@
 				77852D3E09E95E3B002826E7 /* S3ObjectOperations.m in Sources */,
 				77538C6909EB3DCB0024FB3B /* S3AppKitExtensions.m in Sources */,
 				30BA790B0A91F0D100E4E2A9 /* S3ObjectDownloadOperation.m in Sources */,
+				30BA7C7F0A93A92800E4E2A9 /* S3ObjectUploadOperation.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -13,6 +13,7 @@
 #import "S3ObjectOperations.h"
 #import "S3Application.h"
 #import "S3ObjectDownloadOperation.h"
+#import "S3ObjectUploadOperation.h"
 
 #define SHEET_CANCEL 0
 #define SHEET_OK 1
@@ -158,7 +159,7 @@
 		[self setObjects:[(S3ObjectListOperation*)op objects]];
 		[self setObjectsInfo:[(S3ObjectListOperation*)op metadata]];
 	}
-	if ([op isKindOfClass:[S3ObjectUploadOperation class]]||[op isKindOfClass:[S3ObjectDeleteOperation class]])
+	if ([op isKindOfClass:[S3ObjectUploadOperation class]]||[op isKindOfClass:[S3ObjectStreamedUploadOperation class]]||[op isKindOfClass:[S3ObjectDeleteOperation class]])
 		[self refresh:self];
 }
 
@@ -226,8 +227,12 @@
     [sheet orderOut:self];
 	if (returnCode==SHEET_OK)
 	{
+#ifdef S3_AVOID_STREAMED_UPLOAD
 		NSData* data = [NSData dataWithContentsOfFile:[self uploadFilename]];
 		S3ObjectUploadOperation* op = [S3ObjectUploadOperation objectUploadWithConnection:_connection delegate:self bucket:_bucket key:[self uploadKey] data:data acl:[self uploadACL]];
+#else
+		S3ObjectStreamedUploadOperation* op = [S3ObjectStreamedUploadOperation objectUploadWithConnection:_connection delegate:self bucket:_bucket key:[self uploadKey] path:[self uploadFilename] acl:[self uploadACL]];
+#endif
 		[(S3Application*)NSApp logOperation:op];
 		[self setCurrentOperations:[NSMutableSet setWithObject:op]];
 	}

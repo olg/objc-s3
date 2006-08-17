@@ -101,7 +101,6 @@
 	
 	NSString* auth = [[[buf dataUsingEncoding:NSUTF8StringEncoding] sha1HMacWithKey:_secretAccessKey] encodeBase64];
 	[conn addValue:[NSString stringWithFormat:@"AWS %@:%@",_accessKeyID,auth] forHTTPHeaderField:@"Authorization"];
-	
 }
 
 -(NSString*)urlForBucket:(NSString*)b resource:(NSString*)r qualifier:(NSString*)q
@@ -149,6 +148,67 @@
 	[request setHTTPMethod:method];
 
 	return request;
+}
+
+
+-(void)addAuthorizationToCF:(CFHTTPMessageRef)conn method:(NSString*)method data:(id)data headers:(NSDictionary*)headers url:(NSURL*)url
+{															
+	NSString* contentType = @"";
+	// for additional security, include a content-md5 tag with any
+	// query that is supplying data to S3
+	NSString* contentMD5 = @"";
+	if(data != nil) {
+		NSString* contentMD5 = [[data md5Digest] encodeBase64];
+		CFHTTPMessageSetHeaderFieldValue(conn, CFSTR("Content-MD5"), (CFStringRef)contentMD5);
+	}
+	NSString* k;
+	NSEnumerator* e;
+	e = [headers keyEnumerator];
+	while (k = [e nextObject])
+	{
+		id o = [headers objectForKey:k];
+		CFHTTPMessageSetHeaderFieldValue(conn, (CFStringRef)k, (CFStringRef)o);
+	}
+	
+	NSCalendarDate * date = [NSCalendarDate calendarDate];
+	[date setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
+	NSString* dateString = [date descriptionWithCalendarFormat:@"%a, %d %b %Y %H:%M:%S %z"];
+	CFHTTPMessageSetHeaderFieldValue(conn, CFSTR("Date"), (CFStringRef)dateString);
+
+	// S3 authentication works as a SHA1 hash of the following information
+	// in this precise order
+	NSMutableString* buf = [NSMutableString string];
+	[buf appendFormat:@"%@\n",method];
+	[buf appendFormat:@"%@\n",contentMD5];
+	[buf appendFormat:@"%@\n",contentType];
+	[buf appendFormat:@"%@\n",dateString];
+	
+	e = [[[headers allKeys] sortedArrayUsingSelector:@selector(compare:)] objectEnumerator];
+	while (k = [e nextObject])
+	{
+		id o = [headers objectForKey:k];
+		if ([k hasPrefix:AMZ_PREFIX])
+			[buf appendFormat:@"%@:%@\n",k,o];
+	}
+	[buf appendFormat:@"%@",[[url path] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+
+	
+	NSString* auth = [[[buf dataUsingEncoding:NSUTF8StringEncoding] sha1HMacWithKey:_secretAccessKey] encodeBase64];
+	CFHTTPMessageSetHeaderFieldValue(conn, CFSTR("Authorization"), (CFStringRef)[NSString stringWithFormat:@"AWS %@:%@",_accessKeyID,auth]);
+}
+
+-(CFDataRef)createHeaderDataForMethod:(NSString*)method withResource:(NSString*)resource subResource:(NSString*)s headers:(NSDictionary*)d
+{
+	NSString* url = [NSString stringWithFormat:@"http://%@/%@",_host,[resource stringByAppendingPathComponent:[s stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+	NSURL* rootURL = [NSURL URLWithString:url];
+	
+	CFHTTPMessageRef request = CFHTTPMessageCreateRequest(kCFAllocatorDefault, (CFStringRef)method, (CFURLRef)rootURL, kCFHTTPVersion1_1);
+
+	[self addAuthorizationToCF:request method:method data:nil headers:d url:rootURL];	
+
+	CFDataRef serializedRequest = CFHTTPMessageCopySerializedMessage(request);
+	CFRelease(request);
+	return serializedRequest;
 }
 
 

@@ -22,7 +22,8 @@
 
 -(id)initWithRequest:(NSURLRequest*)request delegate:(id)delegate toPath:(NSString*)path forSize:(long long)size
 {
-	[super initWithRequest:request delegate:delegate];
+	[super initWithDelegate:delegate];
+	_request = [request retain];
     _connection = [[NSURLDownload alloc] initWithRequest:request delegate:self];
 	_size = size;
 	[_connection setDestination:path allowOverwrite:YES];
@@ -31,6 +32,8 @@
 
 -(void)dealloc
 {
+	[_request release];
+	[_response release];
 	[_connection release];
 	[super dealloc];
 }
@@ -57,7 +60,8 @@
 
 - (void)download:(NSURLDownload *)download didReceiveResponse:(NSURLResponse *)response
 {
-	[self setResponse:(NSHTTPURLResponse*)response];
+    [_response release];
+    _response = [response retain];
     [self setStatus:@"Connected to server"];
 	if ([_delegate respondsToSelector:@selector(operationStateChange:)])
 		[_delegate operationStateChange:self];
@@ -167,3 +171,6 @@
 @end
 
 #endif
+
+
+

@@ -13,7 +13,6 @@
 #import "S3Object.h"
 #import "S3Extensions.h"
 
-#define XAMZACL @"x-amz-acl"
 
 @implementation S3ObjectDeleteOperation
 
@@ -26,24 +25,6 @@
 {
 	NSURLRequest* rootConn = [c makeRequestForMethod:@"DELETE" withResource:[b name] subResource:[o key]];
 	S3ObjectDeleteOperation* op = [[[S3ObjectDeleteOperation alloc] initWithRequest:rootConn delegate:d] autorelease];
-	return op;
-}
-
-@end
-
-
-@implementation S3ObjectUploadOperation
-
--(NSString*)kind
-{
-	return @"Object upload";
-}
-
-+(S3ObjectUploadOperation*)objectUploadWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b key:(NSString*)k data:(NSData*)n acl:(NSString*)acl
-{
-	NSMutableURLRequest* rootConn = [c makeRequestForMethod:@"PUT" withResource:[b name] subResource:k headers:[NSDictionary dictionaryWithObject:acl forKey:XAMZACL]];
-	[rootConn setHTTPBody:n];
-	S3ObjectUploadOperation* op = [[[S3ObjectUploadOperation alloc] initWithRequest:rootConn delegate:d] autorelease];
 	return op;
 }
 

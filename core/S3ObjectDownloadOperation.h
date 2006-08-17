@@ -28,6 +28,8 @@
 {
 	long long _size;
 	long long _received;
+	NSHTTPURLResponse* _response;
+	NSURLRequest* _request;
 	NSURLDownload* _connection;
 }
 
