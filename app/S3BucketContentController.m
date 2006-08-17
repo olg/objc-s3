@@ -37,6 +37,7 @@
 	[toolbar setSizeMode:NSToolbarSizeModeDefault];
 	[toolbar setDisplayMode:NSToolbarDisplayModeDefault];
 	[[self window] setToolbar:toolbar];
+	[_objectsController setFileOperationsDelegate:self];
 }
 
 - (NSArray*)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar
@@ -189,6 +190,24 @@
 	[self setCurrentOperations:ops];
 }
 
+-(NSString*)exportFile:(id)b path:(NSString*)p
+{
+	NSSavePanel* sp = [NSSavePanel savePanel];
+	int runResult;
+	NSString* n = [b key];
+	if (n==nil) n = @"Untitled";
+	runResult = [sp runModalForDirectory:p file:n];
+	if (runResult == NSOKButton) {
+		S3ObjectDownloadOperation* op = [S3ObjectDownloadOperation objectDownloadWithConnection:_connection delegate:self bucket:_bucket object:b toPath:[sp filename]];
+		[(S3Application*)NSApp logOperation:op];
+		[self willChangeValueForKey:@"currentOperations"];
+		[_currentOperations addObject:op];
+		[self didChangeValueForKey:@"currentOperations"];
+		return [sp filename];
+	}
+	return nil;
+}
+
 -(IBAction)download:(id)sender
 {
 	NSMutableSet* ops = [NSMutableSet set];
@@ -248,6 +267,15 @@
 	}
 }
 
+-(void)importFile:(NSString*)path
+{
+	[self setUploadFilename:path];
+	[self setUploadACL:ACL_PRIVATE];
+	[self setUploadKey:[[self uploadFilename] lastPathComponent]];
+	[self setUploadSize:[[self uploadFilename] readableSizeForPath]];
+	[NSApp beginSheet:uploadSheet modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:nil];
+}
+
 - (void)openPanelDidEnd:(NSOpenPanel *)panel returnCode:(int)returnCode contextInfo:(void *)contextInfo
 {
 	NSArray *files = [panel filenames];
@@ -258,11 +286,7 @@
 	}
 	[panel release];
 	
-	[self setUploadFilename:[files objectAtIndex:0]];
-	[self setUploadACL:ACL_PRIVATE];
-	[self setUploadKey:[[self uploadFilename] lastPathComponent]];
-	[self setUploadSize:[[self uploadFilename] readableSizeForPath]];
-	[NSApp beginSheet:uploadSheet modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:nil];
+	[self importFile:[files objectAtIndex:0]];
 }
 
 #pragma mark -

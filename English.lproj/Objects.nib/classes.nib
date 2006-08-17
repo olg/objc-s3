@@ -16,7 +16,13 @@
             OUTLETS = {"_objectsController" = NSArrayController; uploadSheet = NSWindow; }; 
             SUPERCLASS = NSWindowController; 
         }, 
-        {CLASS = S3ClickableURLField; LANGUAGE = ObjC; SUPERCLASS = NSTextField; }
+        {CLASS = S3ClickableURLField; LANGUAGE = ObjC; SUPERCLASS = NSTextField; }, 
+        {
+            CLASS = S3DragAndDropArrayController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {delegate = id; tableView = NSTableView; }; 
+            SUPERCLASS = NSArrayController; 
+        }
     ); 
     IBVersion = 1; 
 }

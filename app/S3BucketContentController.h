@@ -8,6 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "S3Operation.h"
+#import "S3DragAndDropArrayController.h"
 
 @class S3Connection;
 @class S3Bucket;
@@ -21,7 +22,7 @@
 	NSMutableDictionary* _objectsInfo;
 	
 	IBOutlet NSWindow* uploadSheet;
-	IBOutlet NSArrayController* _objectsController;
+	IBOutlet S3DragAndDropArrayController* _objectsController;
 
 	NSString* _uploadKey;
 	NSString* _uploadACL;
