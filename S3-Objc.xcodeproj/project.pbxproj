@@ -132,18 +132,18 @@
 				7777EB3309C7929900EC8148 /* S3Object.m */,
 				7777EB3B09C79E6F00EC8148 /* S3Bucket.h */,
 				7777EB3C09C79E6F00EC8148 /* S3Bucket.m */,
+				775D396409DF44BF00B16BE3 /* S3Connection.h */,
+				775D396509DF44BF00B16BE3 /* S3Connection.m */,
 				775D392A09DF2BA300B16BE3 /* S3Operation.h */,
 				775D392B09DF2BA300B16BE3 /* S3Operation.m */,
 				775D392D09DF2BB900B16BE3 /* S3BucketOperations.h */,
 				775D392E09DF2BB900B16BE3 /* S3BucketOperations.m */,
 				77852D3C09E95E3B002826E7 /* S3ObjectOperations.h */,
 				77852D3D09E95E3B002826E7 /* S3ObjectOperations.m */,
-				30BA79090A91F0D100E4E2A9 /* S3ObjectDownloadOperation.h */,
-				30BA790A0A91F0D100E4E2A9 /* S3ObjectDownloadOperation.m */,
-				775D396409DF44BF00B16BE3 /* S3Connection.h */,
-				775D396509DF44BF00B16BE3 /* S3Connection.m */,
 				30BA7C7D0A93A92800E4E2A9 /* S3ObjectUploadOperation.h */,
 				30BA7C7E0A93A92800E4E2A9 /* S3ObjectUploadOperation.m */,
+				30BA79090A91F0D100E4E2A9 /* S3ObjectDownloadOperation.h */,
+				30BA790A0A91F0D100E4E2A9 /* S3ObjectDownloadOperation.m */,
 			);
 			path = core;
 			sourceTree = "<group>";
