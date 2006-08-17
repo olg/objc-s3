@@ -6,6 +6,8 @@
 //  Copyright 2006 Olivier Gutknecht. All rights reserved.
 //
 
+#import <SystemConfiguration/SystemConfiguration.h>
+
 #import "S3BucketContentController.h"
 #import "S3Extensions.h"
 #import "S3Connection.h"
@@ -227,12 +229,20 @@
     [sheet orderOut:self];
 	if (returnCode==SHEET_OK)
 	{
-#ifdef S3_AVOID_STREAMED_UPLOAD
-		NSData* data = [NSData dataWithContentsOfFile:[self uploadFilename]];
-		S3ObjectUploadOperation* op = [S3ObjectUploadOperation objectUploadWithConnection:_connection delegate:self bucket:_bucket key:[self uploadKey] data:data acl:[self uploadACL]];
-#else
-		S3ObjectStreamedUploadOperation* op = [S3ObjectStreamedUploadOperation objectUploadWithConnection:_connection delegate:self bucket:_bucket key:[self uploadKey] path:[self uploadFilename] acl:[self uploadACL]];
-#endif
+		S3Operation* op;
+		
+		CFDictionaryRef proxyDict = SCDynamicStoreCopyProxies(NULL); 
+		BOOL hasProxy = (CFDictionaryGetValue(proxyDict, kSCPropNetProxiesHTTPProxy) != NULL);
+		CFRelease(proxyDict);
+		
+		if (hasProxy)
+		{
+			NSData* data = [NSData dataWithContentsOfFile:[self uploadFilename]];
+			op = [S3ObjectUploadOperation objectUploadWithConnection:_connection delegate:self bucket:_bucket key:[self uploadKey] data:data acl:[self uploadACL]];
+		}
+		else 
+			op = [S3ObjectStreamedUploadOperation objectUploadWithConnection:_connection delegate:self bucket:_bucket key:[self uploadKey] path:[self uploadFilename] acl:[self uploadACL]];
+		
 		[(S3Application*)NSApp logOperation:op];
 		[self setCurrentOperations:[NSMutableSet setWithObject:op]];
 	}
