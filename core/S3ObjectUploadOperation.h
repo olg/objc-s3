@@ -10,8 +10,6 @@
 #import "S3Operation.h"
 #import "S3Connection.h"
 
-// #define S3_AVOID_STREAMED_UPLOAD
-
 @interface S3ObjectUploadOperation : S3NSURLConnectionOperation 
 
 +(S3ObjectUploadOperation*)objectUploadWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b key:(NSString*)k data:(NSData*)n acl:(NSString*)acl;
@@ -23,13 +21,13 @@
 	long long _size;
 	long long _sent;
 	
-	NSInputStream* istream;
-	NSOutputStream* ostream;
-	NSInputStream* fstream;
+	NSInputStream* _istream;
+	NSOutputStream* _ostream;
+	NSInputStream* _fstream;
+    NSMutableData* _ibuffer;
+    NSMutableData* _obuffer;
 	CFDataRef _headerData;
 	CFHTTPMessageRef _response;
-    NSMutableData* ibuffer;
-    NSMutableData* obuffer;
 }
 
 + (S3ObjectStreamedUploadOperation*)objectUploadWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b key:(NSString*)k path:(NSString*)path acl:(NSString*)acl;

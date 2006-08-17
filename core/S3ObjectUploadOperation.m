@@ -43,26 +43,26 @@
 	[headers setObject:DEFAULT_HOST forKey:@"Host"];
 
 	
-	obuffer = [[NSMutableData alloc] init];//
+	_obuffer = [[NSMutableData alloc] init];//
 	_headerData = [c createHeaderDataForMethod:@"PUT" withResource:[b name] subResource:k headers:headers];
 		
 	NSHost *host = [NSHost hostWithName:DEFAULT_HOST];
-	// iStream and oStream are instance variables
-	[NSStream getStreamsToHost:host port:80 inputStream:&istream outputStream:&ostream];
-	fstream = [NSInputStream inputStreamWithFileAtPath:path];
-    [istream retain];
-	[ostream retain];
-	[fstream retain];
+	// _istream and _ostream are instance variables
+	[NSStream getStreamsToHost:host port:80 inputStream:&_istream outputStream:&_ostream];
+	_fstream = [NSInputStream inputStreamWithFileAtPath:path];
+    [_istream retain];
+	[_ostream retain];
+	[_fstream retain];
 	
-	[istream setDelegate:self];
-	[ostream setDelegate:self];
-	[fstream setDelegate:self];
-	[istream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-	[ostream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-	[fstream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-	[istream open];
-    [ostream open];
-    [fstream open];
+	[_istream setDelegate:self];
+	[_ostream setDelegate:self];
+	[_fstream setDelegate:self];
+	[_istream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+	[_ostream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+	[_fstream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+	[_istream open];
+    [_ostream open];
+    [_fstream open];
 
 	return self;
 }
@@ -82,22 +82,22 @@
 
 - (void)invalidate 
 {
-	[istream close];
-	[ostream close];
-	[fstream close];
-	[istream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-	[ostream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-	[fstream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-	[fstream release];
-	[istream release];
-	[ostream release];
-	istream = nil;
-	ostream = nil;
-	fstream = nil;
-	[ibuffer release];
-	[obuffer release];
-	ibuffer = nil;
-	obuffer = nil;
+	[_istream close];
+	[_ostream close];
+	[_fstream close];
+	[_istream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+	[_ostream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+	[_fstream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+	[_fstream release];
+	[_istream release];
+	[_ostream release];
+	_istream = nil;
+	_ostream = nil;
+	_fstream = nil;
+	[_ibuffer release];
+	[_obuffer release];
+	_ibuffer = nil;
+	_obuffer = nil;
 }
 
 -(NSString*)kind
@@ -145,10 +145,15 @@
 
 -(void)dealloc
 {
-	[istream release];
-	[ostream release];
-	[fstream release];
-	CFRelease(_headerData);	
+	[_istream release];
+	[_ostream release];
+	[_fstream release];
+	[_ibuffer release];
+	[_obuffer release];
+	if (_headerData!=NULL)
+		CFRelease(_headerData);	
+	if (_response!=NULL)
+		CFRelease(_response);	
 	[super dealloc];
 }
 
@@ -171,45 +176,45 @@
 
 - (void)processFileBytes 
 {
-	if (![fstream hasBytesAvailable])
-		[fstream close];
-	if ([obuffer length]==0)
+	if (![_fstream hasBytesAvailable])
+		[_fstream close];
+	if ([_obuffer length]==0)
 	{
-		[obuffer setLength:FILEBUFFERSIZE*1024];
-		int read = [fstream read:[obuffer mutableBytes] maxLength:[obuffer length]];
-		[obuffer setLength:read];
+		[_obuffer setLength:FILEBUFFERSIZE*1024];
+		int read = [_fstream read:[_obuffer mutableBytes] maxLength:[_obuffer length]];
+		[_obuffer setLength:read];
 		if (read==0)
-			[fstream close];
+			[_fstream close];
 
 	}
-	//NSLog(@"F-> %d",[fstream streamStatus]);
+	//NSLog(@"F-> %d",[_fstream streamStatus]);
 }
 	
 - (void)processOutgoingBytes {
 	
-    if (![ostream hasSpaceAvailable]) {
+    if (![_ostream hasSpaceAvailable]) {
         return;
     }
 	
 	if (_headerData!=NULL) 
 	{
-		int w = [ostream write:CFDataGetBytePtr(_headerData) maxLength:CFDataGetLength(_headerData)];
+		int w = [_ostream write:CFDataGetBytePtr(_headerData) maxLength:CFDataGetLength(_headerData)];
 		if (w < CFDataGetLength(_headerData))
 			NSLog(@"Header data was not sent in just one write. Oops");
 		CFRelease(_headerData);
 		_headerData = NULL;
 	}
 	
-    unsigned olen = [obuffer length];
+    unsigned olen = [_obuffer length];
     if (0 < olen) {
-        int writ = [ostream write:[obuffer bytes] maxLength:olen];
+        int writ = [_ostream write:[_obuffer bytes] maxLength:olen];
         // buffer any unwritten bytes for later writing
         if (writ < olen) {
-            memmove([obuffer mutableBytes], [obuffer mutableBytes] + writ, olen - writ);
-            [obuffer setLength:olen - writ];
+            memmove([_obuffer mutableBytes], [_obuffer mutableBytes] + writ, olen - writ);
+            [_obuffer setLength:olen - writ];
             return;
         }
-        [obuffer setLength:0];
+        [_obuffer setLength:0];
 		_sent = _sent + writ;
 		int percent = _sent * 100.0 / _size;
 		[self setStatus:[NSString stringWithFormat:@"Sending data %d %%",percent]];
@@ -217,19 +222,19 @@
 	[self processFileBytes];
 	
 	
-	if (0 == [obuffer length]) 
+	if (0 == [_obuffer length]) 
 	{
-		if (([fstream streamStatus]==NSStreamStatusAtEnd)||([fstream streamStatus]==NSStreamStatusClosed)||([fstream streamStatus]==NSStreamStatusError))
+		if (([_fstream streamStatus]==NSStreamStatusAtEnd)||([_fstream streamStatus]==NSStreamStatusClosed)||([_fstream streamStatus]==NSStreamStatusError))
 		{
-			[ostream close];
+			[_ostream close];
 		}
 	}		
-	//NSLog(@"O-> %d",[ostream streamStatus]);
+	//NSLog(@"O-> %d",[_ostream streamStatus]);
 }
 
 - (BOOL)analyzeIncomingBytes {
     CFHTTPMessageRef working = CFHTTPMessageCreateEmpty(kCFAllocatorDefault, FALSE);
-    CFHTTPMessageAppendBytes(working, [ibuffer bytes], [ibuffer length]);
+    CFHTTPMessageAppendBytes(working, [_ibuffer bytes], [_ibuffer length]);
     
 	_response = working;
 	CFRetain(_response);
@@ -240,20 +245,20 @@
 
 - (void)processIncomingBytes
 {        
-	if(!ibuffer) {
-		ibuffer = [[NSMutableData data] retain];
+	if(!_ibuffer) {
+		_ibuffer = [[NSMutableData data] retain];
 	}
 	uint8_t buf[1024];
 	int len = 0;
-	len = [istream read:buf maxLength:1024];
+	len = [_istream read:buf maxLength:1024];
 	if(len>0) {
-		[ibuffer appendBytes:(const void *)buf length:len];
+		[_ibuffer appendBytes:(const void *)buf length:len];
 	} else {
-		[istream close];
+		[_istream close];
 	}
 	if ([self analyzeIncomingBytes])
 	{
-		[istream close];
+		[_istream close];
 		[self invalidate];
 		if ([self operationSuccess])
 			[self connectionDidFinishLoading];
@@ -261,18 +266,18 @@
 			[self connectionDidFailWithError:[self error]];
 	}
 	
-	//NSLog(@"I-> %d",[istream streamStatus]);
+	//NSLog(@"I-> %d",[_istream streamStatus]);
 }	
 
 - (void)stream:(NSStream *)stream handleEvent:(NSStreamEvent)eventCode 
 {
 #if 0
-	if (stream==fstream)
-		NSLog(@"fstream %d %d",eventCode,[stream streamStatus]);
-	if (stream==ostream)
-		NSLog(@"ostream %d %d",eventCode,[stream streamStatus]);
-	if (stream==istream)
-		NSLog(@"istream %d %d",eventCode,[stream streamStatus]);
+	if (stream==_fstream)
+		NSLog(@"_fstream %d %d",eventCode,[stream streamStatus]);
+	if (stream==_ostream)
+		NSLog(@"_ostream %d %d",eventCode,[stream streamStatus]);
+	if (stream==_istream)
+		NSLog(@"_istream %d %d",eventCode,[stream streamStatus]);
     switch(eventCode) {
 		case NSStreamEventNone:
 			NSLog(@"    NSStreamEventNone");
@@ -297,21 +302,21 @@
 	
     switch(eventCode) {
 		case NSStreamEventOpenCompleted:
-			if (stream == ostream)
+			if (stream == _ostream)
 				[self setStatus:@"Connected to server"];
 			break;
         case NSStreamEventHasSpaceAvailable:
-			if (stream == ostream)
+			if (stream == _ostream)
 				[self processOutgoingBytes];
             break;
         case NSStreamEventHasBytesAvailable:
-			if (stream == istream)
+			if (stream == _istream)
 				[self processIncomingBytes];
-			else if (stream == fstream)
+			else if (stream == _fstream)
 				[self processFileBytes];
 				break;
 		case NSStreamEventEndEncountered:
-			if (stream == istream)
+			if (stream == _istream)
 				[self analyzeIncomingBytes];
 		default:
 			break;
