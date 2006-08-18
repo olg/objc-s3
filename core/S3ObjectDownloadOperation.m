@@ -27,7 +27,7 @@
     _connection = [[NSURLDownload alloc] initWithRequest:request delegate:self];
 	_size = size;
 	_percent = 0;
-	[_connection setDestination:path allowOverwrite:YES];
+	[_connection setDestination:path allowOverwrite:NO];
 	return self;
 }
 
