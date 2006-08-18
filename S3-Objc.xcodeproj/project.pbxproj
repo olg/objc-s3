@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		301E14880A9487B000452AD5 /* S3DragAndDropArrayController.m in Sources */ = {isa = PBXBuildFile; fileRef = 301E14870A9487B000452AD5 /* S3DragAndDropArrayController.m */; };
+		306299E50A953E0A00634B34 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 306299E40A953E0A00634B34 /* SystemConfiguration.framework */; };
 		30BA790B0A91F0D100E4E2A9 /* S3ObjectDownloadOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 30BA790A0A91F0D100E4E2A9 /* S3ObjectDownloadOperation.m */; };
 		30BA7C7F0A93A92800E4E2A9 /* S3ObjectUploadOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 30BA7C7E0A93A92800E4E2A9 /* S3ObjectUploadOperation.m */; };
 		7737F80C09EDA1EB0015B80B /* upload.icns in Resources */ = {isa = PBXBuildFile; fileRef = 7737F80A09EDA1EB0015B80B /* upload.icns */; };
@@ -55,6 +56,7 @@
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		301E14860A9487B000452AD5 /* S3DragAndDropArrayController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3DragAndDropArrayController.h; sourceTree = "<group>"; };
 		301E14870A9487B000452AD5 /* S3DragAndDropArrayController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3DragAndDropArrayController.m; sourceTree = "<group>"; };
+		306299E40A953E0A00634B34 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = /System/Library/Frameworks/SystemConfiguration.framework; sourceTree = "<absolute>"; };
 		30BA79090A91F0D100E4E2A9 /* S3ObjectDownloadOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3ObjectDownloadOperation.h; sourceTree = "<group>"; };
 		30BA790A0A91F0D100E4E2A9 /* S3ObjectDownloadOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3ObjectDownloadOperation.m; sourceTree = "<group>"; };
 		30BA7C7D0A93A92800E4E2A9 /* S3ObjectUploadOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3ObjectUploadOperation.h; sourceTree = "<group>"; };
@@ -118,6 +120,7 @@
 				7765E31409E726830075B66B /* libssl.dylib in Frameworks */,
 				7765E31809E726CA0075B66B /* libcrypto.dylib in Frameworks */,
 				777D0D2D0A332CB4003CABA0 /* Security.framework in Frameworks */,
+				306299E50A953E0A00634B34 /* SystemConfiguration.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -154,6 +157,7 @@
 		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				306299E40A953E0A00634B34 /* SystemConfiguration.framework */,
 				777D0D2C0A332CB4003CABA0 /* Security.framework */,
 				7765E31709E726CA0075B66B /* libcrypto.dylib */,
 				7765E31309E726830075B66B /* libssl.dylib */,
