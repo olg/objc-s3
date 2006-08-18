@@ -13,7 +13,8 @@
 @class S3Connection;
 @class S3Bucket;
 
-@interface S3BucketContentController : NSWindowController  <S3OperationDelegate> {
+
+@interface S3BucketContentController : NSWindowController  <S3OperationDelegate,S3DragAndDropProtocol> {
 	S3Connection* _connection;
 	NSMutableSet* _currentOperations;
 	
