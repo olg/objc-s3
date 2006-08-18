@@ -26,6 +26,7 @@
 	_request = [request retain];
     _connection = [[NSURLDownload alloc] initWithRequest:request delegate:self];
 	_size = size;
+	_percent = 0;
 	[_connection setDestination:path allowOverwrite:YES];
 	return self;
 }
@@ -73,13 +74,12 @@
 	{
 		_received = _received + length;
 		int percent = _received * 100.0 / _size;
-		[self setStatus:[NSString stringWithFormat:@"Receiving data %d %%",percent]];
-	}
-	else
-		[self setStatus:@"Receiving data"];
-
-	if ([_delegate respondsToSelector:@selector(operationStateChange:)])
-		[_delegate operationStateChange:self];
+		if (_percent != percent) 
+		{
+			[self setStatus:[NSString stringWithFormat:@"Receiving data %d %%",percent]];
+			_percent = percent;
+		}
+	}	
 }
 
 - (BOOL)download:(NSURLDownload *)download shouldDecodeSourceDataOfMIMEType:(NSString *)encodingType

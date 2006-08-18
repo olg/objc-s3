@@ -42,7 +42,7 @@
 	[headers setObject:@"*/*" forKey:@"Accept"];
 	[headers setObject:DEFAULT_HOST forKey:@"Host"];
 
-	
+	_percent = 0;
 	_obuffer = [[NSMutableData alloc] init];//
 	_headerData = [c createHeaderDataForMethod:@"PUT" withResource:[b name] subResource:k headers:headers];
 		
@@ -185,7 +185,6 @@
 		[_obuffer setLength:read];
 		if (read==0)
 			[_fstream close];
-
 	}
 	//NSLog(@"F-> %d",[_fstream streamStatus]);
 }
@@ -208,16 +207,22 @@
     unsigned olen = [_obuffer length];
     if (0 < olen) {
         int writ = [_ostream write:[_obuffer bytes] maxLength:olen];
+
+		_sent = _sent + writ;
+		int percent = _sent * 100 / _size;
+		if (_percent != percent) 
+		{
+			[self setStatus:[NSString stringWithFormat:@"Sending data %d %%",percent]];
+			_percent = percent;
+		}
+        
         // buffer any unwritten bytes for later writing
-        if (writ < olen) {
+		if (writ < olen) {
             memmove([_obuffer mutableBytes], [_obuffer mutableBytes] + writ, olen - writ);
             [_obuffer setLength:olen - writ];
             return;
         }
         [_obuffer setLength:0];
-		_sent = _sent + writ;
-		int percent = _sent * 100.0 / _size;
-		[self setStatus:[NSString stringWithFormat:@"Sending data %d %%",percent]];
     }
 	[self processFileBytes];
 	

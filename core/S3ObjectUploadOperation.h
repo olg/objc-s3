@@ -20,6 +20,7 @@
 {
 	long long _size;
 	long long _sent;
+	int _percent;
 	
 	NSInputStream* _istream;
 	NSOutputStream* _ostream;
