@@ -13,3 +13,6 @@
 - (BOOL) validateToolbarItem:(NSToolbarItem*)theItem;
 
 @end
+
+@interface S3FileSizeTransformer: NSValueTransformer {}
+@end

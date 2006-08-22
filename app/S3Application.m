@@ -10,9 +10,14 @@
 #import "S3Connection.h"
 #import "S3LoginController.h"
 #import "S3OperationController.h"
-
+#import "S3AppKitExtensions.h"
 
 @implementation S3Application
+
++ (void)initialize {
+    S3FileSizeTransformer *fileSizeTransformer = [[[S3FileSizeTransformer alloc] init] autorelease];
+    [NSValueTransformer setValueTransformer:fileSizeTransformer forName:@"S3FileSizeTransformer"];
+}
 
 -(id)init
 {

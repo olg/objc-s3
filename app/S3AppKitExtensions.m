@@ -7,6 +7,7 @@
 //
 
 #import "S3AppKitExtensions.h"
+#import "S3Extensions.h"
 
 @implementation NSArrayController (ToolbarExtensions)
 
@@ -18,4 +19,13 @@
 		return TRUE;
 }
 
+@end
+
+
+@implementation S3FileSizeTransformer
++ (Class)transformedValueClass { return [NSString class]; }
++ (BOOL)allowsReverseTransformation { return NO; }
+- (id)transformedValue:(id)item {
+    return [item readableFileSize];
+}
 @end
