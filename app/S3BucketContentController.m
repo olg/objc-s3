@@ -45,12 +45,14 @@
 	return [NSArray arrayWithObjects: NSToolbarSeparatorItemIdentifier,
 		NSToolbarSpaceItemIdentifier,
 		NSToolbarFlexibleSpaceItemIdentifier,
-		@"Refresh", @"Upload", @"Download", @"Remove", nil];
+		@"Refresh", @"Upload", @"Download", @"Remove", @"Remove All",nil];
 }
 
 - (BOOL)validateToolbarItem:(NSToolbarItem *)theItem
 {
-	if ([[theItem itemIdentifier] isEqualToString: @"Remove"])
+	if ([[theItem itemIdentifier] isEqualToString: @"Remove All"])
+        return [[_objectsController arrangedObjects] count] > 0;
+    if ([[theItem itemIdentifier] isEqualToString: @"Remove"])
 		return [_objectsController canRemove];
 	if ([[theItem itemIdentifier] isEqualToString: @"Download"])
 		return [_objectsController canRemove];
@@ -59,7 +61,7 @@
 
 - (NSArray*)toolbarDefaultItemIdentifiers:(NSToolbar*)toolbar
 {
-	return [NSArray arrayWithObjects: @"Upload", @"Download", @"Remove", NSToolbarFlexibleSpaceItemIdentifier, @"Refresh", nil]; 
+	return [NSArray arrayWithObjects: @"Upload", @"Download", @"Remove", NSToolbarSeparatorItemIdentifier,  @"Remove All", NSToolbarFlexibleSpaceItemIdentifier, @"Refresh", nil]; 
 }
 
 - (NSToolbarItem*)toolbar:(NSToolbar*)toolbar itemForItemIdentifier:(NSString*)itemIdentifier willBeInsertedIntoToolbar:(BOOL) flag
@@ -89,6 +91,14 @@
 		[item setImage: [NSImage imageNamed: @"delete.icns"]];
 		[item setTarget:self];
 		[item setAction:@selector(remove:)];
+    }
+	else if ([itemIdentifier isEqualToString: @"Remove All"])
+	{
+		[item setLabel: NSLocalizedString(@"Remove All", nil)];
+		[item setPaletteLabel: [item label]];
+		[item setImage: [NSImage imageNamed: @"delete.icns"]];
+		[item setTarget:self];
+		[item setAction:@selector(removeAll:)];
     }
 	else if ([itemIdentifier isEqualToString: @"Refresh"])
 	{
@@ -174,6 +184,32 @@
 	S3ObjectListOperation* op = [S3ObjectListOperation objectListWithConnection:_connection delegate:self bucket:_bucket];
 	[(S3Application*)NSApp logOperation:op];
 	[self setCurrentOperations:[NSMutableSet setWithObject:op]];
+}
+
+-(IBAction)removeAll:(id)sender
+{
+    NSAlert * alert = [[NSAlert alloc] init];
+    [alert setMessageText:NSLocalizedString(@"Remove all objects permanently?",nil)];
+    [alert setInformativeText:NSLocalizedString(@"Warning: Are you sure you want to remove all objects in this bucket? This operation cannot be undone.",nil)];
+    [alert addButtonWithTitle:NSLocalizedString(@"Cancel",nil)];
+    [alert addButtonWithTitle:NSLocalizedString(@"Remove",nil)];
+    if ([alert runModal] == NSAlertFirstButtonReturn)
+    {   
+        [alert release];
+        return;
+    }
+    [alert release];
+    
+	NSMutableSet* ops = [NSMutableSet set];
+	S3Object* b;
+	NSEnumerator* e = [[_objectsController arrangedObjects] objectEnumerator];
+	while (b = [e nextObject])
+	{
+		S3ObjectDeleteOperation* op = [S3ObjectDeleteOperation objectDeletionWithConnection:_connection delegate:self bucket:_bucket object:b];
+		[(S3Application*)NSApp logOperation:op];
+		[ops addObject:op];
+	}
+	[self setCurrentOperations:ops];
 }
 
 -(IBAction)remove:(id)sender
