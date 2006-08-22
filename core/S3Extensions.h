@@ -58,3 +58,9 @@
 - (NSString*)readableSizeForPath;
 
 @end
+
+@interface NSNumber (Comfort)
+
+-(NSString*)readableFileSize;
+
+@end

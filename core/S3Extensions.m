@@ -186,7 +186,16 @@
 	if (fileAttributes==nil)
 		return @"Unknown";
 	
-    unsigned long long size = [[fileAttributes objectForKey:NSFileSize] unsignedLongLongValue];
+    return [[fileAttributes objectForKey:NSFileSize] readableFileSize];
+}
+
+@end
+
+@implementation NSNumber (Comfort)
+
+-(NSString*)readableFileSize
+{
+    unsigned long long size = [self unsignedLongLongValue];
     
 	if (size == 0.) 
 		return @"Empty";
@@ -205,5 +214,6 @@
 	
 	return @"Unknown";
 }
+
 
 @end
