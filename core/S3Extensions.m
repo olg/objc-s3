@@ -37,6 +37,21 @@
 
 @end
 
+@implementation NSSet (Comfort)
+
+-(BOOL)containsObjectOfClass:(Class)c
+{
+    NSEnumerator* e = [self objectEnumerator];
+    id o;
+    while (o = [e nextObject])
+    {
+        if ([o isKindOfClass:c])
+            return TRUE;
+    }
+    return FALSE;
+}
+@end
+
 
 @implementation NSXMLElement (Comfort)
 
@@ -172,12 +187,12 @@
 		return @"Unknown";
 	
     unsigned long long size = [[fileAttributes objectForKey:NSFileSize] unsignedLongLongValue];
-
+    
 	if (size == 0.) 
 		return @"Empty";
 	else 
 		if (size > 0. && size < 1024.) 
-			return [NSString stringWithFormat:@"%lu bytes", size];
+			return [NSString stringWithFormat:@"%qu bytes", size];
 	else 
 		if (size >= 1024. && size < pow(1024., 2.)) 
 			return [NSString stringWithFormat:@"%.1f KB", (size / 1024.)];

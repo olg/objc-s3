@@ -22,6 +22,12 @@
 
 @end
 
+@interface NSSet (Comfort)
+
+-(BOOL)containsObjectOfClass:(Class)c;
+
+@end
+
 
 @interface NSXMLElement (Comfort)
 
