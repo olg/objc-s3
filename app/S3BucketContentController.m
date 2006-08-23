@@ -253,6 +253,25 @@
 	[self setCurrentOperations:ops];
 }
 
+-(void)uploadFile:(NSString*)path key:(NSString*)key acl:(NSString*)acl
+{
+    S3Operation* op;
+    
+    CFDictionaryRef proxyDict = SCDynamicStoreCopyProxies(NULL); 
+    BOOL hasProxy = (CFDictionaryGetValue(proxyDict, kSCPropNetProxiesHTTPProxy) != NULL);
+    CFRelease(proxyDict);
+    
+    if (hasProxy)
+    {
+        NSData* data = [NSData dataWithContentsOfFile:path];
+        op = [S3ObjectUploadOperation objectUploadWithConnection:_connection delegate:self bucket:_bucket key:key data:data acl:acl];
+    }
+    else 
+        op = [S3ObjectStreamedUploadOperation objectUploadWithConnection:_connection delegate:self bucket:_bucket key:key path:path acl:acl];
+    
+    [(S3Application*)NSApp logOperation:op];
+    [self setCurrentOperations:[NSMutableSet setWithObject:op]];    
+}
 
 -(IBAction)upload:(id)sender
 {
@@ -265,24 +284,7 @@
 {
     [sheet orderOut:self];
 	if (returnCode==SHEET_OK)
-	{
-		S3Operation* op;
-		
-		CFDictionaryRef proxyDict = SCDynamicStoreCopyProxies(NULL); 
-		BOOL hasProxy = (CFDictionaryGetValue(proxyDict, kSCPropNetProxiesHTTPProxy) != NULL);
-		CFRelease(proxyDict);
-		
-		if (hasProxy)
-		{
-			NSData* data = [NSData dataWithContentsOfFile:[self uploadFilename]];
-			op = [S3ObjectUploadOperation objectUploadWithConnection:_connection delegate:self bucket:_bucket key:[self uploadKey] data:data acl:[self uploadACL]];
-		}
-		else 
-			op = [S3ObjectStreamedUploadOperation objectUploadWithConnection:_connection delegate:self bucket:_bucket key:[self uploadKey] path:[self uploadFilename] acl:[self uploadACL]];
-		
-		[(S3Application*)NSApp logOperation:op];
-		[self setCurrentOperations:[NSMutableSet setWithObject:op]];
-	}
+        [self uploadFile:[self uploadFilename] key:[self uploadKey] acl:[self uploadACL]];
 }
 
 -(BOOL)acceptFileForImport:(NSString*)path
@@ -296,13 +298,18 @@
 		return TRUE;
 }
 
--(void)importFile:(NSString*)path
+-(void)importFile:(NSString*)path withDialog:(BOOL)b
 {
-	[self setUploadFilename:path];
-	[self setUploadACL:ACL_PRIVATE];
-	[self setUploadKey:[[self uploadFilename] lastPathComponent]];
-	[self setUploadSize:[[self uploadFilename] readableSizeForPath]];
-	[NSApp beginSheet:uploadSheet modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:nil];
+    if (b)
+    {        
+        [self setUploadFilename:path];
+        [self setUploadACL:ACL_PRIVATE];
+        [self setUploadKey:[[self uploadFilename] lastPathComponent]];
+        [self setUploadSize:[[self uploadFilename] readableSizeForPath]];
+        [NSApp beginSheet:uploadSheet modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:nil];
+    }
+    else
+        [self uploadFile:path key:[path lastPathComponent] acl:ACL_PRIVATE];
 }
 
 - (void)openPanelDidEnd:(NSOpenPanel *)panel returnCode:(int)returnCode contextInfo:(void *)contextInfo
@@ -315,7 +322,7 @@
 	}
 	[panel release];
 	
-	[self importFile:[files objectAtIndex:0]];
+	[self importFile:[files objectAtIndex:0] withDialog:TRUE];
 }
 
 #pragma mark -

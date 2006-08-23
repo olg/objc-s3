@@ -24,13 +24,18 @@
 
 -(BOOL)validateDraggingInfo:(id <NSDraggingInfo>)info 
 {
-	NSURL *url = [NSURL URLFromPasteboard:[info draggingPasteboard]];	
-	if (url && [url isFileURL]) 
-	{
-		NSString* path = [url path];
-		if ([delegate acceptFileForImport:path])
-			return YES;
-	}
+    if ([[[info draggingPasteboard] types] containsObject:NSFilenamesPboardType]) 
+    {
+        NSArray *files = [[info draggingPasteboard] propertyListForType:NSFilenamesPboardType];
+        int numberOfFiles = [files count];
+        int i;
+        for (i=0;i<numberOfFiles;i++)
+        {
+            if ([delegate acceptFileForImport:[files objectAtIndex:i]])
+                return YES;
+        }
+    }
+    
 	return NO;
 }
 
@@ -47,11 +52,15 @@
 
 - (BOOL)tableView:(NSTableView*)tv acceptDrop:(id <NSDraggingInfo>)info row:(int)row dropOperation:(NSTableViewDropOperation)op
 {
-	// Probably over-zealous, it' unlikely that the drag info would change between validate and accept drop
-	if ([self validateDraggingInfo:info])
-	{
-		[delegate importFile:[[NSURL URLFromPasteboard:[info draggingPasteboard]] path]];
-		return YES;
+    if ([[[info draggingPasteboard] types] containsObject:NSFilenamesPboardType]) 
+    {
+        NSArray *files = [[info draggingPasteboard] propertyListForType:NSFilenamesPboardType];
+        int numberOfFiles = [files count];
+        int i;
+        for (i=0;i<numberOfFiles;i++)
+            if ([delegate acceptFileForImport:[files objectAtIndex:i]])
+                [delegate importFile:[files objectAtIndex:i] withDialog:(numberOfFiles==1)];
+        return YES;
 	}
 	else
 		return NO;

@@ -9,7 +9,7 @@
 #import <Cocoa/Cocoa.h>
 
 @protocol S3DragAndDropProtocol
--(void)importFile:(NSString*)path;
+-(void)importFile:(NSString*)path withDialog:(BOOL)b;
 -(BOOL)acceptFileForImport:(NSString*)path;
 @end
 
