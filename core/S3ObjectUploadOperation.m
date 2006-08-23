@@ -178,10 +178,10 @@
 {
 	if (![_fstream hasBytesAvailable])
 		[_fstream close];
-	if ([_obuffer length]==0)
+	else if ([_obuffer length]==0)
 	{
 		[_obuffer setLength:FILEBUFFERSIZE*1024];
-		int read = [_fstream read:[_obuffer mutableBytes] maxLength:[_obuffer length]];
+		unsigned int read = [_fstream read:[_obuffer mutableBytes] maxLength:[_obuffer length]];
 		[_obuffer setLength:read];
 		if (read==0)
 			[_fstream close];
