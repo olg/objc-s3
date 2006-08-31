@@ -189,6 +189,22 @@
     return [[fileAttributes objectForKey:NSFileSize] readableFileSize];
 }
 
+- (NSString*)mimeTypeForPath
+{
+	FSRef fsRef;
+	CFStringRef utiType;
+	OSStatus err;
+	
+	err= FSPathMakeRef((const UInt8 *)[self fileSystemRepresentation], &fsRef, NULL);
+	if(err != noErr)
+		return nil;
+	LSCopyItemAttribute(&fsRef,kLSRolesAll,kLSItemContentType, (CFTypeRef*)&utiType);
+	if(err != noErr)
+		return nil;
+	CFStringRef mimeType = UTTypeCopyPreferredTagWithClass(utiType, kUTTagClassMIMEType);
+	return [(NSString*)mimeType autorelease];
+}
+
 @end
 
 @implementation NSNumber (Comfort)
@@ -214,6 +230,5 @@
 	
 	return @"Unknown";
 }
-
 
 @end

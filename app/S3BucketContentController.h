@@ -29,6 +29,7 @@
 	NSString* _uploadACL;
 	NSString* _uploadFilename;
 	NSString* _uploadSize;
+	NSString* _uploadMimeType;
 }	
 
 - (IBAction)refresh:(id)sender;
@@ -62,5 +63,7 @@
 - (void)setUploadFilename:(NSString *)anUploadFilename;
 - (NSString *)uploadSize;
 - (void)setUploadSize:(NSString *)anUploadSize;
+- (NSString *)uploadMimeType;
+- (void)setUploadMimeType:(NSString *)aMimeType;
 
 @end

@@ -253,7 +253,7 @@
 	[self setCurrentOperations:ops];
 }
 
--(void)uploadFile:(NSString*)path key:(NSString*)key acl:(NSString*)acl
+-(void)uploadFile:(NSString*)path key:(NSString*)key acl:(NSString*)acl mimeType:(NSString*)mimetype
 {
     S3Operation* op;
     
@@ -261,13 +261,13 @@
     BOOL hasProxy = (CFDictionaryGetValue(proxyDict, kSCPropNetProxiesHTTPProxy) != NULL);
     CFRelease(proxyDict);
     
-    if (hasProxy)
+    if (hasProxy || TRUE)
     {
         NSData* data = [NSData dataWithContentsOfFile:path];
-        op = [S3ObjectUploadOperation objectUploadWithConnection:_connection delegate:self bucket:_bucket key:key data:data acl:acl];
+        op = [S3ObjectUploadOperation objectUploadWithConnection:_connection delegate:self bucket:_bucket key:key data:data acl:acl mimeType:mimetype];
     }
     else 
-        op = [S3ObjectStreamedUploadOperation objectUploadWithConnection:_connection delegate:self bucket:_bucket key:key path:path acl:acl];
+        op = [S3ObjectStreamedUploadOperation objectUploadWithConnection:_connection delegate:self bucket:_bucket key:key path:path acl:acl mimeType:mimetype];
     
     [(S3Application*)NSApp logOperation:op];
     [self setCurrentOperations:[NSMutableSet setWithObject:op]];    
@@ -284,7 +284,7 @@
 {
     [sheet orderOut:self];
 	if (returnCode==SHEET_OK)
-        [self uploadFile:[self uploadFilename] key:[self uploadKey] acl:[self uploadACL]];
+        [self uploadFile:[self uploadFilename] key:[self uploadKey] acl:[self uploadACL] mimeType:[self uploadMimeType]];
 }
 
 -(BOOL)acceptFileForImport:(NSString*)path
@@ -306,10 +306,11 @@
         [self setUploadACL:ACL_PRIVATE];
         [self setUploadKey:[[self uploadFilename] lastPathComponent]];
         [self setUploadSize:[[self uploadFilename] readableSizeForPath]];
+        [self setUploadMimeType:[[self uploadFilename] mimeTypeForPath]];
         [NSApp beginSheet:uploadSheet modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:nil];
     }
     else
-        [self uploadFile:path key:[path lastPathComponent] acl:ACL_PRIVATE];
+        [self uploadFile:path key:[path lastPathComponent] acl:ACL_PRIVATE mimeType:[path mimeTypeForPath]];
 }
 
 - (void)openPanelDidEnd:(NSOpenPanel *)panel returnCode:(int)returnCode contextInfo:(void *)contextInfo
@@ -425,6 +426,17 @@
     _uploadSize = [anUploadSize retain];
 }
 
+- (NSString *)uploadMimeType
+{
+    return [[_uploadMimeType retain] autorelease]; 
+}
+
+- (void)setUploadMimeType:(NSString *)aUploadMimeType
+{
+    [_uploadMimeType release];
+    _uploadMimeType = [aUploadMimeType retain];
+}
+
 -(void)dealloc
 {
 	[self setObjects:nil];
@@ -437,6 +449,8 @@
 	[self setUploadKey:nil];
 	[self setUploadACL:nil];
 	[self setUploadFilename:nil];
+	[self setUploadMimeType:nil];
+
 	[self setCurrentOperations:nil];
 	
 	[super dealloc];
