@@ -67,6 +67,10 @@
 		NSString* contentMD5 = [[data md5Digest] encodeBase64];
 		[conn addValue:contentMD5 forHTTPHeaderField:@"Content-MD5"];
 	}
+	NSString* ct = [headers objectForKey:@"Content-Type"];
+	if (ct!=nil)
+		contentType = ct;
+	
 	NSString* k;
 	NSEnumerator* e;
 	e = [headers keyEnumerator];
@@ -161,6 +165,10 @@
 		NSString* contentMD5 = [[data md5Digest] encodeBase64];
 		CFHTTPMessageSetHeaderFieldValue(conn, CFSTR("Content-MD5"), (CFStringRef)contentMD5);
 	}
+	NSString* ct = [headers objectForKey:@"Content-Type"];
+	if (ct!=nil)
+		contentType = ct;
+
 	NSString* k;
 	NSEnumerator* e;
 	e = [headers keyEnumerator];
