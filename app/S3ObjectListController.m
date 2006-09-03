@@ -20,7 +20,14 @@
 #define SHEET_CANCEL 0
 #define SHEET_OK 1
 
+// These keys are also used in nib file, for bindings
+
 #define ACL_PRIVATE @"private"
+
+#define FILEDATA_PATH @"path"
+#define FILEDATA_KEY  @"key"
+#define FILEDATA_TYPE @"mime"
+#define FILEDATA_SIZE @"size"
 
 @implementation S3ObjectListController
 
@@ -264,7 +271,7 @@
     CFDictionaryRef proxyDict = SCDynamicStoreCopyProxies(NULL); 
     BOOL hasProxy = (CFDictionaryGetValue(proxyDict, kSCPropNetProxiesHTTPProxy) != NULL);
     CFRelease(proxyDict);
-    
+	
     if (hasProxy || TRUE)
     {
         NSData* data = [NSData dataWithContentsOfFile:path];
@@ -277,16 +284,13 @@
     [self setCurrentOperations:[NSMutableSet setWithObject:op]];    
 }
 
--(void)uploadFiles:(NSArray*)files acl:(NSString*)acl
-{
-	NSEnumerator* e = [files objectEnumerator];
-	NSString* path;
-	NSString* prefix = [NSString commonPathComponentInPaths:files]; 
+-(void)uploadFiles
+{	
+	NSEnumerator* e = [[self uploadFiles] objectEnumerator];
+	NSDictionary* data;
 
-	while (path = [e nextObject])
-	{
-		[self uploadFile:path key:[path substringFromIndex:[prefix length]] acl:[self uploadACL] mimeType:[path mimeTypeForPath]];		
-	}
+	while (data = [e nextObject])
+		[self uploadFile:[data objectForKey:FILEDATA_PATH] key:[data objectForKey:FILEDATA_KEY] acl:[self uploadACL] mimeType:[data objectForKey:FILEDATA_TYPE]];		
 }
 
 
@@ -305,11 +309,7 @@
 	if (returnCode!=SHEET_OK)
 		return;
 	
-	if (sheet==uploadSheet)
-        [self uploadFile:[(NSString*)contextInfo autorelease] key:[self uploadKey] acl:[self uploadACL] mimeType:[self uploadMimeType]];
-
-	if (sheet==multipleUploadSheet)
-        [self uploadFiles:[(NSArray*)contextInfo autorelease] acl:[self uploadACL]];
+	[self uploadFiles];
 }
 
 -(BOOL)acceptFileForImport:(NSString*)path
@@ -319,37 +319,42 @@
 
 -(void)importFiles:(NSArray*)files withDialog:(BOOL)dialog
 {
+	// First expand directories and only keep paths to files
 	NSArray* paths = [files expandPaths];
+		
+	NSString* path;
+	NSEnumerator* e = [paths objectEnumerator];
+	NSMutableArray* filesInfo = [NSMutableArray array];
+	NSString* prefix = [NSString commonPathComponentInPaths:paths]; 
 	
-	if ([paths count]==1)
+	while (path = [e nextObject])
 	{
-		NSString* path = [paths objectAtIndex:0];
-		if (!dialog)
-		{
-			[self uploadFile:path key:[path lastPathComponent] acl:ACL_PRIVATE mimeType:[path mimeTypeForPath]];
-			return;
-		}
-		[self setUploadFilename:[path stringByAbbreviatingWithTildeInPath]];
-		[self setUploadACL:ACL_PRIVATE];
-		[self setUploadKey:[path lastPathComponent]];
-		[self setUploadSize:[path readableSizeForPath]];
-		[self setUploadMimeType:[path mimeTypeForPath]];
-		[NSApp beginSheet:uploadSheet modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:[path retain]];			
+		NSMutableDictionary* info = [NSMutableDictionary dictionary];
+		[info setObject:path forKey:FILEDATA_PATH;
+		[info setObject:[path readableSizeForPath] forKey:FILEDATA_SIZE];
+		[info safeSetObject:[path mimeTypeForPath] forKey:FILEDATA_TYPE withValueForNil:@""];
+		[info setObject:[path substringFromIndex:[prefix length]] forKey:FILEDATA_KEY];
+		[filesInfo addObject:info];
 	}
+	
+	[self setUploadFiles:filesInfo];
+	[self setUploadACL:ACL_PRIVATE];
+	[self setUploadSize:[NSString readableSizeForPaths:paths]];
+
+	if (!dialog)
+		[self uploadFiles];
 	else
 	{
-		if (!dialog)
+		if ([paths count]==1)
 		{
-			[self uploadFiles:paths acl:ACL_PRIVATE];
-			return;
+			[self setUploadFilename:[[paths objectAtIndex:0] stringByAbbreviatingWithTildeInPath]];
+			[NSApp beginSheet:uploadSheet modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:nil];			
 		}
-		NSString* prefix = [NSString commonPathComponentInPaths:paths]; 
-		[self setUploadKey:@""];
-		[self setUploadMimeType:@""];
-		[self setUploadACL:ACL_PRIVATE];
-		[self setUploadSize:[NSString readableSizeForPaths:paths]];
-		[self setUploadFilename:[NSString stringWithFormat:NSLocalizedString(@"%d elements in %@",nil),[paths count],[prefix stringByAbbreviatingWithTildeInPath]]];
-		[NSApp beginSheet:multipleUploadSheet modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:[paths retain]];			
+		else
+		{
+			[self setUploadFilename:[NSString stringWithFormat:NSLocalizedString(@"%d elements in %@",nil),[paths count],[prefix stringByAbbreviatingWithTildeInPath]]];
+			[NSApp beginSheet:multipleUploadSheet modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:nil];							
+		}
 	}
 }
 
@@ -402,7 +407,6 @@
     _bucket = [aBucket retain];
 }
 
-
 - (S3Connection *)connection
 {
     return _connection; 
@@ -412,7 +416,6 @@
     [_connection release];
     _connection = [aConnection retain];
 }
-
 
 - (NSMutableSet *)currentOperations
 {
@@ -424,18 +427,6 @@
     _currentOperations = [aCurrentOperations retain];
 }
 
-
-- (NSString *)uploadKey
-{
-    return _uploadKey; 
-}
-- (void)setUploadKey:(NSString *)anUploadKey
-{
-    [_uploadKey release];
-    _uploadKey = [anUploadKey retain];
-}
-
-
 - (NSString *)uploadACL
 {
     return _uploadACL; 
@@ -445,7 +436,6 @@
     [_uploadACL release];
     _uploadACL = [anUploadACL retain];
 }
-
 
 - (NSString *)uploadFilename
 {
@@ -467,16 +457,18 @@
     _uploadSize = [anUploadSize retain];
 }
 
-- (NSString *)uploadMimeType
+- (NSMutableArray *)uploadFiles
 {
-    return [[_uploadMimeType retain] autorelease]; 
+    return [[_uploadFiles retain] autorelease]; 
+}
+- (void)setUploadFiles:(NSMutableArray *)anUploadFiles
+{
+    [_uploadFiles release];
+    _uploadFiles = [anUploadFiles retain];
 }
 
-- (void)setUploadMimeType:(NSString *)aUploadMimeType
-{
-    [_uploadMimeType release];
-    _uploadMimeType = [aUploadMimeType retain];
-}
+#pragma mark -
+#pragma mark Dealloc
 
 -(void)dealloc
 {
@@ -487,10 +479,9 @@
 	[self setConnection:nil];
 	[self setCurrentOperations:nil];
 
-	[self setUploadKey:nil];
 	[self setUploadACL:nil];
 	[self setUploadFilename:nil];
-	[self setUploadMimeType:nil];
+	[self setUploadFiles:nil];
 
 	[self setCurrentOperations:nil];
 	

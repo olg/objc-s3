@@ -26,11 +26,10 @@
 	IBOutlet NSWindow* multipleUploadSheet;
 	IBOutlet S3DragAndDropArrayController* _objectsController;
 
-	NSString* _uploadKey;
 	NSString* _uploadACL;
 	NSString* _uploadFilename;
 	NSString* _uploadSize;
-	NSString* _uploadMimeType;
+	NSMutableArray* _uploadFiles;
 }	
 
 - (IBAction)refresh:(id)sender;
@@ -56,15 +55,13 @@
 - (NSMutableSet *)currentOperations;
 - (void)setCurrentOperations:(NSMutableSet *)aCurrentOperations;
 
-- (NSString *)uploadKey;
-- (void)setUploadKey:(NSString *)anUploadKey;
 - (NSString *)uploadACL;
 - (void)setUploadACL:(NSString *)anUploadACL;
 - (NSString *)uploadFilename;
 - (void)setUploadFilename:(NSString *)anUploadFilename;
 - (NSString *)uploadSize;
 - (void)setUploadSize:(NSString *)anUploadSize;
-- (NSString *)uploadMimeType;
-- (void)setUploadMimeType:(NSString *)aMimeType;
+- (NSMutableArray *)uploadFiles;
+- (void)setUploadFiles:(NSMutableArray *)anUploadFiles;
 
 @end

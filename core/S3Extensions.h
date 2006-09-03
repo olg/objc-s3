@@ -19,6 +19,7 @@
 @interface NSMutableDictionary (Comfort)
 
 -(void)safeSetObject:(id)o forKey:(NSString*)k;
+-(void)safeSetObject:(id)o forKey:(NSString*)k withValueForNil:(id)d;
 
 @end
 

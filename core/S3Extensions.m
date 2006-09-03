@@ -73,6 +73,16 @@
 	[self setObject:o forKey:k];
 }
 
+-(void)safeSetObject:(id)o forKey:(NSString*)k withValueForNil:(id)d
+{
+	if (k==nil)
+		return;
+	if (o!=nil)
+		[self setObject:o forKey:k];
+	else
+		[self setObject:d forKey:k];
+}
+
 @end
 
 @implementation NSSet (Comfort)
