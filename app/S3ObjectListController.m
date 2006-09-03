@@ -1,5 +1,5 @@
 //
-//  S3BucketContentController.m
+//  S3ObjectListController.m
 //  S3-Objc
 //
 //  Created by Olivier Gutknecht on 4/3/06.
@@ -8,7 +8,7 @@
 
 #import <SystemConfiguration/SystemConfiguration.h>
 
-#import "S3BucketContentController.h"
+#import "S3ObjectListController.h"
 #import "S3Extensions.h"
 #import "S3Connection.h"
 #import "S3Bucket.h"
@@ -22,7 +22,7 @@
 
 #define ACL_PRIVATE @"private"
 
-@implementation S3BucketContentController
+@implementation S3ObjectListController
 
 #pragma mark - 
 #pragma mark Toolbar management
@@ -124,12 +124,12 @@
 
 - (IBAction)cancelSheet:(id)sender
 {
-	[NSApp endSheet:uploadSheet returnCode:SHEET_CANCEL];
+	[NSApp endSheet:[sender window] returnCode:SHEET_CANCEL];
 }
 
 - (IBAction)closeSheet:(id)sender
 {
-	[NSApp endSheet:uploadSheet returnCode:SHEET_OK];
+	[NSApp endSheet:[sender window] returnCode:SHEET_OK];
 }
 
 -(void)didPresentErrorWithRecovery:(BOOL)didRecover contextInfo:(void *)contextInfo
@@ -253,8 +253,12 @@
 	[self setCurrentOperations:ops];
 }
 
+
 -(void)uploadFile:(NSString*)path key:(NSString*)key acl:(NSString*)acl mimeType:(NSString*)mimetype
 {
+	if (![self acceptFileForImport:path])
+		return;	
+	
     S3Operation* op;
     
     CFDictionaryRef proxyDict = SCDynamicStoreCopyProxies(NULL); 
@@ -273,57 +277,94 @@
     [self setCurrentOperations:[NSMutableSet setWithObject:op]];    
 }
 
+-(void)uploadFiles:(NSArray*)files acl:(NSString*)acl
+{
+	NSEnumerator* e = [files objectEnumerator];
+	NSString* path;
+	NSString* prefix = [NSString commonPathComponentInPaths:files]; 
+
+	while (path = [e nextObject])
+	{
+		[self uploadFile:path key:[path substringFromIndex:[prefix length]] acl:[self uploadACL] mimeType:[path mimeTypeForPath]];		
+	}
+}
+
+
 -(IBAction)upload:(id)sender
 {
 	NSOpenPanel *oPanel = [[NSOpenPanel openPanel] retain];
-	[oPanel setAllowsMultipleSelection:NO];
+	[oPanel setAllowsMultipleSelection:YES];
+	[oPanel setPrompt:NSLocalizedString(@"Upload",nil)];
+	[oPanel setCanChooseDirectories:TRUE];
 	[oPanel beginForDirectory:nil file:nil types:nil modelessDelegate:self didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:) contextInfo:NULL];
 }
 
 - (void)didEndSheet:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
 {
     [sheet orderOut:self];
-	if (returnCode==SHEET_OK)
-        [self uploadFile:[self uploadFilename] key:[self uploadKey] acl:[self uploadACL] mimeType:[self uploadMimeType]];
+	if (returnCode!=SHEET_OK)
+		return;
+	
+	if (sheet==uploadSheet)
+        [self uploadFile:[(NSString*)contextInfo autorelease] key:[self uploadKey] acl:[self uploadACL] mimeType:[self uploadMimeType]];
+
+	if (sheet==multipleUploadSheet)
+        [self uploadFiles:[(NSArray*)contextInfo autorelease] acl:[self uploadACL]];
 }
 
 -(BOOL)acceptFileForImport:(NSString*)path
 {
-	BOOL b;
-	if (![[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&b] || b)
-		return FALSE;
-	if (![[NSFileManager defaultManager] isReadableFileAtPath:path])
-		return FALSE;
-	else
-		return TRUE;
+	return [[NSFileManager defaultManager] isReadableFileAtPath:path];
 }
 
--(void)importFile:(NSString*)path withDialog:(BOOL)b
+-(void)importFiles:(NSArray*)files withDialog:(BOOL)dialog
 {
-    if (b)
-    {        
-        [self setUploadFilename:path];
-        [self setUploadACL:ACL_PRIVATE];
-        [self setUploadKey:[[self uploadFilename] lastPathComponent]];
-        [self setUploadSize:[[self uploadFilename] readableSizeForPath]];
-        [self setUploadMimeType:[[self uploadFilename] mimeTypeForPath]];
-        [NSApp beginSheet:uploadSheet modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:nil];
-    }
-    else
-        [self uploadFile:path key:[path lastPathComponent] acl:ACL_PRIVATE mimeType:[path mimeTypeForPath]];
+	NSArray* paths = [files expandPaths];
+	
+	if ([paths count]==1)
+	{
+		NSString* path = [paths objectAtIndex:0];
+		if (!dialog)
+		{
+			[self uploadFile:path key:[path lastPathComponent] acl:ACL_PRIVATE mimeType:[path mimeTypeForPath]];
+			return;
+		}
+		[self setUploadFilename:[path stringByAbbreviatingWithTildeInPath]];
+		[self setUploadACL:ACL_PRIVATE];
+		[self setUploadKey:[path lastPathComponent]];
+		[self setUploadSize:[path readableSizeForPath]];
+		[self setUploadMimeType:[path mimeTypeForPath]];
+		[NSApp beginSheet:uploadSheet modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:[path retain]];			
+	}
+	else
+	{
+		if (!dialog)
+		{
+			[self uploadFiles:paths acl:ACL_PRIVATE];
+			return;
+		}
+		NSString* prefix = [NSString commonPathComponentInPaths:paths]; 
+		[self setUploadKey:@""];
+		[self setUploadMimeType:@""];
+		[self setUploadACL:ACL_PRIVATE];
+		[self setUploadSize:[NSString readableSizeForPaths:paths]];
+		[self setUploadFilename:[NSString stringWithFormat:NSLocalizedString(@"%d elements in %@",nil),[paths count],[prefix stringByAbbreviatingWithTildeInPath]]];
+		[NSApp beginSheet:multipleUploadSheet modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:[paths retain]];			
+	}
 }
+
 
 - (void)openPanelDidEnd:(NSOpenPanel *)panel returnCode:(int)returnCode contextInfo:(void *)contextInfo
 {
 	NSArray *files = [panel filenames];
 	
-	if ((returnCode != NSOKButton)||([files count]!=1)) {
+	if (returnCode != NSOKButton) {
 		[panel release];
 		return;
 	}
 	[panel release];
-	
-	[self importFile:[files objectAtIndex:0] withDialog:TRUE];
+
+	[self importFiles:files withDialog:TRUE];
 }
 
 #pragma mark -

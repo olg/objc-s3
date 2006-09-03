@@ -25,6 +25,44 @@
 
 @end
 
+@implementation NSArray (Comfort)
+
+-(NSArray*)expandPaths
+{
+	NSMutableArray* a = [NSMutableArray array];
+	NSEnumerator* e = [self objectEnumerator];
+	NSString* path;
+	BOOL dir;
+	
+	while(path = [e nextObject])
+	{
+		if ([[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&dir])
+		{		
+			if (!dir)
+				[a addObject:path];
+			else
+			{
+				NSString *file;
+				NSDirectoryEnumerator *dirEnum = [[NSFileManager defaultManager] enumeratorAtPath:path];
+				
+				while (file = [dirEnum nextObject]) 
+				{
+					if (![[file lastPathComponent] hasPrefix:@"."]) 
+					{
+						NSString* fullPath = [path stringByAppendingPathComponent:file];
+						
+						if ([[NSFileManager defaultManager] fileExistsAtPath:fullPath isDirectory:&dir])
+							if (!dir)
+								[a addObject:fullPath];
+					}
+				}
+			}
+		}
+	}
+	return a;
+}
+
+@end
 
 @implementation NSMutableDictionary (Comfort)
 
@@ -205,14 +243,24 @@
 	return [(NSString*)mimeType autorelease];
 }
 
-@end
-
-@implementation NSNumber (Comfort)
-
--(NSString*)readableFileSize
++ (NSString*)readableSizeForPaths:(NSArray*)files
 {
-    unsigned long long size = [self unsignedLongLongValue];
-    
+	NSEnumerator* e = [files objectEnumerator];
+	NSString* path;
+	unsigned long long total = 0;
+	
+	while (path = [e nextObject])
+	{
+		NSDictionary *fileAttributes = [[NSFileManager defaultManager] fileAttributesAtPath:path traverseLink:YES];
+		if (fileAttributes!=nil)
+			total = total + [[fileAttributes objectForKey:NSFileSize] unsignedLongLongValue];				
+	}
+	
+    return [NSString readableFileSizeFor:total];
+}
+
++(NSString*)readableFileSizeFor:(unsigned long long) size
+{
 	if (size == 0.) 
 		return @"Empty";
 	else 
@@ -229,6 +277,62 @@
 			return [NSString stringWithFormat:@"%.3f GB", (size / pow(1024., 3.))];
 	
 	return @"Unknown";
+}
+
++(NSString*)commonPathComponentInPaths:(NSArray*)paths
+{
+	NSString* prefix = [NSString commonPrefixWithStrings:paths]; 
+	NSRange r = [prefix rangeOfString:@"/" options:NSBackwardsSearch];
+	if (r.location!=NSNotFound)
+		return [prefix substringToIndex:(r.location+1)];
+	else
+		return @"";
+}
+
+
++(NSString*)commonPrefixWithStrings:(NSArray*)strings
+{
+	int sLength = [strings count];
+	int i,j;
+	
+	if (sLength == 1)
+		return [strings objectAtIndex:0];
+	else 
+	{
+		NSString* prefix = [strings objectAtIndex:0];
+		int maxLength = [prefix length];
+		
+		for (i = 1; i < sLength; i++)
+			if ([[strings objectAtIndex:i] length] < maxLength)
+				maxLength = [[strings objectAtIndex:i] length];
+		
+		for (i = 0; i < maxLength; i++) {
+			unichar c = [prefix characterAtIndex:i];
+			
+			for (j = 1; j < sLength; j++) {
+				NSString* compareString = [strings objectAtIndex:j];
+				
+				if ([compareString characterAtIndex:i] != c)
+					if (i == 0)
+						return @"";
+					else
+						return [prefix substringToIndex:i];
+			}
+		}
+		
+		return [prefix substringToIndex:maxLength];
+	}
+}
+
+@end
+
+
+
+@implementation NSNumber (Comfort)
+
+-(NSString*)readableFileSize
+{
+	return [NSString readableFileSizeFor:[self unsignedLongLongValue]];
 }
 
 @end

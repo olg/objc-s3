@@ -8,7 +8,7 @@
 
 #import "S3Connection.h"
 #import "S3Extensions.h"
-#import "S3BucketContentController.h"
+#import "S3ObjectListController.h"
 
 
 @implementation S3Connection

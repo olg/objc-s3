@@ -1,5 +1,5 @@
 //
-//  S3BucketContentController.h
+//  S3ObjectListController.h
 //  S3-Objc
 //
 //  Created by Olivier Gutknecht on 4/3/06.
@@ -14,7 +14,7 @@
 @class S3Bucket;
 
 
-@interface S3BucketContentController : NSWindowController  <S3OperationDelegate,S3DragAndDropProtocol> {
+@interface S3ObjectListController : NSWindowController  <S3OperationDelegate,S3DragAndDropProtocol> {
 	S3Connection* _connection;
 	NSMutableSet* _currentOperations;
 	
@@ -23,6 +23,7 @@
 	NSMutableDictionary* _objectsInfo;
 	
 	IBOutlet NSWindow* uploadSheet;
+	IBOutlet NSWindow* multipleUploadSheet;
 	IBOutlet S3DragAndDropArrayController* _objectsController;
 
 	NSString* _uploadKey;
@@ -37,8 +38,8 @@
 - (IBAction)download:(id)sender;
 - (IBAction)remove:(id)sender;
 
--(IBAction)cancelSheet:(id)sender;
--(IBAction)closeSheet:(id)sender;
+- (IBAction)cancelSheet:(id)sender;
+- (IBAction)closeSheet:(id)sender;
 
 
 - (void)setConnection:(S3Connection *)aConnection;

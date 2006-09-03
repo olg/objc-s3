@@ -10,7 +10,7 @@
 #import "S3Owner.h"
 #import "S3Connection.h"
 #import "S3Extensions.h"
-#import "S3BucketContentController.h"
+#import "S3ObjectListController.h"
 #import "S3Application.h"
 
 #define SHEET_CANCEL 0
@@ -178,7 +178,7 @@
 	NSEnumerator* e = [[_bucketsController selectedObjects] objectEnumerator];
 	while (b = [e nextObject])
 	{
-		S3BucketContentController* c = [[[S3BucketContentController alloc] initWithWindowNibName:@"Objects"] autorelease];
+		S3ObjectListController* c = [[[S3ObjectListController alloc] initWithWindowNibName:@"Objects"] autorelease];
 		[c setBucket:b];
 		[c setConnection:_connection];
 		[c showWindow:self];

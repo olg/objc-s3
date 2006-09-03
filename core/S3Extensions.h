@@ -28,6 +28,11 @@
 
 @end
 
+@interface NSArray (Comfort)
+
+-(NSArray*)expandPaths;
+
+@end
 
 @interface NSXMLElement (Comfort)
 
@@ -55,8 +60,13 @@
 - (NSData *) decodeBase64;
 - (NSData *) decodeBase64WithNewlines:(BOOL)encodedWithNewlines;
 
-- (NSString*)readableSizeForPath;
 - (NSString*)mimeTypeForPath;
+- (NSString*)readableSizeForPath;
++ (NSString*)readableSizeForPaths:(NSArray*)files;
++ (NSString*)readableFileSizeFor:(unsigned long long) size;
+
++ (NSString*)commonPrefixWithStrings:(NSArray*)strings;
++ (NSString*)commonPathComponentInPaths:(NSArray*)paths;
 
 @end
 

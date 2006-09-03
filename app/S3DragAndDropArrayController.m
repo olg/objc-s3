@@ -55,11 +55,7 @@
     if ([[[info draggingPasteboard] types] containsObject:NSFilenamesPboardType]) 
     {
         NSArray *files = [[info draggingPasteboard] propertyListForType:NSFilenamesPboardType];
-        int numberOfFiles = [files count];
-        int i;
-        for (i=0;i<numberOfFiles;i++)
-            if ([delegate acceptFileForImport:[files objectAtIndex:i]])
-                [delegate importFile:[files objectAtIndex:i] withDialog:(numberOfFiles==1)];
+		[delegate importFiles:files withDialog:TRUE];
         return YES;
 	}
 	else

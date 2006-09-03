@@ -2,6 +2,13 @@
     IBClasses = (
         {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
         {CLASS = NSDatePicker; LANGUAGE = ObjC; SUPERCLASS = NSControl; }, 
+        {CLASS = S3ClickableURLField; LANGUAGE = ObjC; SUPERCLASS = NSTextField; }, 
+        {
+            CLASS = S3DragAndDropArrayController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {delegate = id; tableView = NSTableView; }; 
+            SUPERCLASS = NSArrayController; 
+        }, 
         {
             ACTIONS = {
                 cancelSheet = id; 
@@ -11,17 +18,14 @@
                 remove = id; 
                 upload = id; 
             }; 
-            CLASS = S3BucketContentController; 
+            CLASS = S3ObjectListController; 
             LANGUAGE = ObjC; 
-            OUTLETS = {"_objectsController" = NSArrayController; uploadSheet = NSWindow; }; 
+            OUTLETS = {
+                "_objectsController" = S3DragAndDropArrayController; 
+                multipleUploadSheet = NSWindow; 
+                uploadSheet = NSWindow; 
+            }; 
             SUPERCLASS = NSWindowController; 
-        }, 
-        {CLASS = S3ClickableURLField; LANGUAGE = ObjC; SUPERCLASS = NSTextField; }, 
-        {
-            CLASS = S3DragAndDropArrayController; 
-            LANGUAGE = ObjC; 
-            OUTLETS = {delegate = id; tableView = NSTableView; }; 
-            SUPERCLASS = NSArrayController; 
         }
     ); 
     IBVersion = 1; 
