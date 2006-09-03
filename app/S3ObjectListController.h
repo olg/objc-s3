@@ -29,7 +29,7 @@
 	NSString* _uploadACL;
 	NSString* _uploadFilename;
 	NSString* _uploadSize;
-	NSMutableArray* _uploadFiles;
+	NSMutableArray* _uploadData;
 }	
 
 - (IBAction)refresh:(id)sender;
@@ -61,7 +61,7 @@
 - (void)setUploadFilename:(NSString *)anUploadFilename;
 - (NSString *)uploadSize;
 - (void)setUploadSize:(NSString *)anUploadSize;
-- (NSMutableArray *)uploadFiles;
-- (void)setUploadFiles:(NSMutableArray *)anUploadFiles;
+- (NSMutableArray *)uploadData;
+- (void)setUploadData:(NSMutableArray *)data;
 
 @end

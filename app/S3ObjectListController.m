@@ -286,7 +286,7 @@
 
 -(void)uploadFiles
 {	
-	NSEnumerator* e = [[self uploadFiles] objectEnumerator];
+	NSEnumerator* e = [[self uploadData] objectEnumerator];
 	NSDictionary* data;
 
 	while (data = [e nextObject])
@@ -330,14 +330,14 @@
 	while (path = [e nextObject])
 	{
 		NSMutableDictionary* info = [NSMutableDictionary dictionary];
-		[info setObject:path forKey:FILEDATA_PATH;
+		[info setObject:path forKey:FILEDATA_PATH];
 		[info setObject:[path readableSizeForPath] forKey:FILEDATA_SIZE];
 		[info safeSetObject:[path mimeTypeForPath] forKey:FILEDATA_TYPE withValueForNil:@""];
 		[info setObject:[path substringFromIndex:[prefix length]] forKey:FILEDATA_KEY];
 		[filesInfo addObject:info];
 	}
 	
-	[self setUploadFiles:filesInfo];
+	[self setUploadData:filesInfo];
 	[self setUploadACL:ACL_PRIVATE];
 	[self setUploadSize:[NSString readableSizeForPaths:paths]];
 
@@ -457,14 +457,14 @@
     _uploadSize = [anUploadSize retain];
 }
 
-- (NSMutableArray *)uploadFiles
+- (NSMutableArray *)uploadData
 {
-    return [[_uploadFiles retain] autorelease]; 
+    return [[_uploadData retain] autorelease]; 
 }
-- (void)setUploadFiles:(NSMutableArray *)anUploadFiles
+- (void)setUploadData:(NSMutableArray *)data
 {
-    [_uploadFiles release];
-    _uploadFiles = [anUploadFiles retain];
+    [_uploadData release];
+    _uploadData = [data retain];
 }
 
 #pragma mark -
@@ -481,7 +481,7 @@
 
 	[self setUploadACL:nil];
 	[self setUploadFilename:nil];
-	[self setUploadFiles:nil];
+	[self setUploadData:nil];
 
 	[self setCurrentOperations:nil];
 	
