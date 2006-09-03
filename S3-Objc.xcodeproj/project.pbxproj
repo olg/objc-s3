@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		301E14880A9487B000452AD5 /* S3DragAndDropArrayController.m in Sources */ = {isa = PBXBuildFile; fileRef = 301E14870A9487B000452AD5 /* S3DragAndDropArrayController.m */; };
 		306299E50A953E0A00634B34 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 306299E40A953E0A00634B34 /* SystemConfiguration.framework */; };
+		3066A6AA0AAB608F003CACDA /* S3ActiveWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3066A6A90AAB608F003CACDA /* S3ActiveWindowController.m */; };
 		30BA790B0A91F0D100E4E2A9 /* S3ObjectDownloadOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 30BA790A0A91F0D100E4E2A9 /* S3ObjectDownloadOperation.m */; };
 		30BA7C7F0A93A92800E4E2A9 /* S3ObjectUploadOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 30BA7C7E0A93A92800E4E2A9 /* S3ObjectUploadOperation.m */; };
 		7737F80C09EDA1EB0015B80B /* upload.icns in Resources */ = {isa = PBXBuildFile; fileRef = 7737F80A09EDA1EB0015B80B /* upload.icns */; };
@@ -57,6 +58,8 @@
 		301E14860A9487B000452AD5 /* S3DragAndDropArrayController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3DragAndDropArrayController.h; sourceTree = "<group>"; };
 		301E14870A9487B000452AD5 /* S3DragAndDropArrayController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3DragAndDropArrayController.m; sourceTree = "<group>"; };
 		306299E40A953E0A00634B34 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = /System/Library/Frameworks/SystemConfiguration.framework; sourceTree = "<absolute>"; };
+		3066A6A80AAB608F003CACDA /* S3ActiveWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3ActiveWindowController.h; sourceTree = "<group>"; };
+		3066A6A90AAB608F003CACDA /* S3ActiveWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3ActiveWindowController.m; sourceTree = "<group>"; };
 		30BA79090A91F0D100E4E2A9 /* S3ObjectDownloadOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3ObjectDownloadOperation.h; sourceTree = "<group>"; };
 		30BA790A0A91F0D100E4E2A9 /* S3ObjectDownloadOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3ObjectDownloadOperation.m; sourceTree = "<group>"; };
 		30BA7C7D0A93A92800E4E2A9 /* S3ObjectUploadOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3ObjectUploadOperation.h; sourceTree = "<group>"; };
@@ -241,6 +244,8 @@
 			children = (
 				778B5E0809E18FE2002AF32D /* S3Application.h */,
 				778B5E0909E18FE2002AF32D /* S3Application.m */,
+				3066A6A80AAB608F003CACDA /* S3ActiveWindowController.h */,
+				3066A6A90AAB608F003CACDA /* S3ActiveWindowController.m */,
 				777CB09B09E5E4F1003E37C9 /* S3LoginController.h */,
 				777CB09C09E5E4F1003E37C9 /* S3LoginController.m */,
 				778B5DCC09E1817D002AF32D /* S3BucketListController.h */,
@@ -343,6 +348,7 @@
 				30BA790B0A91F0D100E4E2A9 /* S3ObjectDownloadOperation.m in Sources */,
 				30BA7C7F0A93A92800E4E2A9 /* S3ObjectUploadOperation.m in Sources */,
 				301E14880A9487B000452AD5 /* S3DragAndDropArrayController.m in Sources */,
+				3066A6AA0AAB608F003CACDA /* S3ActiveWindowController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

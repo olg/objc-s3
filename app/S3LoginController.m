@@ -54,31 +54,13 @@
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
-	// Then only we observe is access key to check password in keychain
+	// The only thing we observe is access key to check password in keychain
 	[self checkPasswordInKeychain];
 }
 
--(void)didPresentErrorWithRecovery:(BOOL)didRecover contextInfo:(void *)contextInfo
-{
-}
-
--(void)operationStateChange:(S3Operation*)o;
-{
-}
-
--(void)operationDidFail:(S3Operation*)o
-{
-	[[self window] presentError:[o error] modalForWindow:[self window] delegate:self didPresentSelector:@selector(didPresentErrorWithRecovery:contextInfo:) contextInfo:nil];
-}
-
-
 -(void)operationDidFinish:(S3Operation*)o
 {
-	BOOL b = [o operationSuccess];
-	if (!b) {
-		[self operationDidFail:o];
-		return;
-	}
+	[super operationDidFinish:o];
 	
 	[[NSUserDefaults standardUserDefaults] setObject:[_connection accessKeyID] forKey:DEFAULT_USER];
 	if ([_keychainCheckbox state] == NSOnState)
@@ -104,39 +86,7 @@
 -(IBAction)connect:(id)sender
 {
 	S3BucketListOperation* op = [S3BucketListOperation bucketListOperationWithConnection:_connection delegate:self];
-	[self setOperation:op];
-	[(S3Application*)NSApp logOperation:op];
-}
-
-#pragma mark -
-#pragma mark Key-value coding
-
-- (S3Connection *)connection
-{
-    return _connection; 
-}
-- (void)setConnection:(S3Connection *)aConnection
-{
-    [_connection release];
-    _connection = [aConnection retain];
-}
-
-- (S3Operation *)operation
-{
-    return _operation; 
-}
-
-- (void)setOperation:(S3Operation *)operation
-{
-    [_operation release];
-    _operation = [operation retain];
-}
-
--(void)dealloc
-{
-	[self setOperation:nil];
-	[self setConnection:nil];
-	[super dealloc];
+	[self addToCurrentOperations:op];
 }
 
 #pragma mark -
@@ -187,7 +137,5 @@
                                            nil);
 	return (status==noErr);
 }
-
-
 
 @end

@@ -23,14 +23,9 @@
 
 @end
 
-@interface NSSet (Comfort)
-
--(BOOL)containsObjectOfClass:(Class)c;
-
-@end
-
 @interface NSArray (Comfort)
 
+-(BOOL)containsObjectOfClass:(Class)c;
 -(NSArray*)expandPaths;
 
 @end

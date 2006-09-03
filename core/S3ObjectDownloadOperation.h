@@ -22,6 +22,8 @@
    NSURLConnection-based object download operation will be removed in a future version.
 */
 
+//#define S3_DOWNLOADS_NSURLCONNECTION
+
 #ifndef S3_DOWNLOADS_NSURLCONNECTION
 
 @interface S3ObjectDownloadOperation : S3Operation 

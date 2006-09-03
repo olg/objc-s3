@@ -205,18 +205,16 @@
 	CFHTTPMessageSetHeaderFieldValue(conn, CFSTR("Authorization"), (CFStringRef)[NSString stringWithFormat:@"AWS %@:%@",_accessKeyID,auth]);
 }
 
--(CFDataRef)createHeaderDataForMethod:(NSString*)method withResource:(NSString*)resource subResource:(NSString*)s headers:(NSDictionary*)d
+-(CFHTTPMessageRef)createCFRequestForMethod:(NSString*)method withResource:(NSString*)resource subResource:(NSString*)s headers:(NSDictionary*)d
 {
-	NSString* url = [NSString stringWithFormat:@"http://%@/%@",_host,[resource stringByAppendingPathComponent:[s stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+	NSString* url = [NSString stringWithFormat:@"http://%@/%@",_host, [[resource stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding] stringByAppendingPathComponent:[s stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
 	NSURL* rootURL = [NSURL URLWithString:url];
 	
 	CFHTTPMessageRef request = CFHTTPMessageCreateRequest(kCFAllocatorDefault, (CFStringRef)method, (CFURLRef)rootURL, kCFHTTPVersion1_1);
 
 	[self addAuthorizationToCF:request method:method data:nil headers:d url:rootURL];	
-
-	CFDataRef serializedRequest = CFHTTPMessageCopySerializedMessage(request);
-	CFRelease(request);
-	return serializedRequest;
+	
+	return request;
 }
 
 

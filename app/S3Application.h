@@ -18,5 +18,6 @@
 -(IBAction)showOperationConsole:(id)sender;
 
 -(void)logOperation:(id)op;
+-(void)unlogOperation:(id)op;
 
 @end

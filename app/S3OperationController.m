@@ -47,13 +47,27 @@
 
 - (BOOL) validateToolbarItem:(NSToolbarItem*)theItem
 {
+	if ([[theItem itemIdentifier] isEqualToString:@"Remove"])
+	{	
+		if (![_operationsArrayController canRemove])
+			return FALSE;
+		
+		NSEnumerator* e = [[_operationsArrayController selectedObjects] objectEnumerator];
+		S3Operation* op;
+		while (op = [e nextObject]) 
+		{
+			if (([op state]==S3OperationActive)||([op state]==S3OperationPending))
+				return FALSE;
+		}
+		return TRUE;
+	}
 	if ([[theItem itemIdentifier] isEqualToString:@"Stop"])
 	{	
 		NSEnumerator* e = [[_operationsArrayController selectedObjects] objectEnumerator];
 		S3Operation* op;
 		while (op = [e nextObject]) 
 		{
-			if ([op active])
+			if (([op state]==S3OperationActive)||([op state]==S3OperationPending))
 				return TRUE;
 		}
 		return FALSE;
@@ -62,13 +76,18 @@
 	return TRUE;
 }
 
+-(IBAction)remove:(id)sender;
+{
+	[_operationsArrayController remove:sender];
+}
+
 -(IBAction)stop:(id)sender;
 {
 	NSEnumerator* e = [[_operationsArrayController selectedObjects] objectEnumerator];
 	S3Operation* op;
 	while (op = [e nextObject]) 
 	{
-		if ([op active])
+		if (([op state]==S3OperationActive)||([op state]==S3OperationPending))
 			[op stop:self];
 	}	
 }
@@ -90,7 +109,7 @@
 		[item setLabel: NSLocalizedString(@"Remove", nil)];
 		[item setPaletteLabel: [item label]];
 		[item setImage: [NSImage imageNamed: @"delete.icns"]];
-		[item setTarget:_operationsArrayController];
+		[item setTarget:self];
 		[item setAction:@selector(remove:)];
     }
 	else if ([itemIdentifier isEqualToString: @"Info"])
@@ -122,6 +141,9 @@
 
 - (id) transformedValue:(id)data
 {
+	if ([data length]>4096)
+		return [[[NSAttributedString alloc] initWithString:@"..."] autorelease];
+	
 	NSString* s = [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] autorelease];
 	if (s==nil)
 		s = @"";
@@ -132,7 +154,7 @@
 
 @interface NSHTTPURLResponse (Logging)
 -(NSString*)httpStatus;
--(NSArray*)headers;
+-(NSArray*)headersReceived;
 @end
 
 @implementation NSHTTPURLResponse (Logging)
@@ -142,7 +164,7 @@
 	return [NSString stringWithFormat:@"%d (%@)",[self statusCode],[NSHTTPURLResponse localizedStringForStatusCode:[self statusCode]]];
 }
 
--(NSArray*)headers
+-(NSArray*)headersReceived
 {
 	NSMutableArray* a = [NSMutableArray array];
 	NSEnumerator* e = [[self allHeaderFields] keyEnumerator];
@@ -158,12 +180,12 @@
 
 
 @interface NSURLRequest (Logging)
--(NSArray*)headers;
+-(NSArray*)headersSent;
 @end 
 
 @implementation NSURLRequest (Logging)
 
--(NSArray*)headers
+-(NSArray*)headersSent
 {
 	NSMutableArray* a = [NSMutableArray array];
 	NSEnumerator* e = [[self allHTTPHeaderFields] keyEnumerator];

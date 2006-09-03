@@ -7,13 +7,12 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "S3BucketOperations.h"
+
+#import "S3ActiveWindowController.h"
 
 @class S3Connection;
 
-@interface S3LoginController : NSWindowController  <S3OperationDelegate> {
-	S3Connection* _connection;
-	S3Operation* _operation;
+@interface S3LoginController : S3ActiveWindowController {
 	IBOutlet NSButton* _defaultButton;
 	IBOutlet NSButton* _keychainCheckbox;
 }
@@ -22,8 +21,6 @@
 - (IBAction)openHelpPage:(id)sender;
 - (IBAction)flippedKeychainSupport:(id)sender;
 
-- (void)setConnection:(S3Connection *)aConnection;
-- (void)setOperation:(S3Operation *)operation;
 - (void)checkPasswordInKeychain;
 
 - (NSString*)getS3KeyFromKeychainForUser:(NSString *)username;

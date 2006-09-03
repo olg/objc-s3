@@ -15,7 +15,8 @@
 typedef enum _S3OperationState {
 	S3OperationDone = 1,
 	S3OperationError = 2,
-	S3OperationProcessing = 3
+	S3OperationActive = 3,
+	S3OperationPending = 4
 } S3OperationState;
 
 @class S3Operation;
@@ -33,6 +34,7 @@ typedef enum _S3OperationState {
 	NSError* _error;
 	NSObject<S3OperationDelegate>* _delegate;	
 	BOOL _active;
+	S3OperationState _state;
 }
 
 - (id)initWithDelegate:(id)delegate;
@@ -44,6 +46,9 @@ typedef enum _S3OperationState {
 - (NSString *)status;
 - (void)setStatus:(NSString *)aStatus;
 - (void)stop:(id)sender;
+- (void)start:(id)sender;
+- (S3OperationState)state;
+- (void)setState:(S3OperationState)aState;
 
 @end
 
@@ -57,3 +62,8 @@ typedef enum _S3OperationState {
 -(id)initWithRequest:(NSURLRequest*)request delegate:(id)delegate;
 
 @end
+
+@interface S3ListOperation : S3NSURLConnectionOperation
+
+@end
+

@@ -7,16 +7,14 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "S3Operation.h"
+
+#import "S3ActiveWindowController.h"
 #import "S3DragAndDropArrayController.h"
 
-@class S3Connection;
 @class S3Bucket;
 
 
-@interface S3ObjectListController : NSWindowController  <S3OperationDelegate,S3DragAndDropProtocol> {
-	S3Connection* _connection;
-	NSMutableSet* _currentOperations;
+@interface S3ObjectListController : S3ActiveWindowController  <S3DragAndDropProtocol> {
 	
 	S3Bucket* _bucket;
 	NSMutableArray* _objects;
@@ -40,9 +38,6 @@
 - (IBAction)cancelSheet:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 
-
-- (void)setConnection:(S3Connection *)aConnection;
-
 - (NSMutableArray *)objects;
 - (void)setObjects:(NSMutableArray *)aObjects;
 
@@ -51,9 +46,6 @@
 
 - (S3Bucket *)bucket;
 - (void)setBucket:(S3Bucket *)aBucket;
-
-- (NSMutableSet *)currentOperations;
-- (void)setCurrentOperations:(NSMutableSet *)aCurrentOperations;
 
 - (NSString *)uploadACL;
 - (void)setUploadACL:(NSString *)anUploadACL;

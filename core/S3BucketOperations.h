@@ -13,7 +13,7 @@
 @class S3Bucket;
 @class S3Connection;
 
-@interface S3BucketListOperation : S3NSURLConnectionOperation 
+@interface S3BucketListOperation : S3ListOperation 
 
 +(S3BucketListOperation*)bucketListOperationWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d;
 

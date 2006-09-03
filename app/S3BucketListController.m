@@ -100,27 +100,10 @@
 	[NSApp endSheet:addSheet returnCode:SHEET_OK];
 }
 
--(void)didPresentErrorWithRecovery:(BOOL)didRecover contextInfo:(void *)contextInfo
-{
-}
-
--(void)operationStateChange:(S3Operation*)o;
-{
-}
-
--(void)operationDidFail:(S3Operation*)o
-{
-	[[self window] presentError:[o error] modalForWindow:[self window] delegate:self didPresentSelector:@selector(didPresentErrorWithRecovery:contextInfo:) contextInfo:nil];
-}
-
 -(void)operationDidFinish:(S3Operation*)o
 {
-	BOOL b = [o operationSuccess];
-	if (!b) {
-		[self operationDidFail:o];
-		return;
-	}
-	
+	[super operationDidFinish:o];
+
 	if ([o isKindOfClass:[S3BucketListOperation class]]) {
 		[self setBuckets:[(S3BucketListOperation*)o bucketList]];
 		[self setBucketsOwner:[(S3BucketListOperation*)o owner]];			
@@ -134,23 +117,19 @@
 
 -(IBAction)remove:(id)sender
 {
-	NSMutableSet* ops = [NSMutableSet set];
 	S3Bucket* b;
 	NSEnumerator* e = [[_bucketsController selectedObjects] objectEnumerator];
 	while (b = [e nextObject])
 	{
 		S3BucketDeleteOperation* op = [S3BucketDeleteOperation bucketDeletionWithConnection:_connection delegate:self bucket:b];
-		[(S3Application*)NSApp logOperation:op];
-		[ops addObject:op];
+		[self addToCurrentOperations:op];
 	}
-	[self setCurrentOperations:ops];
 }
 
 -(IBAction)refresh:(id)sender
 {
 	S3BucketListOperation* op = [S3BucketListOperation bucketListOperationWithConnection:_connection delegate:self];
-	[(S3Application*)NSApp logOperation:op];
-	[self setCurrentOperations:[NSMutableSet setWithObject:op]];
+	[self addToCurrentOperations:op];
 }
 
 
@@ -160,8 +139,7 @@
 	if (returnCode==SHEET_OK)
 	{
 		S3BucketAddOperation* op = [S3BucketAddOperation bucketAddWithConnection:_connection delegate:self name:_name];
-		[(S3Application*)NSApp logOperation:op];
-		[self setCurrentOperations:[NSMutableSet setWithObject:op]];		
+		[self addToCurrentOperations:op];
 	}
 }
 
@@ -199,16 +177,6 @@
     _name = [aName retain];
 }
 
-- (S3Connection *)connection
-{
-    return _connection; 
-}
-- (void)setConnection:(S3Connection *)aConnection
-{
-    [_connection release];
-    _connection = [aConnection retain];
-}
-
 - (S3Owner *)bucketsOwner
 {
     return _bucketsOwner; 
@@ -231,23 +199,11 @@
     _buckets = [aBuckets retain];
 }
 
-- (NSMutableSet *)currentOperations
-{
-    return _currentOperations; 
-}
-- (void)setCurrentOperations:(NSMutableSet *)aCurrentOperations
-{
-    [_currentOperations release];
-    _currentOperations = [aCurrentOperations retain];
-}
-
 -(void)dealloc
 {
 	[self setName:nil];
-	[self setConnection:nil];
 	[self setBucketsOwner:nil];
 	[self setBuckets:nil];
-	[self setCurrentOperations:nil];
 	
 	[super dealloc];
 }

@@ -7,15 +7,15 @@
 //
 
 #import <Cocoa/Cocoa.h>
+
 #import "S3BucketOperations.h"
+#import "S3ActiveWindowController.h"
 
 @class S3Connection;
 @class S3Owner;
 
-@interface S3BucketListController : NSWindowController <S3OperationDelegate> {
-	S3Connection* _connection;
-	NSMutableSet* _currentOperations;
-
+@interface S3BucketListController : S3ActiveWindowController {
+	
 	NSMutableArray* _buckets;
 	S3Owner* _bucketsOwner;
 		
@@ -36,15 +36,10 @@
 - (NSString *)name;
 - (void)setName:(NSString *)aName;
 
-- (void)setConnection:(S3Connection *)aConnection;
-
 - (S3Owner *)bucketsOwner;
 - (void)setBucketsOwner:(S3Owner *)anBucketsOwner;
 
 - (NSMutableArray *)buckets;
 - (void)setBuckets:(NSMutableArray *)aBuckets;
-
-- (NSMutableSet *)currentOperations;
-- (void)setCurrentOperations:(NSMutableSet *)aCurrentOperations;
 
 @end

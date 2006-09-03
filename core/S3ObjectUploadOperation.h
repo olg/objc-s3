@@ -29,6 +29,8 @@
     NSMutableData* _obuffer;
 	CFDataRef _headerData;
 	CFHTTPMessageRef _response;
+	CFHTTPMessageRef _request;
+	NSString* _path;
 }
 
 + (S3ObjectStreamedUploadOperation*)objectUploadWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b key:(NSString*)k path:(NSString*)path acl:(NSString*)acl mimeType:(NSString*)mimetype;

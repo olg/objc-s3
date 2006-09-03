@@ -62,6 +62,18 @@
 	return a;
 }
 
+
+-(BOOL)containsObjectOfClass:(Class)c;
+{
+    NSEnumerator* e = [self objectEnumerator];
+    id o;
+    while (o = [e nextObject])
+    {
+        if ([o isKindOfClass:c])
+            return TRUE;
+    }
+    return FALSE;
+}
 @end
 
 @implementation NSMutableDictionary (Comfort)
@@ -84,22 +96,6 @@
 }
 
 @end
-
-@implementation NSSet (Comfort)
-
--(BOOL)containsObjectOfClass:(Class)c
-{
-    NSEnumerator* e = [self objectEnumerator];
-    id o;
-    while (o = [e nextObject])
-    {
-        if ([o isKindOfClass:c])
-            return TRUE;
-    }
-    return FALSE;
-}
-@end
-
 
 @implementation NSXMLElement (Comfort)
 

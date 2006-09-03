@@ -23,7 +23,7 @@
 
 // Bucket operations
 
-@interface S3ObjectListOperation : S3NSURLConnectionOperation {
+@interface S3ObjectListOperation : S3ListOperation {
 	S3Bucket* _bucket;
 }
 

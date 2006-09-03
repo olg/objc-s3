@@ -20,6 +20,7 @@
 #define SHEET_CANCEL 0
 #define SHEET_OK 1
 
+
 // These keys are also used in nib file, for bindings
 
 #define ACL_PRIVATE @"private"
@@ -139,27 +140,10 @@
 	[NSApp endSheet:[sender window] returnCode:SHEET_OK];
 }
 
--(void)didPresentErrorWithRecovery:(BOOL)didRecover contextInfo:(void *)contextInfo
-{
-}
-
--(void)operationStateChange:(S3Operation*)o;
-{
-}
-
--(void)operationDidFail:(S3Operation*)o
-{
-	[[self window] presentError:[o error] modalForWindow:[self window] delegate:self didPresentSelector:@selector(didPresentErrorWithRecovery:contextInfo:) contextInfo:nil];
-}
-
 -(void)operationDidFinish:(S3Operation*)op
 {
-	BOOL b = [op operationSuccess];
-	if (!b)	{	
-		[self operationDidFail:op];
-		return;
-	}
-	
+	[super operationDidFinish:op];
+
 #ifdef S3_DOWNLOADS_NSURLCONNECTION
 	if ([op isKindOfClass:[S3ObjectDownloadOperation class]]) {
 		NSData* d = [(S3ObjectDownloadOperation*)op data];
@@ -179,8 +163,13 @@
 		[self setObjects:[(S3ObjectListOperation*)op objects]];
 		[self setObjectsInfo:[(S3ObjectListOperation*)op metadata]];
 	}
+	
 	if ([op isKindOfClass:[S3ObjectUploadOperation class]]||[op isKindOfClass:[S3ObjectStreamedUploadOperation class]]||[op isKindOfClass:[S3ObjectDeleteOperation class]])
-		[self refresh:self];
+	{
+		// Simple heuristics: if we still have something in the operation queue, no need to refresh now
+		if ([_currentOperations count]==0)
+			[self refresh:self];
+	}
 }
 
 #pragma mark -
@@ -189,8 +178,7 @@
 -(IBAction)refresh:(id)sender
 {
 	S3ObjectListOperation* op = [S3ObjectListOperation objectListWithConnection:_connection delegate:self bucket:_bucket];
-	[(S3Application*)NSApp logOperation:op];
-	[self setCurrentOperations:[NSMutableSet setWithObject:op]];
+	[self addToCurrentOperations:op];
 }
 
 -(IBAction)removeAll:(id)sender
@@ -207,43 +195,36 @@
     }
     [alert release];
     
-	NSMutableSet* ops = [NSMutableSet set];
 	S3Object* b;
 	NSEnumerator* e = [[_objectsController arrangedObjects] objectEnumerator];
 	while (b = [e nextObject])
 	{
 		S3ObjectDeleteOperation* op = [S3ObjectDeleteOperation objectDeletionWithConnection:_connection delegate:self bucket:_bucket object:b];
-		[(S3Application*)NSApp logOperation:op];
-		[ops addObject:op];
+		[self addToCurrentOperations:op];
+
 	}
-	[self setCurrentOperations:ops];
 }
 
 -(IBAction)remove:(id)sender
 {
-	NSMutableSet* ops = [NSMutableSet set];
 	S3Object* b;
 	NSEnumerator* e = [[_objectsController selectedObjects] objectEnumerator];
 	while (b = [e nextObject])
 	{
 		S3ObjectDeleteOperation* op = [S3ObjectDeleteOperation objectDeletionWithConnection:_connection delegate:self bucket:_bucket object:b];
-		[(S3Application*)NSApp logOperation:op];
-		[ops addObject:op];
+		[self addToCurrentOperations:op];
 	}
-	[self setCurrentOperations:ops];
 }
 
 -(IBAction)download:(id)sender
 {
-	NSMutableSet* ops = [NSMutableSet set];
 	S3Object* b;
 	NSEnumerator* e = [[_objectsController selectedObjects] objectEnumerator];
 	while (b = [e nextObject])
 	{
 #ifdef S3_DOWNLOADS_NSURLCONNECTION
 		S3ObjectDownloadOperation* op = [S3ObjectDownloadOperation objectDownloadWithConnection:_connection delegate:self bucket:_bucket object:b];
-		[(S3Application*)NSApp logOperation:op];
-		[ops addObject:op];
+		[self addToCurrentOperations:op];
 #else
 		NSSavePanel* sp = [NSSavePanel savePanel];
 		int runResult;
@@ -252,12 +233,10 @@
 		runResult = [sp runModalForDirectory:nil file:n];
 		if (runResult == NSOKButton) {
 			S3ObjectDownloadOperation* op = [S3ObjectDownloadOperation objectDownloadWithConnection:_connection delegate:self bucket:_bucket object:b toPath:[sp filename]];
-			[(S3Application*)NSApp logOperation:op];
-			[ops addObject:op];
+			[self addToCurrentOperations:op];
 		}
 #endif
 	}
-	[self setCurrentOperations:ops];
 }
 
 
@@ -272,7 +251,7 @@
     BOOL hasProxy = (CFDictionaryGetValue(proxyDict, kSCPropNetProxiesHTTPProxy) != NULL);
     CFRelease(proxyDict);
 	
-    if (hasProxy || TRUE)
+    if (hasProxy)
     {
         NSData* data = [NSData dataWithContentsOfFile:path];
         op = [S3ObjectUploadOperation objectUploadWithConnection:_connection delegate:self bucket:_bucket key:key data:data acl:acl mimeType:mimetype];
@@ -280,8 +259,8 @@
     else 
         op = [S3ObjectStreamedUploadOperation objectUploadWithConnection:_connection delegate:self bucket:_bucket key:key path:path acl:acl mimeType:mimetype];
     
-    [(S3Application*)NSApp logOperation:op];
-    [self setCurrentOperations:[NSMutableSet setWithObject:op]];    
+	[self addToCurrentOperations:op];
+
 }
 
 -(void)uploadFiles
@@ -407,26 +386,6 @@
     _bucket = [aBucket retain];
 }
 
-- (S3Connection *)connection
-{
-    return _connection; 
-}
-- (void)setConnection:(S3Connection *)aConnection
-{
-    [_connection release];
-    _connection = [aConnection retain];
-}
-
-- (NSMutableSet *)currentOperations
-{
-    return _currentOperations; 
-}
-- (void)setCurrentOperations:(NSMutableSet *)aCurrentOperations
-{
-    [_currentOperations release];
-    _currentOperations = [aCurrentOperations retain];
-}
-
 - (NSString *)uploadACL
 {
     return _uploadACL; 
@@ -476,14 +435,9 @@
 	[self setObjectsInfo:nil];
 	[self setBucket:nil];
 
-	[self setConnection:nil];
-	[self setCurrentOperations:nil];
-
 	[self setUploadACL:nil];
 	[self setUploadFilename:nil];
 	[self setUploadData:nil];
-
-	[self setCurrentOperations:nil];
 	
 	[super dealloc];
 }

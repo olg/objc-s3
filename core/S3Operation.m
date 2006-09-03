@@ -13,9 +13,10 @@
 -(id)initWithDelegate:(id)delegate
 {
 	[super init];
-	[self setActive:YES];
 	_delegate = delegate;
-	_status = @"Active";
+	_status = @"Pending";
+	[self setState:S3OperationPending];
+	[self setActive:NO];
 	return self;
 }
 
@@ -46,6 +47,14 @@
     _active = flag;
 }
 
+- (S3OperationState)state
+{
+    return _state;
+}
+- (void)setState:(S3OperationState)aState
+{
+    _state = aState;
+}
 
 - (NSError *)error
 {
@@ -69,7 +78,13 @@
 	[self setError:[NSError errorWithDomain:S3_ERROR_DOMAIN code:-1 userInfo:d]];
 	[self setStatus:@"Cancelled"];
 	[self setActive:NO];
+	[self setState:S3OperationError];
 	[_delegate operationDidFail:self];
+}
+
+- (void)start:(id)sender;
+{
+	
 }
 
 @end
@@ -80,9 +95,15 @@
 {
 	[super initWithDelegate:delegate];
 	_request = [request retain];
-    _connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
 	_data = [[NSMutableData alloc] init];
 	return self;
+}
+
+-(void)start:(id)sender
+{
+	_connection = [[NSURLConnection alloc] initWithRequest:_request delegate:self];
+	[self setState:S3OperationActive];
+	[self setStatus:@"Active"];
 }
 
 -(void)dealloc
@@ -163,6 +184,7 @@
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {
     [self setStatus:@"Done"];
 	[self setActive:NO];
+	[self setState:S3OperationDone];
 	[_delegate operationDidFinish:self];
 }
 
@@ -171,11 +193,16 @@
 	[self setError:error];
     [self setStatus:@"Error"];
 	[self setActive:NO];
+	[self setState:S3OperationError];
 	[_delegate operationDidFail:self];
 }
 
 - (NSCachedURLResponse *)connection:(NSURLConnection *)connection willCacheResponse:(NSCachedURLResponse *)cachedResponse {
     return nil; // Don't cache
 }
+
+@end
+
+@implementation S3ListOperation
 
 @end

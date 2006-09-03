@@ -44,6 +44,14 @@
 	return @"Object download";
 }
 
+
+- (void)setResponse:(NSHTTPURLResponse *)aResponse
+{
+	[aResponse retain];
+    [_response release];
+    _response = aResponse;
+}
+
 +(S3ObjectDownloadOperation*)objectDownloadWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b object:(S3Object*)o toPath:(NSString*)path;
 {
 	NSURLRequest* rootConn = [c makeRequestForMethod:@"GET" withResource:[b name] subResource:[o key]];
@@ -61,8 +69,7 @@
 
 - (void)download:(NSURLDownload *)download didReceiveResponse:(NSURLResponse *)response
 {
-    [_response release];
-    _response = [response retain];
+	[self setResponse:(NSHTTPURLResponse*)response];
     [self setStatus:@"Connected to server"];
 	if ([_delegate respondsToSelector:@selector(operationStateChange:)])
 		[_delegate operationStateChange:self];
@@ -91,13 +98,17 @@
 {
     [self setStatus:@"Done"];
 	[self setActive:NO];
+	[self setState:S3OperationDone];
+	[self retain];
 	[_delegate operationDidFinish:self];
+	[self release];
 }
 
 - (void)download:(NSURLDownload *)download didFailWithError:(NSError *)error {
 	[self setError:error];
     [self setStatus:@"Error"];
 	[self setActive:NO];
+	[self setState:S3OperationError];
 	[_delegate operationDidFail:self];
 }
 
@@ -109,6 +120,7 @@
 	[self setError:[NSError errorWithDomain:S3_ERROR_DOMAIN code:-1 userInfo:d]];
 	[self setStatus:@"Cancelled"];
 	[self setActive:NO];
+	[self setState:S3OperationError];
 	[_delegate operationDidFail:self];
 }
 

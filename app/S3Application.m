@@ -84,4 +84,10 @@
 	[self insertObject:op inOperationsAtIndex:[self countOfOperations]];
 }
 
+-(void)unlogOperation:(id)op
+{
+//	int i = [_operations indexOfObject:op];
+//	[self removeObjectFromOperationsAtIndex:i];
+}
+
 @end

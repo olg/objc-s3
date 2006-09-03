@@ -8,6 +8,7 @@
 
 #import "S3ObjectUploadOperation.h"
 
+#define UPLOAD_HTTP_METHOD @"PUT"
 
 @implementation S3ObjectUploadOperation
 
@@ -24,13 +25,14 @@
 	else
 		headers = [NSDictionary dictionaryWithObjectsAndKeys:acl,XAMZACL,mimeType,@"Content-Type",nil];
 		
-	NSMutableURLRequest* rootConn = [c makeRequestForMethod:@"PUT" withResource:[b name] subResource:k headers:headers];
+	NSMutableURLRequest* rootConn = [c makeRequestForMethod:UPLOAD_HTTP_METHOD withResource:[b name] subResource:k headers:headers];
 	[rootConn setHTTPBody:n];
 	S3ObjectUploadOperation* op = [[[S3ObjectUploadOperation alloc] initWithRequest:rootConn delegate:d] autorelease];
 	return op;
 }
 
 @end
+
 
 @implementation S3ObjectStreamedUploadOperation
 
@@ -40,9 +42,10 @@
     
 	NSNumber* n = [[[NSFileManager defaultManager] fileAttributesAtPath:path traverseLink:YES] objectForKey:NSFileSize];
 	_size = [n longLongValue];
+	_path = [path retain];
 	
-	NSMutableDictionary* headers = [NSMutableDictionary dictionary];
-	[headers setObject:acl forKey:XAMZACL];
+    NSMutableDictionary* headers = [NSMutableDictionary dictionary];
+    [headers setObject:acl forKey:XAMZACL];
 	[headers setObject:[n stringValue] forKey:@"Content-Length"];
 	[headers setObject:@"CFNetwork" forKey:@"User-Agent"];
 	[headers setObject:@"*/*" forKey:@"Accept"];
@@ -52,12 +55,19 @@
 
 	_percent = 0;
 	_obuffer = [[NSMutableData alloc] init];//
-	_headerData = [c createHeaderDataForMethod:@"PUT" withResource:[b name] subResource:k headers:headers];
-		
+
+	_request = [c createCFRequestForMethod:UPLOAD_HTTP_METHOD withResource:[b name] subResource:k headers:headers];
+	_headerData = CFHTTPMessageCopySerializedMessage(_request);
+	
+	return self;
+}
+
+-(void)start:(id)sender
+{
 	NSHost *host = [NSHost hostWithName:DEFAULT_HOST];
 	// _istream and _ostream are instance variables
 	[NSStream getStreamsToHost:host port:80 inputStream:&_istream outputStream:&_ostream];
-	_fstream = [NSInputStream inputStreamWithFileAtPath:path];
+	_fstream = [NSInputStream inputStreamWithFileAtPath:_path];
     [_istream retain];
 	[_ostream retain];
 	[_fstream retain];
@@ -70,9 +80,11 @@
 	[_fstream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
 	[_istream open];
     [_ostream open];
-    [_fstream open];
+    [_fstream open];	
+	[self setStatus:@"Active"];
+	[self setActive:TRUE];
+	[self setState:S3OperationActive];
 
-	return self;
 }
 
 +(S3ObjectStreamedUploadOperation*)objectUploadWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b key:(NSString*)k path:(NSString*)p acl:(NSString*)a mimeType:(NSString*)m
@@ -121,6 +133,7 @@
 	[self setError:[NSError errorWithDomain:S3_ERROR_DOMAIN code:-1 userInfo:d]];
 	[self setStatus:@"Cancelled"];
 	[self setActive:NO];
+	[self setState:S3OperationError];
 	[_delegate operationDidFail:self];
 }
 
@@ -153,15 +166,18 @@
 
 -(void)dealloc
 {
+	[_path release];
 	[_istream release];
 	[_ostream release];
 	[_fstream release];
 	[_ibuffer release];
 	[_obuffer release];
 	if (_headerData!=NULL)
-		CFRelease(_headerData);	
+        CFRelease(_headerData);	
 	if (_response!=NULL)
-		CFRelease(_response);	
+        CFRelease(_response);
+	if (_request!=NULL)
+        CFRelease(_headerData);
 	[super dealloc];
 }
 
@@ -169,6 +185,7 @@
 - (void)connectionDidFinishLoading {
     [self setStatus:@"Done"];
 	[self setActive:NO];
+	[self setState:S3OperationDone];
 	[_delegate operationDidFinish:self];
 }
 
@@ -177,6 +194,7 @@
 	[self setError:error];
     [self setStatus:@"Error"];
 	[self setActive:NO];
+	[self setState:S3OperationError];
 	[_delegate operationDidFail:self];
 }
 
@@ -255,6 +273,70 @@
     CFRelease(working);
     return YES;
 }
+
+
+// We fake KVO for the inspector pane.
+
+-(id)valueForUndefinedKey:(NSString*)k
+{
+	if ([k isEqualToString:@"response"])
+		return self;
+	if ([k isEqualToString:@"request"])
+		return self;
+	return [super valueForUndefinedKey:k];
+}
+
+- (id)valueForKeyPath:(NSString *)keyPath
+{
+	if ([keyPath isEqualToString:@"response.httpStatus"])
+	{
+		if (_response==NULL)
+			return @"";
+		int status = CFHTTPMessageGetResponseStatusCode(_response);
+		return [NSString stringWithFormat:@"%d (%@)",status,[NSHTTPURLResponse localizedStringForStatusCode:status]];
+	}
+	if ([keyPath isEqualToString:@"response.headersReceived"])
+	{
+		NSMutableArray* a = [NSMutableArray array];
+		if (_response==NULL)
+			return a;
+		CFDictionaryRef h = CFHTTPMessageCopyAllHeaderFields(_response);
+		NSEnumerator* e = [(NSDictionary*)h keyEnumerator];
+		NSString* k;
+		while (k = [e nextObject])
+		{
+			[a addObject:[NSDictionary dictionaryWithObjectsAndKeys:k,@"key",[(NSDictionary*)h objectForKey:k],@"value",nil]];
+		}
+		CFRelease(h);
+		return a;				
+	}
+	if ([keyPath isEqualToString:@"request.headersSent"])
+	{
+		NSMutableArray* a = [NSMutableArray array];
+		if (_request==NULL)
+			return a;
+		CFDictionaryRef h = CFHTTPMessageCopyAllHeaderFields(_request);
+		NSEnumerator* e = [(NSDictionary*)h keyEnumerator];
+		NSString* k;
+		while (k = [e nextObject])
+		{
+			[a addObject:[NSDictionary dictionaryWithObjectsAndKeys:k,@"key",[(NSDictionary*)h objectForKey:k],@"value",nil]];
+		}
+		CFRelease(h);
+		return a;		
+	}
+	if ([keyPath isEqualToString:@"request.HTTPMethod"])
+		return UPLOAD_HTTP_METHOD;
+	if ([keyPath isEqualToString:@"request.URL"])
+	{
+		if (_request==NULL)
+			return @"";
+		return [[(NSURL*)CFHTTPMessageCopyRequestURL(_request) autorelease] description];
+	}
+		
+	return [super valueForKeyPath:keyPath];
+}
+
 
 - (void)processIncomingBytes
 {        
