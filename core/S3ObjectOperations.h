@@ -25,11 +25,18 @@
 
 @interface S3ObjectListOperation : S3ListOperation {
 	S3Bucket* _bucket;
+    S3Connection* _s3connection;
 }
 
 +(S3ObjectListOperation*)objectListWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b;
++(S3ObjectListOperation*)objectListWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b marker:(NSString*)marker;
 
 -(NSMutableArray*)objects;
 -(NSMutableDictionary*)metadata;
+
+-(S3Connection *)connection;
+-(void)setConnection:(S3Connection *)aConnection;
+
+-(S3ObjectListOperation*)operationForNextChunk;
 
 @end

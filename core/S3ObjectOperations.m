@@ -54,10 +54,31 @@
     _bucket = [aBucket retain];
 }
 
-+(S3ObjectListOperation*)objectListWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b;
+- (S3Connection *)connection
 {
-	NSURLRequest* rootConn = [c makeRequestForMethod:@"GET" withResource:[b name]];
+    return _s3connection; 
+}
+
+- (void)setConnection:(S3Connection *)aConnection
+{
+    [aConnection retain];
+    [_connection release];
+    _s3connection = aConnection;
+}
+
++(S3ObjectListOperation*)objectListWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b
+{
+    return [S3ObjectListOperation objectListWithConnection:c delegate:d bucket:b marker:nil];
+}
+
++(S3ObjectListOperation*)objectListWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b marker:(NSString*)marker
+{
+	NSMutableDictionary* params = [NSMutableDictionary dictionary];
+    [params safeSetObject:marker forKey:@"marker"];
+    
+	NSURLRequest* rootConn = [c makeRequestForMethod:@"GET" withResource:[b name] parameters:params headers:nil];
 	S3ObjectListOperation* op = [[[S3ObjectListOperation alloc] initWithRequest:rootConn delegate:d] autorelease];
+    [op setConnection:c];
 	[op setBucket:b];
 	return op;
 }
@@ -70,11 +91,32 @@
 	
 	[dictionary safeSetObject:[[root elementForName:@"Name"] stringValue] forKey:@"Name"];
 	[dictionary safeSetObject:[[root elementForName:@"Marker"] stringValue] forKey:@"Marker"];
+	[dictionary safeSetObject:[[root elementForName:@"NextMarker"] stringValue] forKey:@"NextMarker"];
 	[dictionary safeSetObject:[[root elementForName:@"MaxKeys"] stringValue] forKey:@"MaxKeys"];
 	[dictionary safeSetObject:[[root elementForName:@"Prefix"] stringValue] forKey:@"Prefix"];
 	[dictionary safeSetObject:[[root elementForName:@"IsTruncated"] stringValue] forKey:@"IsTruncated"];
 	
 	return dictionary;
+}
+
+-(S3ObjectListOperation*)operationForNextChunk
+{
+    NSDictionary* d = [self metadata];
+    if (![[d objectForKey:@"IsTruncated"] isEqualToString:@"true"])
+        return nil;
+    
+    NSString* nm = [d objectForKey:@"NextMarker"];
+    if (nm==nil)
+    {
+        NSArray* objs = [self objects];
+        nm = [[objs objectAtIndex:([objs count]-1)] key];
+    }
+    
+    if (nm==nil)
+        return nil;
+
+    S3ObjectListOperation* op = [S3ObjectListOperation objectListWithConnection:[self connection] delegate:_delegate bucket:_bucket marker:nm];
+    return op;
 }
 
 -(NSMutableArray*)objects
