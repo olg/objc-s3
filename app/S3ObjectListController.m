@@ -160,8 +160,13 @@
 	}
 #endif
 	if ([op isKindOfClass:[S3ObjectListOperation class]]) {
-		[self setObjects:[(S3ObjectListOperation*)op objects]];
+		[self addObjects:[(S3ObjectListOperation*)op objects]];
 		[self setObjectsInfo:[(S3ObjectListOperation*)op metadata]];
+        
+        S3ObjectListOperation* next = [(S3ObjectListOperation*)op operationForNextChunk];
+        if (next!=nil)
+            [self addToCurrentOperations:next];
+
 	}
 	
 	if ([op isKindOfClass:[S3ObjectUploadOperation class]]||[op isKindOfClass:[S3ObjectStreamedUploadOperation class]]||[op isKindOfClass:[S3ObjectDeleteOperation class]])
@@ -177,6 +182,7 @@
 
 -(IBAction)refresh:(id)sender
 {
+    [self setObjects:[NSMutableArray array]];
 	S3ObjectListOperation* op = [S3ObjectListOperation objectListWithConnection:_connection delegate:self bucket:_bucket];
 	[self addToCurrentOperations:op];
 }
@@ -353,6 +359,13 @@
 
 #pragma mark -
 #pragma mark Key-value coding
+
+-(void)addObjects:(NSArray*)a
+{
+    [self willChangeValueForKey:@"objects"];
+    [_objects addObjectsFromArray:a];
+    [self didChangeValueForKey:@"objects"];
+}
 
 - (NSMutableArray *)objects
 {

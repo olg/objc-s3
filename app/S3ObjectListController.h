@@ -38,6 +38,8 @@
 - (IBAction)cancelSheet:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 
+- (void)addObjects:(NSArray *)aObjects;
+
 - (NSMutableArray *)objects;
 - (void)setObjects:(NSMutableArray *)aObjects;
 
