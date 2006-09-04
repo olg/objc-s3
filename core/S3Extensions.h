@@ -30,6 +30,12 @@
 
 @end
 
+@interface NSDictionary (URL)
+
+-(NSString*)queryString;
+
+@end
+
 @interface NSXMLElement (Comfort)
 
 -(NSXMLElement*)elementForName:(NSString*)n;

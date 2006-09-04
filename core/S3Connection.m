@@ -137,11 +137,18 @@
 
 -(NSMutableURLRequest*)makeRequestForMethod:(NSString*)method withResource:(NSString*)resource headers:(NSDictionary*)d
 {
-	NSString* url;
-	if (resource==nil)
-		url = [NSString stringWithFormat:@"http://%@/",_host];
-	else 
-		url = [NSString stringWithFormat:@"http://%@/%@",_host,resource];
+	return [self makeRequestForMethod:method withResource:resource parameters:nil headers:d];
+}
+
+-(NSMutableURLRequest*)makeRequestForMethod:(NSString*)method withResource:(NSString*)resource parameters:(NSDictionary*)params headers:(NSDictionary*)d
+{
+    NSMutableString* url = [NSMutableString stringWithString:@"http://"];
+    [url appendString:_host];
+    [url appendString:@"/"];
+    if (resource!=nil)
+        [url appendString:resource];
+    if (params!=nil)
+        [url appendString:[params queryString]];
 
 	NSURL* rootURL = [NSURL URLWithString:url];
 	

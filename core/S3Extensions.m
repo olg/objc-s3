@@ -76,6 +76,37 @@
 }
 @end
 
+@implementation NSDictionary (URL)
+
+-(NSString*)queryString
+{
+    if ([self count]==0)
+        return @"";
+    
+    NSMutableString* s = [NSMutableString string];
+    NSArray* keys = [self allKeys];
+    NSString* k;
+    int i;
+
+    k = [keys objectAtIndex:0];
+    [s appendString:@"?"];
+    [s appendString:k];
+    [s appendString:@"="];
+    [s appendString:[self objectForKey:k]];
+    
+    for (i=1;i<[keys count];i++)
+    {
+        k = [keys objectAtIndex:i];
+        [s appendString:@"&"];
+        [s appendString:k];
+        [s appendString:@"="];
+        [s appendString:[self objectForKey:k]];
+    }
+    return s;
+}
+
+@end
+
 @implementation NSMutableDictionary (Comfort)
 
 -(void)safeSetObject:(id)o forKey:(NSString*)k
