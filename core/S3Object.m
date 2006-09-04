@@ -19,7 +19,6 @@
 {
 	[super init];
 	[data retain];
-	[dict retain];
 	_data = data;
 	_metadata = [[NSMutableDictionary dictionaryWithDictionary:dict] retain];
 	return self;
