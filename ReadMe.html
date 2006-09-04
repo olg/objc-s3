@@ -7,43 +7,36 @@
   <meta name="Generator" content="Cocoa HTML Writer">
   <meta name="CocoaVersion" content="824.41">
   <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 9.0px 0.0px; line-height: 17.0px; font: 14.0px Gill Sans; color: #711e11}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Gill Sans; min-height: 14.0px}
+    p.p1 {margin: 0.0px 0.0px 9.0px 0.0px; line-height: 17.0px; font: 14.0px Gill Sans; color: #69270e}
+    p.p2 {margin: 0.0px 0.0px 13.0px 0.0px; line-height: 17.0px; font: 13.0px Gill Sans}
     p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Gill Sans}
-    p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Gill Sans; color: #0000ec}
-    span.s1 {text-decoration: underline ; color: #0000e4}
-    span.s2 {text-decoration: underline}
+    p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Gill Sans; min-height: 14.0px}
+    p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Gill Sans; color: #0000ec}
+    span.s1 {text-decoration: underline ; color: #303e74}
+    span.s2 {color: #000000}
+    span.s3 {text-decoration: underline}
+    span.s4 {color: #0000e8}
   </style>
 </head>
 <body>
 <p class="p1"><b>S3 Browser</b></p>
-<p class="p2"><br></p>
-<p class="p3">S3 browser is a Mac OS X application, a minimalist browser for the <a href="http://aws.amazon.com/s3"><span class="s1">Amazon S3</span></a> storage service. It can list, create and delete buckets, and upload, download and delete objects. It includes a small operation console and inspector.</p>
-<p class="p2"><br></p>
-<p class="p3">The UI code is <i>very</i> Cocoa bindings oriented. The backend code uses the low-level WebKit classes (NSURLConnection and friends), and the whole thing tries to be as asynchronous as possible. I hope it could be a starting point for S3 support in OS X desktop apps.</p>
-<p class="p2"><br></p>
-<p class="p3">You will need a Amazon WebServices account to use this application.</p>
-<p class="p2"><br></p>
-<p class="p3"><b>Todo</b></p>
-<p class="p2"><br></p>
-<p class="p3">- handle large buckets</p>
-<p class="p3">- URL generation tool</p>
-<p class="p3">- ACL Support</p>
-<p class="p3">- correctness review</p>
-<p class="p2"><br></p>
+<p class="p2">S3 browser is a Mac OS X administration tool for the <a href="http://aws.amazon.com/s3"><span class="s1">Amazon S3</span></a> storage service. My goal is to build a small application useful in itself for developers or users subscribed to the S3 service, but also to provide example code showing how to access S3 through the REST API in a OS X Objective-C client application, on top of OS X technologies (Keychain, URL loading system, ...).</p>
+<p class="p2">Basic S3 operations are implemented (bucket list/create/delete), objects deletion, upload and download (using streaming network code to be able to deal with large files). There is also a small low-level request inspector and a task console.</p>
+<p class="p2">To use this application, this, you will need a <a href="http://www.amazon.com/aws"><span class="s1">Amazon WebServices account</span></a>.</p>
 <p class="p3"><b>History</b></p>
-<p class="p2"><br></p>
-<p class="p3"><i>v0.3 r30</i> : Added stream-based API for large file support, added double-click to download item, and drop to table to upload.</p>
+<p class="p4"><br></p>
+<p class="p3"><i>v1.0 r50</i> : Support for content-type, multiple files upload (including directories, mapped to slash-paths keys on S3), operation batching, large buckets listings, misc UI fixes.</p>
+<p class="p3"><i>v0.3 r30</i> : Added stream-based API for large file support, added double-click to download item, and file drop for upload.</p>
 <p class="p3"><i>v0.2 r15</i> : Added keychain support, multiple selection in object window, fixes default download filename, improved GUI (removed all action buttons, added toolbar). Source release (BSD License).</p>
 <p class="p3"><i>v0.1 r3</i> : first (binary) release</p>
-<p class="p2"><br></p>
+<p class="p4"><br></p>
 <p class="p3"><b>License</b></p>
-<p class="p2"><br></p>
-<p class="p3">BSD License. Please refer to the LICENSE.txt file.</p>
-<p class="p2"><br></p>
+<p class="p4"><br></p>
+<p class="p5"><span class="s2">BSD License. Please check <a href="http://people.no-distance.net/ol/software/s3/"><span class="s3">http://people.no-distance.net/ol/software/s3/</span></a></span><span class="s4"><span class="Apple-converted-space"> </span></span><span class="s2"> for more info</span></p>
+<p class="p4"><br></p>
 <p class="p3"><b>Contact</b></p>
-<p class="p2"><br></p>
-<p class="p3">Olivier Gutknecht - <a href="mailto:olg@no-distance.net"><span class="s1">olg@no-distance.net</span></a></p>
-<p class="p4"><span class="s2"><a href="http://people.no-distance.net/ol/software/s3/">http://people.no-distance.net/ol/software/s3/</a></span></p>
+<p class="p4"><br></p>
+<p class="p5"><span class="s2">Olivier Gutknecht - <a href="mailto:ol+s3@no-distance.net"><span class="s3">ol+s3@no-distance.net</span></a></span></p>
+<p class="p5"><span class="s3"><a href="http://people.no-distance.net/ol/olog/">http://people.no-distance.net/ol/olog/</a></span></p>
 </body>
 </html>
