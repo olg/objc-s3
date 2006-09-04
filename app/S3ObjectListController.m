@@ -171,6 +171,9 @@
 	
 	if ([op isKindOfClass:[S3ObjectUploadOperation class]]||[op isKindOfClass:[S3ObjectStreamedUploadOperation class]]||[op isKindOfClass:[S3ObjectDeleteOperation class]])
 	{
+        NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
+        if ([[standardUserDefaults objectForKey:@"norefresh"] boolValue] == TRUE)
+            return;
 		// Simple heuristics: if we still have something in the operation queue, no need to refresh now
 		if ([_currentOperations count]==0)
 			[self refresh:self];

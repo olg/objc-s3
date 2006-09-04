@@ -86,8 +86,12 @@
 
 -(void)unlogOperation:(id)op
 {
-//	int i = [_operations indexOfObject:op];
-//	[self removeObjectFromOperationsAtIndex:i];
+    NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
+    if ([[standardUserDefaults objectForKey:@"autoclean"] boolValue] == TRUE)
+    {   
+        int i = [_operations indexOfObject:op];
+        [self removeObjectFromOperationsAtIndex:i];        
+    }
 }
 
 @end
