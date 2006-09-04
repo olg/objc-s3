@@ -172,11 +172,11 @@
 	[_fstream release];
 	[_ibuffer release];
 	[_obuffer release];
-	if (_headerData!=NULL)
-        CFRelease(_headerData);	
+	if (_request!=NULL)
+        CFRelease(_request);	
 	if (_response!=NULL)
         CFRelease(_response);
-	if (_request!=NULL)
+	if (_headerData!=NULL)
         CFRelease(_headerData);
 	[super dealloc];
 }
