@@ -49,6 +49,11 @@
 	[self showOperationConsole:self];
 }
 
+-(IBAction)showHelp:(id)sender
+{
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://people.no-distance.net/ol/software/s3/"]];
+}
+
 
 #pragma mark -
 #pragma mark Key-value coding
