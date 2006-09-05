@@ -17,6 +17,8 @@
 {
 	[super init];
 	_host = DEFAULT_HOST;
+	_port = DEFAULT_PORT;
+    _secure = NO; 
 	_operations = [[NSMutableArray alloc] init];
 	return self;
 }
@@ -107,14 +109,6 @@
 	[conn addValue:[NSString stringWithFormat:@"AWS %@:%@",_accessKeyID,auth] forHTTPHeaderField:@"Authorization"];
 }
 
--(NSString*)urlForBucket:(NSString*)b resource:(NSString*)r qualifier:(NSString*)q
-{
-	if (q==nil)
-		return [NSString stringWithFormat:@"http://%@/%@/%@?q",_host,b,r];
-	else 
-		return [NSString stringWithFormat:@"http://%@/%@/%@/%@",_host,b,r];
-}
-
 -(NSMutableURLRequest*)makeRequestForMethod:(NSString*)method
 {
 	return [self makeRequestForMethod:method withResource:nil headers:nil];
@@ -125,32 +119,9 @@
 	return [self makeRequestForMethod:method withResource:resource headers:nil];
 }
 
--(NSMutableURLRequest*)makeRequestForMethod:(NSString*)method withResource:(NSString*)resource subResource:(NSString*)s
-{
-	return [self makeRequestForMethod:method withResource:resource subResource:s headers:nil];
-}
-
--(NSMutableURLRequest*)makeRequestForMethod:(NSString*)method withResource:(NSString*)resource subResource:(NSString*)s headers:(NSDictionary*)d
-{
-	return [self makeRequestForMethod:method withResource:[resource stringByAppendingPathComponent:[s stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] headers:d];
-}
-
 -(NSMutableURLRequest*)makeRequestForMethod:(NSString*)method withResource:(NSString*)resource headers:(NSDictionary*)d
 {
-	return [self makeRequestForMethod:method withResource:resource parameters:nil headers:d];
-}
-
--(NSMutableURLRequest*)makeRequestForMethod:(NSString*)method withResource:(NSString*)resource parameters:(NSDictionary*)params headers:(NSDictionary*)d
-{
-    NSMutableString* url = [NSMutableString stringWithString:@"http://"];
-    [url appendString:_host];
-    [url appendString:@"/"];
-    if (resource!=nil)
-        [url appendString:resource];
-    if (params!=nil)
-        [url appendString:[params queryString]];
-
-	NSURL* rootURL = [NSURL URLWithString:url];
+    NSURL* rootURL = [self urlForResource:resource];
 	
 	NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:rootURL];
 	[request setHTTPMethod:method];
@@ -212,17 +183,61 @@
 	CFHTTPMessageSetHeaderFieldValue(conn, CFSTR("Authorization"), (CFStringRef)[NSString stringWithFormat:@"AWS %@:%@",_accessKeyID,auth]);
 }
 
--(CFHTTPMessageRef)createCFRequestForMethod:(NSString*)method withResource:(NSString*)resource subResource:(NSString*)s headers:(NSDictionary*)d
+-(CFHTTPMessageRef)createCFRequestForMethod:(NSString*)method withResource:(NSString*)resource headers:(NSDictionary*)d
 {
-	NSString* url = [NSString stringWithFormat:@"http://%@/%@",_host, [[resource stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding] stringByAppendingPathComponent:[s stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
-	NSURL* rootURL = [NSURL URLWithString:url];
+	NSURL* rootURL = [self urlForResource:resource];
 	
 	CFHTTPMessageRef request = CFHTTPMessageCreateRequest(kCFAllocatorDefault, (CFStringRef)method, (CFURLRef)rootURL, kCFHTTPVersion1_1);
-
 	[self addAuthorizationToCF:request method:method data:nil headers:d url:rootURL];	
 	
 	return request;
 }
 
+-(NSString*)resourceForBucket:(S3Bucket*)bucket key:(NSString*)key
+{
+    return [self resourceForBucket:bucket key:key parameters:nil];
+}
+
+-(NSString*)resourceForBucket:(S3Bucket*)bucket parameters:(NSString*)parameters
+{
+    return [self resourceForBucket:bucket key:nil parameters:parameters];
+}
+
+-(NSString*)resourceForBucket:(S3Bucket*)bucket key:(NSString*)key parameters:(NSString*)parameters
+{
+    if (bucket==nil)
+        bucket=@"";
+    
+    if ((key==nil)||([[key stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]))
+        if (parameters!=nil)
+            return [NSString stringWithFormat:@"%@%@",[bucket name],parameters];
+        else
+            return [bucket name];
+
+    if (parameters!=nil)
+        return [NSString stringWithFormat:@"%@/%@%@",[bucket name],[key stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],parameters];
+    else
+        return [NSString stringWithFormat:@"%@/%@",[bucket name],[key stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+}
+
+-(NSURL*)urlForResource:(NSString*)resource
+{
+    NSMutableString* url;
+    
+    if (resource==nil)
+        resource=@"";
+
+    if (_secure)
+        url = [NSMutableString stringWithString:@"https://"];
+    else
+        url = [NSMutableString stringWithString:@"http://"];
+
+    if (_port!=80)
+        [url appendFormat:@"%@:%d/%@",_host,_port,resource];
+    else
+        [url appendFormat:@"%@/%@",_host,resource];
+
+	return [NSURL URLWithString:url];
+}
 
 @end

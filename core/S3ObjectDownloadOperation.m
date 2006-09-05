@@ -54,7 +54,7 @@
 
 +(S3ObjectDownloadOperation*)objectDownloadWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b object:(S3Object*)o toPath:(NSString*)path;
 {
-	NSURLRequest* rootConn = [c makeRequestForMethod:@"GET" withResource:[b name] subResource:[o key]];
+	NSURLRequest* rootConn = [c makeRequestForMethod:@"GET" withResource:[c resourceForBucket:b key:[o key]]];
 	S3ObjectDownloadOperation* op = [[[S3ObjectDownloadOperation alloc] initWithRequest:rootConn delegate:d toPath:path forSize:[o size]] autorelease];
 	return op;
 }
@@ -158,7 +158,7 @@
 
 +(S3ObjectDownloadOperation*)objectDownloadWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b object:(S3Object*)o;
 {
-	NSURLRequest* rootConn = [c makeRequestForMethod:@"GET" withResource:[b name] subResource:[o key]];
+	NSURLRequest* rootConn = [c makeRequestForMethod:@"GET" withResource:[c resourceForBucket:b key:[o key]]];
 	S3ObjectDownloadOperation* op = [[[S3ObjectDownloadOperation alloc] initWithRequest:rootConn delegate:d] autorelease];
 	[op setObject:o];
 	return op;

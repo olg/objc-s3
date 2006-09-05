@@ -17,16 +17,19 @@
 	return @"Object upload";
 }
 
-+(S3ObjectUploadOperation*)objectUploadWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b key:(NSString*)k data:(NSData*)n acl:(NSString*)acl mimeType:(NSString*)mimeType
++(S3ObjectUploadOperation*)objectUploadWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b data:(NSDictionary*)data acl:(NSString*)acl
 {
+    NSString* mimeType = [data objectForKey:FILEDATA_TYPE];
+    NSData* content = [NSData dataWithContentsOfFile:[data objectForKey:FILEDATA_PATH]];
+    
 	NSDictionary* headers;
 	if ((mimeType==nil) || ([[mimeType stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]))
 		headers = [NSDictionary dictionaryWithObject:acl forKey:XAMZACL];
 	else
 		headers = [NSDictionary dictionaryWithObjectsAndKeys:acl,XAMZACL,mimeType,@"Content-Type",nil];
 		
-	NSMutableURLRequest* rootConn = [c makeRequestForMethod:UPLOAD_HTTP_METHOD withResource:[b name] subResource:k headers:headers];
-	[rootConn setHTTPBody:n];
+	NSMutableURLRequest* rootConn = [c makeRequestForMethod:UPLOAD_HTTP_METHOD withResource:[c resourceForBucket:b key:[data objectForKey:FILEDATA_KEY]] headers:headers];
+	[rootConn setHTTPBody:content];
 	S3ObjectUploadOperation* op = [[[S3ObjectUploadOperation alloc] initWithRequest:rootConn delegate:d] autorelease];
 	return op;
 }
@@ -36,17 +39,17 @@
 
 @implementation S3ObjectStreamedUploadOperation
 
--(id)initWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b key:(NSString*)k path:(NSString*)path acl:(NSString*)acl mimeType:(NSString*)mimeType
+-(id)initWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b data:(NSDictionary*)data acl:(NSString*)acl
 {
 	[super initWithDelegate:d];
-    
-	NSNumber* n = [[[NSFileManager defaultManager] fileAttributesAtPath:path traverseLink:YES] objectForKey:NSFileSize];
-	_size = [n longLongValue];
-	_path = [path retain];
+
+    NSString* mimeType = [data objectForKey:FILEDATA_TYPE];
+	_size = [[data objectForKey:FILEDATA_SIZE] longLongValue];
+	_path = [[data objectForKey:FILEDATA_PATH] retain];
 	
     NSMutableDictionary* headers = [NSMutableDictionary dictionary];
     [headers setObject:acl forKey:XAMZACL];
-	[headers setObject:[n stringValue] forKey:@"Content-Length"];
+	[headers setObject:[[data objectForKey:FILEDATA_SIZE] stringValue] forKey:@"Content-Length"];
 	[headers setObject:@"CFNetwork" forKey:@"User-Agent"];
 	[headers setObject:@"*/*" forKey:@"Accept"];
 	[headers setObject:DEFAULT_HOST forKey:@"Host"];
@@ -56,7 +59,7 @@
 	_percent = 0;
 	_obuffer = [[NSMutableData alloc] init];//
 
-	_request = [c createCFRequestForMethod:UPLOAD_HTTP_METHOD withResource:[b name] subResource:k headers:headers];
+	_request = [c createCFRequestForMethod:UPLOAD_HTTP_METHOD withResource:[c resourceForBucket:b key:[data objectForKey:FILEDATA_KEY]] headers:headers];
 	_headerData = CFHTTPMessageCopySerializedMessage(_request);
 	
 	return self;
@@ -87,9 +90,9 @@
 
 }
 
-+(S3ObjectStreamedUploadOperation*)objectUploadWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b key:(NSString*)k path:(NSString*)p acl:(NSString*)a mimeType:(NSString*)m
++(S3ObjectStreamedUploadOperation*)objectUploadWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b data:(NSDictionary*)data acl:(NSString*)acl
 {
-	return [[[S3ObjectStreamedUploadOperation alloc] initWithConnection:c delegate:d bucket:b key:k path:p acl:a mimeType:m] autorelease];;
+	return [[[S3ObjectStreamedUploadOperation alloc] initWithConnection:c delegate:d bucket:b data:data acl:acl] autorelease];;
 }
 
 -(NSData*)data

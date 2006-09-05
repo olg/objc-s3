@@ -21,14 +21,8 @@
 #define SHEET_OK 1
 
 
-// These keys are also used in nib file, for bindings
 
 #define ACL_PRIVATE @"private"
-
-#define FILEDATA_PATH @"path"
-#define FILEDATA_KEY  @"key"
-#define FILEDATA_TYPE @"mime"
-#define FILEDATA_SIZE @"size"
 
 @implementation S3ObjectListController
 
@@ -237,7 +231,7 @@
 #else
 		NSSavePanel* sp = [NSSavePanel savePanel];
 		int runResult;
-		NSString* n = [b key];
+		NSString* n = [[b key] lastPathComponent];
 		if (n==nil) n = @"Untitled";
 		runResult = [sp runModalForDirectory:nil file:n];
 		if (runResult == NSOKButton) {
@@ -249,24 +243,30 @@
 }
 
 
--(void)uploadFile:(NSString*)path key:(NSString*)key acl:(NSString*)acl mimeType:(NSString*)mimetype
+-(void)uploadFile:(NSDictionary*)data acl:(NSString*)acl
 {
+    NSString* path = [data objectForKey:FILEDATA_PATH];
+    NSNumber* size = [data objectForKey:FILEDATA_SIZE];
+    
 	if (![self acceptFileForImport:path])
-		return;	
+    {   
+        NSDictionary* d = [NSDictionary dictionaryWithObjectsAndKeys:[NSString stringWithFormat:NSLocalizedString(@"The file '%@' could not be read",nil),path],NSLocalizedDescriptionKey,nil];
+        [[self window] presentError:[NSError errorWithDomain:S3_ERROR_DOMAIN code:-2 userInfo:d] modalForWindow:[self window] delegate:self 
+                 didPresentSelector:@selector(didPresentErrorWithRecovery:contextInfo:) contextInfo:nil];
+        return;        
+    }
 	
     S3Operation* op;
     
     CFDictionaryRef proxyDict = SCDynamicStoreCopyProxies(NULL); 
     BOOL hasProxy = (CFDictionaryGetValue(proxyDict, kSCPropNetProxiesHTTPProxy) != NULL);
     CFRelease(proxyDict);
-	
-    if (hasProxy)
-    {
-        NSData* data = [NSData dataWithContentsOfFile:path];
-        op = [S3ObjectUploadOperation objectUploadWithConnection:_connection delegate:self bucket:_bucket key:key data:data acl:acl mimeType:mimetype];
-    }
+
+    // If it's a small file, no need for streamed operation (and we can cover easily both kind of upload ops in tests)
+    if (hasProxy || ([size longLongValue] < 16384))
+        op = [S3ObjectUploadOperation objectUploadWithConnection:_connection delegate:self bucket:_bucket data:data acl:acl];
     else 
-        op = [S3ObjectStreamedUploadOperation objectUploadWithConnection:_connection delegate:self bucket:_bucket key:key path:path acl:acl mimeType:mimetype];
+        op = [S3ObjectStreamedUploadOperation objectUploadWithConnection:_connection delegate:self bucket:_bucket data:data acl:acl];
     
 	[self addToCurrentOperations:op];
 
@@ -278,7 +278,7 @@
 	NSDictionary* data;
 
 	while (data = [e nextObject])
-		[self uploadFile:[data objectForKey:FILEDATA_PATH] key:[data objectForKey:FILEDATA_KEY] acl:[self uploadACL] mimeType:[data objectForKey:FILEDATA_TYPE]];		
+		[self uploadFile:data acl:[self uploadACL]];		
 }
 
 
@@ -319,7 +319,7 @@
 	{
 		NSMutableDictionary* info = [NSMutableDictionary dictionary];
 		[info setObject:path forKey:FILEDATA_PATH];
-		[info setObject:[path readableSizeForPath] forKey:FILEDATA_SIZE];
+		[info setObject:[path fileSizeForPath] forKey:FILEDATA_SIZE];
 		[info safeSetObject:[path mimeTypeForPath] forKey:FILEDATA_TYPE withValueForNil:@""];
 		[info setObject:[path substringFromIndex:[prefix length]] forKey:FILEDATA_KEY];
 		[filesInfo addObject:info];

@@ -10,12 +10,18 @@
 #import "S3BucketOperations.h"
 
 #define DEFAULT_HOST @"s3.amazonaws.com"
+#define DEFAULT_PORT 80
+#define DEFAULT_PROTOCOL @"http"
+
 #define READ_TIMEOUT 30
 #define XAMZACL @"x-amz-acl"
 
 @interface S3Connection : NSObject {
+    BOOL _secure;
+	int _port;
 	NSString* _host;
-	NSString* _accessKeyID;
+    
+    NSString* _accessKeyID;
 	NSString* _secretAccessKey;
 	
 	NSMutableArray* _operations;
@@ -28,11 +34,14 @@
 
 - (NSMutableURLRequest*)makeRequestForMethod:(NSString*)method;
 - (NSMutableURLRequest*)makeRequestForMethod:(NSString*)method withResource:(NSString*)resource;
-- (NSMutableURLRequest*)makeRequestForMethod:(NSString*)method withResource:(NSString*)resource subResource:(NSString*)s;
-- (NSMutableURLRequest*)makeRequestForMethod:(NSString*)method withResource:(NSString*)resource subResource:(NSString*)s  headers:(NSDictionary*)d;
 - (NSMutableURLRequest*)makeRequestForMethod:(NSString*)method withResource:(NSString*)resource headers:(NSDictionary*)d;
-- (NSMutableURLRequest*)makeRequestForMethod:(NSString*)method withResource:(NSString*)resource parameters:(NSDictionary*)params headers:(NSDictionary*)d;
 
-- (CFHTTPMessageRef)createCFRequestForMethod:(NSString*)method withResource:(NSString*)resource subResource:(NSString*)s headers:(NSDictionary*)d;
+- (NSURL*)urlForResource:(NSString*)resource;
+- (NSString*)resourceForBucket:(S3Bucket*)bucket key:(NSString*)key;
+- (NSString*)resourceForBucket:(S3Bucket*)bucket key:(NSString*)key;
+- (NSString*)resourceForBucket:(S3Bucket*)bucket parameters:(NSString*)parameters;
+- (NSString*)resourceForBucket:(S3Bucket*)bucket key:(NSString*)key parameters:(NSString*)parameters;
+
+- (CFHTTPMessageRef)createCFRequestForMethod:(NSString*)method withResource:(NSString*)resource headers:(NSDictionary*)d;
 
 @end

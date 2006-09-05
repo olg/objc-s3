@@ -10,9 +10,16 @@
 #import "S3Operation.h"
 #import "S3Connection.h"
 
+// These keys are also used in nib file, for bindings
+
+#define FILEDATA_PATH @"path"
+#define FILEDATA_KEY  @"key"
+#define FILEDATA_TYPE @"mime"
+#define FILEDATA_SIZE @"size"
+
 @interface S3ObjectUploadOperation : S3NSURLConnectionOperation 
 
-+(S3ObjectUploadOperation*)objectUploadWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b key:(NSString*)k data:(NSData*)n acl:(NSString*)acl mimeType:(NSString*)mimeType;
++(S3ObjectUploadOperation*)objectUploadWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b data:(NSDictionary*)data acl:(NSString*)acl;
 
 @end
 
@@ -33,7 +40,6 @@
 	NSString* _path;
 }
 
-+ (S3ObjectStreamedUploadOperation*)objectUploadWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b key:(NSString*)k path:(NSString*)path acl:(NSString*)acl mimeType:(NSString*)mimetype;
-
++ (S3ObjectStreamedUploadOperation*)objectUploadWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b data:(NSDictionary*)data acl:(NSString*)acl;
 
 @end

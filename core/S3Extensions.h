@@ -62,6 +62,7 @@
 - (NSData *) decodeBase64;
 - (NSData *) decodeBase64WithNewlines:(BOOL)encodedWithNewlines;
 
+- (NSNumber*)fileSizeForPath;
 - (NSString*)mimeTypeForPath;
 - (NSString*)readableSizeForPath;
 + (NSString*)readableSizeForPaths:(NSArray*)files;

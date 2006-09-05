@@ -255,6 +255,15 @@
     return data;
 }
 
+- (NSNumber*)fileSizeForPath
+{
+	NSDictionary *fileAttributes = [[NSFileManager defaultManager] fileAttributesAtPath:self traverseLink:YES];
+	if (fileAttributes==nil)
+		return [NSNumber numberWithLongLong:0];
+    else
+        return [fileAttributes objectForKey:NSFileSize];
+}
+
 - (NSString*)readableSizeForPath
 {
 	NSDictionary *fileAttributes = [[NSFileManager defaultManager] fileAttributesAtPath:self traverseLink:YES];
