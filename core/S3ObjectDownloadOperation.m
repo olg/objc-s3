@@ -134,8 +134,9 @@
 	NSMutableDictionary* dictionary = [NSMutableDictionary dictionary];
 	
 	[dictionary setObject:[NSNumber numberWithInt:status] forKey:S3_ERROR_HTTP_STATUS_KEY];
-	
+
 	[self setError:[NSError errorWithDomain:S3_ERROR_DOMAIN code:[_response statusCode] userInfo:dictionary]];
+	[self setStatus:@"Error"];
 	return FALSE;
 }
 
