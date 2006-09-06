@@ -102,9 +102,14 @@
 		if ([k hasPrefix:AMZ_PREFIX])
 			[buf appendFormat:@"%@:%@\n",k,o];
 	}
-	[buf appendFormat:@"%@",[[[conn URL] path] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
 
-	
+    if ([[[conn URL] query] hasPrefix:@"acl"])
+        [buf appendFormat:@"%@?acl",[[[conn URL] path] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+    else if ([[[conn URL] query] hasPrefix:@"torrent"])
+        [buf appendFormat:@"%@?torrent",[[[conn URL] path] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+    else
+        [buf appendFormat:@"%@",[[[conn URL] path] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+
 	NSString* auth = [[[buf dataUsingEncoding:NSUTF8StringEncoding] sha1HMacWithKey:_secretAccessKey] encodeBase64];
 	[conn addValue:[NSString stringWithFormat:@"AWS %@:%@",_accessKeyID,auth] forHTTPHeaderField:@"Authorization"];
 }
