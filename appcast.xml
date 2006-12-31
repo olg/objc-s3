@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"> 
+    <channel> 
+        <title>S3 Browser Changelog</title> 
+        <link>http://people.no-distance.net/ol/software/s3/</link> 
+        <description>Most recent changes with links to updates.</description> 
+        <language>en</language> 
+        <item> 
+        	<guid>http://people.no-distance.net/ol/software/s3/S3-Browser-1.0.3.zip</guid>
+            <title>Version 1.0.3</title> 
+            <description>
+            	&lt;ul&gt;
+				&lt;li&gt;Fixed &lt;a href="http://code.google.com/p/objc-s3/issues/detail?id=15"&gt;#15&lt;/a&gt;: should filter invalid characters in bucket names
+            	&lt;/ul&gt;
+            </description> 
+            <pubDate>31 Dec 2006 15:20:11 +0000</pubDate> 
+            <enclosure sparkle:version="66" sparkle:shortVersionString="1.0.3" url="http://people.no-distance.net/ol/software/s3/S3-Browser-1.0.3.zip" length="412773" 
+type="application/octet-stream"/> 
+        </item> 
+        <item> 
+        	<guid>http://people.no-distance.net/ol/software/s3/S3-Browser-1.0.2.zip</guid>
+            <title>Version 1.0.2</title> 
+            <description>
+            	&lt;ul&gt;
+				&lt;li&gt;Now uses Sparkle framework for application upgrade
+				&lt;li&gt;Minor fix on operation failure
+            	&lt;li&gt;Better URL canonicalization
+            	&lt;/ul&gt;
+            </description> 
+            <pubDate>31 Dec 2006 02:20:11 +0000</pubDate> 
+            <enclosure sparkle:version="63" sparkle:shortVersionString="1.0.2" url="http://people.no-distance.net/ol/software/s3/S3-Browser-1.0.2.zip" length="411757" 
+type="application/octet-stream"/> 
+        </item> 
+    </channel> 
+</rss> 
