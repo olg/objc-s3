@@ -167,6 +167,11 @@
 #pragma mark -
 #pragma mark Key-value coding
 
++ (void)initialize {
+    [self setKeys:[NSArray arrayWithObjects:@"name",nil]
+    triggerChangeNotificationsForDependentKey:@"isValidName"];
+}
+
 - (NSString *)name
 {
     return _name; 
@@ -175,6 +180,20 @@
 {
     [_name release];
     _name = [aName retain];
+}
+
+- (BOOL)isValidName
+{
+    // The length of the bucket name must be between 3 and 255 bytes. It can contain letters, numbers, dashes, and underscores.
+    if ([_name length]<3)
+        return NO;
+    if ([_name length]>255)
+        return NO;
+    // This is a bit brute force, we should check iteratively and not reinstantiate on every call.
+    NSCharacterSet* s = [[NSCharacterSet characterSetWithCharactersInString:@"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-"] invertedSet];
+    if ([_name rangeOfCharacterFromSet:s].location!=NSNotFound)
+        return NO;
+    return YES;
 }
 
 - (S3Owner *)bucketsOwner

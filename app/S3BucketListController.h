@@ -36,6 +36,8 @@
 - (NSString *)name;
 - (void)setName:(NSString *)aName;
 
+- (BOOL)isValidName;
+
 - (S3Owner *)bucketsOwner;
 - (void)setBucketsOwner:(S3Owner *)anBucketsOwner;
 
