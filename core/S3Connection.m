@@ -10,6 +10,11 @@
 #import "S3Extensions.h"
 #import "S3ObjectListController.h"
 
+#import <Security/Security.h>
+// C-string, as it is only used in Keychain Services
+#define S3_BROWSER_KEYCHAIN_SERVICE "S3 Browser"
+
+
 
 @implementation S3Connection
 
@@ -30,6 +35,11 @@
     [_host release];
     [_operations release];
 	[super dealloc];
+}
+
+-(BOOL)isReady
+{
+    return (_accessKeyID!=nil)&&(_secretAccessKey!=nil);
 }
 
 - (NSString *)accessKeyID
@@ -53,6 +63,58 @@
     [_secretAccessKey release];
     _secretAccessKey = [aSecretAccessKey retain];
 }
+
+#pragma mark -
+#pragma mark Keychain integration
+
+- (NSString*)getS3KeyFromKeychainForUser:(NSString *)username
+{
+	void *passwordData = nil; // will be allocated and filled in by SecKeychainFindGenericPassword
+	UInt32 passwordLength = 0;
+    
+	NSString* password = nil;
+	const char *user = [username UTF8String]; 
+    
+	OSStatus status;
+	status = SecKeychainFindGenericPassword (NULL, // default keychain
+                                             strlen(S3_BROWSER_KEYCHAIN_SERVICE), S3_BROWSER_KEYCHAIN_SERVICE,
+                                             strlen(user), user,
+                                             &passwordLength, &passwordData,
+                                             nil);
+	if (status==noErr)
+		password = [[[NSString alloc] initWithBytes:passwordData length:passwordLength encoding:NSUTF8StringEncoding] autorelease];
+	SecKeychainItemFreeContent(NULL,passwordData);	
+	
+	return password;
+}
+
+
+- (BOOL)setS3KeyToKeychainForUser:(NSString *)username password:(NSString*)password
+{
+	const char *user = [username UTF8String]; 
+	const char *pass = [password UTF8String]; 
+	
+	OSStatus status;
+	status = SecKeychainAddGenericPassword(NULL, // default keychain
+                                           strlen(S3_BROWSER_KEYCHAIN_SERVICE),S3_BROWSER_KEYCHAIN_SERVICE,
+                                           strlen(user), user,
+                                           strlen(pass), pass,
+                                           nil);
+	return (status==noErr);
+}
+
+-(void)trySetupSecretAccessKeyFromKeychain
+{
+	NSString* password = [self getS3KeyFromKeychainForUser:[self accessKeyID]];
+	if (password!=nil)
+		[self setSecretAccessKey:password];
+}
+
+-(void)storeSecretAccessKeyInKeychain
+{
+    [self setS3KeyToKeychainForUser:[self accessKeyID] password:[self secretAccessKey]];
+}
+
 
 #pragma mark -
 #pragma mark URL Construction

@@ -32,6 +32,11 @@
 - (NSString *)secretAccessKey;
 - (void)setSecretAccessKey:(NSString *)aSecretAccessKey;
 
+- (BOOL)isReady;
+
+-(void)trySetupSecretAccessKeyFromKeychain;
+-(void)storeSecretAccessKeyInKeychain;
+
 - (NSMutableURLRequest*)makeRequestForMethod:(NSString*)method;
 - (NSMutableURLRequest*)makeRequestForMethod:(NSString*)method withResource:(NSString*)resource;
 - (NSMutableURLRequest*)makeRequestForMethod:(NSString*)method withResource:(NSString*)resource headers:(NSDictionary*)d;

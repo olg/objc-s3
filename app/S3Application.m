@@ -11,6 +11,7 @@
 #import "S3LoginController.h"
 #import "S3OperationController.h"
 #import "S3AppKitExtensions.h"
+#import "S3BucketListController.h"
 
 @implementation S3Application
 
@@ -41,12 +42,35 @@
 	[[_controlers objectForKey:@"Console"] showWindow:self];
 }
 
+- (void)tryAutoLogin
+{
+    NSString* defaultKey = [[NSUserDefaults standardUserDefaults] stringForKey:DEFAULT_USER];
+    if (defaultKey!=nil)
+    {   
+        S3Connection* cnx = [[[S3Connection alloc] init] autorelease];
+        [cnx setAccessKeyID:defaultKey];
+        [cnx trySetupSecretAccessKeyFromKeychain];
+        if ([cnx isReady])
+        {
+            S3BucketListController* c = [[[S3BucketListController alloc] initWithWindowNibName:@"Buckets"] autorelease];
+            [c setConnection:cnx];
+            [c showWindow:self];
+            [c refresh:self];
+            [c retain];			
+        }
+    }    
+}
+
 - (void)finishLaunching
 {
 	[super finishLaunching];
 	S3OperationController* c = [[[S3OperationController alloc] initWithWindowNibName:@"Operations"] autorelease];
 	[_controlers setObject:c forKey:@"Console"];
-	[self showOperationConsole:self];
+    [self showOperationConsole:self];
+    
+    NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
+    if ([[standardUserDefaults objectForKey:@"autologin"] boolValue] == TRUE)
+        [self tryAutoLogin];
 }
 
 -(IBAction)showHelp:(id)sender

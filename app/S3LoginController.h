@@ -10,6 +10,8 @@
 
 #import "S3ActiveWindowController.h"
 
+#define DEFAULT_USER @"default-accesskey"
+
 @class S3Connection;
 
 @interface S3LoginController : S3ActiveWindowController {
@@ -22,8 +24,5 @@
 - (IBAction)flippedKeychainSupport:(id)sender;
 
 - (void)checkPasswordInKeychain;
-
-- (NSString*)getS3KeyFromKeychainForUser:(NSString *)username;
-- (BOOL)setS3KeyToKeychainForUser:(NSString *)username password:(NSString*)password;
 
 @end
