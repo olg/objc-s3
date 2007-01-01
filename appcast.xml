@@ -6,6 +6,20 @@
         <description>Most recent changes with links to updates.</description> 
         <language>en</language> 
         <item> 
+        	<guid>http://people.no-distance.net/ol/software/s3/S3-Browser-1.0.4.zip</guid>
+            <title>Version 1.0.4</title> 
+            <description>
+				&lt;ul&gt;
+				&lt;li&gt; Added support for auto-login (&lt;a href="http://code.google.com/p/objc-s3/issues/detail?id=17"&gt;#17&lt;/a&gt;)
+				&lt;li&gt; Remember operation console visibility across launches (&lt;a href="http://code.google.com/p/objc-s3/issues/detail?id=18"&gt;#18&lt;/a&gt;)
+				&lt;li&gt; Fixed a bug introduced in bucket name validation (&lt;a href="http://code.google.com/p/objc-s3/issues/detail?id=16"&gt;#15&lt;/a&gt;): '.' is a valid character in buckets.
+				&lt;/ul&gt;
+			</description> 
+            <pubDate>1 Jan 2007 20:39:11 +0000</pubDate> 
+            <enclosure sparkle:version="72" sparkle:shortVersionString="1.0.4" url="http://people.no-distance.net/ol/software/s3/S3-Browser-1.0.4.zip" length="414891" 
+type="application/octet-stream"/> 
+        </item> 
+        <item> 
         	<guid>http://people.no-distance.net/ol/software/s3/S3-Browser-1.0.3.zip</guid>
             <title>Version 1.0.3</title> 
             <description>
