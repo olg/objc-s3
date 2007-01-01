@@ -39,7 +39,8 @@
 
 -(IBAction)showOperationConsole:(id)sender
 {
-	[[_controlers objectForKey:@"Console"] showWindow:self];
+    // No-op, as everything is done in bindings
+    // but we need a target/action for automatic enabling
 }
 
 - (void)tryAutoLogin
@@ -66,9 +67,12 @@
 	[super finishLaunching];
 	S3OperationController* c = [[[S3OperationController alloc] initWithWindowNibName:@"Operations"] autorelease];
 	[_controlers setObject:c forKey:@"Console"];
-    [self showOperationConsole:self];
     
     NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
+    NSNumber* consoleVisible = [standardUserDefaults objectForKey:@"consolevisible"];
+    if (([consoleVisible boolValue] == TRUE)||(consoleVisible==nil)) // cover the migration cases 
+        [[_controlers objectForKey:@"Console"] showWindow:self];
+    
     if ([[standardUserDefaults objectForKey:@"autologin"] boolValue] == TRUE)
         [self tryAutoLogin];
 }
