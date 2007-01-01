@@ -190,7 +190,7 @@
     if ([_name length]>255)
         return NO;
     // This is a bit brute force, we should check iteratively and not reinstantiate on every call.
-    NSCharacterSet* s = [[NSCharacterSet characterSetWithCharactersInString:@"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-"] invertedSet];
+    NSCharacterSet* s = [[NSCharacterSet characterSetWithCharactersInString:@"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-."] invertedSet];
     if ([_name rangeOfCharacterFromSet:s].location!=NSNotFound)
         return NO;
     return YES;
