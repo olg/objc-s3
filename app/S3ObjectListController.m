@@ -320,7 +320,7 @@
 		NSMutableDictionary* info = [NSMutableDictionary dictionary];
 		[info setObject:path forKey:FILEDATA_PATH];
 		[info setObject:[path fileSizeForPath] forKey:FILEDATA_SIZE];
-		[info safeSetObject:[path mimeTypeForPath] forKey:FILEDATA_TYPE withValueForNil:@""];
+		[info safeSetObject:[path mimeTypeForPath] forKey:FILEDATA_TYPE withValueForNil:@"application/octet-stream"];
 		[info setObject:[path substringFromIndex:[prefix length]] forKey:FILEDATA_KEY];
 		[filesInfo addObject:info];
 	}
