@@ -69,10 +69,13 @@
 
 - (NSString*)getS3KeyFromKeychainForUser:(NSString *)username
 {
-	void *passwordData = nil; // will be allocated and filled in by SecKeychainFindGenericPassword
+    if ([username length]==0)
+        return @"";
+	
+    void *passwordData = nil; // will be allocated and filled in by SecKeychainFindGenericPassword
 	UInt32 passwordLength = 0;
     
-	NSString* password = nil;
+	NSString* password = @"";
 	const char *user = [username UTF8String]; 
     
 	OSStatus status;
