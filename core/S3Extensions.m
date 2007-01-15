@@ -90,17 +90,17 @@
 
     k = [keys objectAtIndex:0];
     [s appendString:@"?"];
-    [s appendString:k];
+    [s appendString:[k stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
     [s appendString:@"="];
-    [s appendString:[self objectForKey:k]];
+    [s appendString:[[self objectForKey:k] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
     
     for (i=1;i<[keys count];i++)
     {
         k = [keys objectAtIndex:i];
         [s appendString:@"&"];
-        [s appendString:k];
+        [s appendString:[k stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
         [s appendString:@"="];
-        [s appendString:[self objectForKey:k]];
+        [s appendString:[[self objectForKey:k] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
     }
     return s;
 }
