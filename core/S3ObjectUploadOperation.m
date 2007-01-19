@@ -266,17 +266,21 @@
 	//NSLog(@"O-> %d",[_ostream streamStatus]);
 }
 
-- (BOOL)analyzeIncomingBytes {
-    CFHTTPMessageRef working = CFHTTPMessageCreateEmpty(kCFAllocatorDefault, FALSE);
-    CFHTTPMessageAppendBytes(working, [_ibuffer bytes], [_ibuffer length]);
-    
-	_response = working;
-	CFRetain(_response);
-			 
-    CFRelease(working);
-    return YES;
+- (BOOL)incomingBytesIsComplete
+{
+	if (CFHTTPMessageIsHeaderComplete(_response)) {
+		return YES;
+	}
+	return NO;
 }
 
+- (void)analyzeIncomingBytes
+{
+	if (_response==NULL) {
+		_response = CFHTTPMessageCreateEmpty(kCFAllocatorDefault, FALSE);        
+	}
+	CFHTTPMessageAppendBytes(_response, [_ibuffer bytes], [_ibuffer length]);	
+}
 
 // We fake KVO for the inspector pane.
 
@@ -340,9 +344,8 @@
 	return [super valueForKeyPath:keyPath];
 }
 
-
 - (void)processIncomingBytes
-{        
+{
 	if(!_ibuffer) {
 		_ibuffer = [[NSMutableData data] retain];
 	}
@@ -351,53 +354,22 @@
 	len = [_istream read:buf maxLength:1024];
 	if(len>0) {
 		[_ibuffer appendBytes:(const void *)buf length:len];
-	} else {
-		[_istream close];
 	}
-	if ([self analyzeIncomingBytes])
-	{
-		[_istream close];
+	[self analyzeIncomingBytes];
+	if ([self incomingBytesIsComplete]) {
 		[self invalidate];
-		if ([self operationSuccess])
-			[self connectionDidFinishLoading];
-		else
-			[self connectionDidFailWithError:[self error]];
+		if ([self operationSuccess]) {
+			[self connectionDidFinishLoading];                        
+		}
+		else {
+			[self connectionDidFailWithError:[self error]];                        
+		}
 	}
-	
 	//NSLog(@"I-> %d",[_istream streamStatus]);
 }	
 
 - (void)stream:(NSStream *)stream handleEvent:(NSStreamEvent)eventCode 
 {
-#if 0
-	if (stream==_fstream)
-		NSLog(@"_fstream %d %d",eventCode,[stream streamStatus]);
-	if (stream==_ostream)
-		NSLog(@"_ostream %d %d",eventCode,[stream streamStatus]);
-	if (stream==_istream)
-		NSLog(@"_istream %d %d",eventCode,[stream streamStatus]);
-    switch(eventCode) {
-		case NSStreamEventNone:
-			NSLog(@"    NSStreamEventNone");
-			break;
-		case NSStreamEventOpenCompleted:
-			NSLog(@"    NSStreamEventOpenCompleted");
-			break;
-		case NSStreamEventHasBytesAvailable:
-			NSLog(@"    NSStreamEventHasBytesAvailable");
-			break;
-		case NSStreamEventHasSpaceAvailable:
-			NSLog(@"    NSStreamEventHasSpaceAvailable");
-			break;
-		case NSStreamEventErrorOccurred:
-			NSLog(@"    NSStreamEventErrorOccurred %@",[stream streamError]);
-			break;
-		case NSStreamEventEndEncountered:
-			NSLog(@"    NSStreamEventEndEncountered");
-			break;
-	}
-#endif
-	
     switch(eventCode) {
 		case NSStreamEventOpenCompleted:
 			if (stream == _ostream)
@@ -415,8 +387,23 @@
 				break;
 		case NSStreamEventEndEncountered:
 			if (stream == _istream)
-				[self analyzeIncomingBytes];
+			{
+				[self invalidate];
+				if ([self incomingBytesIsComplete] == NO) {
+					NSMutableDictionary* dictionary = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"Transfer interrupted. End of stream occured before complete message", NSLocalizedDescriptionKey];
+					[self connectionDidFailWithError:[NSError errorWithDomain:S3_ERROR_DOMAIN code:-1 userInfo:dictionary]];
+				}
+			}
+			break;
+		case NSStreamEventErrorOccurred:
+			if (stream == _istream)
+			{
+				[self connectionDidFailWithError:[_istream streamError]];
+				[self invalidate];
+			}
+			break;			
 		default:
+            //NSLog(@"Unhandled stream event: %d", eventCode);
 			break;
 	}
 }
