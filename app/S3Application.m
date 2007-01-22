@@ -122,8 +122,11 @@
     NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
     if ([[standardUserDefaults objectForKey:@"autoclean"] boolValue] == TRUE)
     {   
-        int i = [_operations indexOfObject:op];
-        [self removeObjectFromOperationsAtIndex:i];        
+        unsigned i = [_operations indexOfObject:op];
+        if (i != NSNotFound) {
+            [[op retain] autorelease];
+            [self removeObjectFromOperationsAtIndex:i];			
+        }
     }
 }
 
