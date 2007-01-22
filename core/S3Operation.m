@@ -183,7 +183,11 @@
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {
-    [self setStatus:@"Done"];
+	if ([self operationSuccess] == NO) {
+		[self connection:connection didFailWithError:[self error]];
+		return;
+	}
+	[self setStatus:@"Done"];
 	[self setActive:NO];
 	[self setState:S3OperationDone];
 	[_delegate operationDidFinish:self];
