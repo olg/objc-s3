@@ -41,6 +41,8 @@
 		778B5DCE09E1817D002AF32D /* S3BucketListController.m in Sources */ = {isa = PBXBuildFile; fileRef = 778B5DCD09E1817D002AF32D /* S3BucketListController.m */; };
 		778B5E0709E18F30002AF32D /* Buckets.nib in Resources */ = {isa = PBXBuildFile; fileRef = 778B5E0509E18F30002AF32D /* Buckets.nib */; };
 		778B5E0A09E18FE2002AF32D /* S3Application.m in Sources */ = {isa = PBXBuildFile; fileRef = 778B5E0909E18FE2002AF32D /* S3Application.m */; };
+		778C8AB70B659674006212F9 /* S3ValueTransformers.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 778C8AB50B659674006212F9 /* S3ValueTransformers.h */; };
+		778C8AB80B659674006212F9 /* S3ValueTransformers.m in Sources */ = {isa = PBXBuildFile; fileRef = 778C8AB60B659674006212F9 /* S3ValueTransformers.m */; };
 		7794949B09DD9B2300A5DEB7 /* S3Extensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 7794949A09DD9B2300A5DEB7 /* S3Extensions.m */; };
 		77BC305809E800750055FD75 /* S3OperationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 77BC305709E800750055FD75 /* S3OperationController.m */; };
 		77BC305B09E8009A0055FD75 /* Operations.nib in Resources */ = {isa = PBXBuildFile; fileRef = 77BC305909E8009A0055FD75 /* Operations.nib */; };
@@ -59,6 +61,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				30D774AF0B406DC400C01A78 /* Sparkle.framework in CopyFiles */,
+				778C8AB70B659674006212F9 /* S3ValueTransformers.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -121,6 +124,8 @@
 		778B5E0609E18F30002AF32D /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/Buckets.nib; sourceTree = "<group>"; };
 		778B5E0809E18FE2002AF32D /* S3Application.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3Application.h; sourceTree = "<group>"; };
 		778B5E0909E18FE2002AF32D /* S3Application.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3Application.m; sourceTree = "<group>"; };
+		778C8AB50B659674006212F9 /* S3ValueTransformers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3ValueTransformers.h; sourceTree = "<group>"; };
+		778C8AB60B659674006212F9 /* S3ValueTransformers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3ValueTransformers.m; sourceTree = "<group>"; };
 		7794949909DD9B2300A5DEB7 /* S3Extensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3Extensions.h; sourceTree = "<group>"; };
 		7794949A09DD9B2300A5DEB7 /* S3Extensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3Extensions.m; sourceTree = "<group>"; };
 		77BC305609E800750055FD75 /* S3OperationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3OperationController.h; sourceTree = "<group>"; };
@@ -277,10 +282,12 @@
 				77BC305709E800750055FD75 /* S3OperationController.m */,
 				77BC334D09E852D90055FD75 /* S3ClickableURLField.h */,
 				77BC334E09E852D90055FD75 /* S3ClickableURLField.m */,
-				77538C6709EB3DCB0024FB3B /* S3AppKitExtensions.h */,
-				77538C6809EB3DCB0024FB3B /* S3AppKitExtensions.m */,
 				301E14860A9487B000452AD5 /* S3DragAndDropArrayController.h */,
 				301E14870A9487B000452AD5 /* S3DragAndDropArrayController.m */,
+				778C8AB50B659674006212F9 /* S3ValueTransformers.h */,
+				778C8AB60B659674006212F9 /* S3ValueTransformers.m */,
+				77538C6709EB3DCB0024FB3B /* S3AppKitExtensions.h */,
+				77538C6809EB3DCB0024FB3B /* S3AppKitExtensions.m */,
 			);
 			path = app;
 			sourceTree = "<group>";
@@ -389,6 +396,7 @@
 				30BA7C7F0A93A92800E4E2A9 /* S3ObjectUploadOperation.m in Sources */,
 				301E14880A9487B000452AD5 /* S3DragAndDropArrayController.m in Sources */,
 				3066A6AA0AAB608F003CACDA /* S3ActiveWindowController.m in Sources */,
+				778C8AB80B659674006212F9 /* S3ValueTransformers.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -491,7 +499,7 @@
 		C01FCF4F08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 79;
+				CURRENT_PROJECT_VERSION = 82;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PREBINDING = NO;
@@ -503,7 +511,7 @@
 		C01FCF5008A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 79;
+				CURRENT_PROJECT_VERSION = 82;
 				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;

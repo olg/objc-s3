@@ -26,7 +26,7 @@
 
 @implementation S3ObjectListController
 
-#pragma mark - 
+#pragma mark -
 #pragma mark Toolbar management
 
 -(void)awakeFromNib
@@ -115,7 +115,7 @@
 }
 
 
-#pragma mark - 
+#pragma mark -
 #pragma mark Misc Delegates
 
 

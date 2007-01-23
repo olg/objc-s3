@@ -22,10 +22,42 @@
 @end
 
 
-@implementation S3FileSizeTransformer
-+ (Class)transformedValueClass { return [NSString class]; }
-+ (BOOL)allowsReverseTransformation { return NO; }
-- (id)transformedValue:(id)item {
-    return [item readableFileSize];
+@implementation NSHTTPURLResponse (Logging)
+
+-(NSString*)httpStatus
+{
+	return [NSString stringWithFormat:@"%d (%@)",[self statusCode],[NSHTTPURLResponse localizedStringForStatusCode:[self statusCode]]];
 }
+
+-(NSArray*)headersReceived
+{
+	NSMutableArray* a = [NSMutableArray array];
+	NSEnumerator* e = [[self allHeaderFields] keyEnumerator];
+	NSString* k;
+	while (k = [e nextObject])
+	{
+		[a addObject:[NSDictionary dictionaryWithObjectsAndKeys:k,@"key",[[self allHeaderFields] objectForKey:k],@"value",nil]];
+	}
+	return a;
+}
+
 @end
+
+@implementation NSURLRequest (Logging)
+
+-(NSArray*)headersSent
+{
+	NSMutableArray* a = [NSMutableArray array];
+	NSEnumerator* e = [[self allHTTPHeaderFields] keyEnumerator];
+	NSString* k;
+	while (k = [e nextObject])
+	{
+		[a addObject:[NSDictionary dictionaryWithObjectsAndKeys:k,@"key",[[self allHTTPHeaderFields] objectForKey:k],@"value",nil]];
+	}
+	return a;
+}
+
+@end
+
+
+

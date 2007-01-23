@@ -7,12 +7,19 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import "S3Operation.h"
 
 @interface NSArrayController (ToolbarExtensions)
-
 - (BOOL) validateToolbarItem:(NSToolbarItem*)theItem;
-
 @end
 
-@interface S3FileSizeTransformer: NSValueTransformer {}
+@interface NSHTTPURLResponse (Logging)
+-(NSString*)httpStatus;
+-(NSArray*)headersReceived;
 @end
+
+@interface NSURLRequest (Logging)
+-(NSArray*)headersSent;
+@end 
+
+

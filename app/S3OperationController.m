@@ -8,6 +8,7 @@
 
 #import "S3OperationController.h"
 #import "S3Application.h"
+#import "S3ValueTransformers.h"
 
 #pragma mark -
 #pragma mark The operation console/inspector itself
@@ -124,80 +125,3 @@
     return [item autorelease];
 }
 @end
-
-#pragma mark -
-#pragma mark Categories and transformers to facilitate bindings
-
-@implementation S3OperationSummarizer
-+ (Class) transformedValueClass
-{
-	return [NSAttributedString class];
-}
-
-+ (BOOL) allowsReverseTransformation
-{
-	return NO;
-}
-
-- (id) transformedValue:(id)data
-{
-	if ([data length]>4096)
-		return [[[NSAttributedString alloc] initWithString:@"..."] autorelease];
-	
-	NSString* s = [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] autorelease];
-	if (s==nil)
-		s = @"";
-	return [[[NSAttributedString alloc] initWithString:s] autorelease];		
-}
-
-@end
-
-@interface NSHTTPURLResponse (Logging)
--(NSString*)httpStatus;
--(NSArray*)headersReceived;
-@end
-
-@implementation NSHTTPURLResponse (Logging)
-
--(NSString*)httpStatus
-{
-	return [NSString stringWithFormat:@"%d (%@)",[self statusCode],[NSHTTPURLResponse localizedStringForStatusCode:[self statusCode]]];
-}
-
--(NSArray*)headersReceived
-{
-	NSMutableArray* a = [NSMutableArray array];
-	NSEnumerator* e = [[self allHeaderFields] keyEnumerator];
-	NSString* k;
-	while (k = [e nextObject])
-	{
-		[a addObject:[NSDictionary dictionaryWithObjectsAndKeys:k,@"key",[[self allHeaderFields] objectForKey:k],@"value",nil]];
-	}
-	return a;
-}
-
-@end
-
-
-@interface NSURLRequest (Logging)
--(NSArray*)headersSent;
-@end 
-
-@implementation NSURLRequest (Logging)
-
--(NSArray*)headersSent
-{
-	NSMutableArray* a = [NSMutableArray array];
-	NSEnumerator* e = [[self allHTTPHeaderFields] keyEnumerator];
-	NSString* k;
-	while (k = [e nextObject])
-	{
-		[a addObject:[NSDictionary dictionaryWithObjectsAndKeys:k,@"key",[[self allHTTPHeaderFields] objectForKey:k],@"value",nil]];
-	}
-	return a;
-}
-
-@end
-
-
-

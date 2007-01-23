@@ -16,9 +16,4 @@
 
 @end
 
-@interface S3OperationSummarizer : NSValueTransformer
-@end
 
-@interface S3Operation (ToolbarExtensions)
-- (BOOL) validateToolbarItem:(NSToolbarItem*)theItem;
-@end

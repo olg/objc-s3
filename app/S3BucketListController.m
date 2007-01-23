@@ -87,7 +87,7 @@
     return [item autorelease];
 }
 
-#pragma mark - 
+#pragma mark -
 #pragma mark Misc Delegates
 
 - (IBAction)cancelSheet:(id)sender
