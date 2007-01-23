@@ -6,6 +6,22 @@
         <description>Most recent changes with links to updates.</description> 
         <language>en</language> 
         <item> 
+        	<guid>http://people.no-distance.net/ol/software/s3/S3-Browser-1.0.6.zip</guid>
+            <title>Version 1.0.6</title> 
+            <description>
+			    &lt;ul&gt;
+				&lt;li&gt; Deleting access key ID in login box was crashing the application (&lt;a href="http://code.google.com/p/objc-s3/issues/detail?id=21"&gt;#21&lt;/a&gt;)
+				&lt;li&gt; Fixes crashers on operation completion (&lt;a href="http://code.google.com/p/objc-s3/issues/detail?id=20"&gt;#20&lt;/a&gt;, &lt;a href="http://code.google.com/p/objc-s3/issues/detail?id=24"&gt;#24&lt;/a&gt;)
+				&lt;li&gt; Operations finishing in error should stay in the operation console (&lt;a href="http://code.google.com/p/objc-s3/issues/detail?id=27"&gt;#27&lt;/a&gt;)
+				&lt;li&gt; Code reorganization
+				&lt;li&gt; &lt;i&gt;(many fixes in this release contributed by mledford. Thanks!)&lt;/i&gt;
+    			&lt;/ul&gt;
+			</description> 
+            <pubDate>23 Jan 2007 12:46:11 +0000</pubDate> 
+            <enclosure sparkle:version="85" sparkle:shortVersionString="1.0.6" url="http://people.no-distance.net/ol/software/s3/S3-Browser-1.0.6.zip" length="425560" 
+type="application/octet-stream"/> 
+        </item> 
+        <item> 
         	<guid>http://people.no-distance.net/ol/software/s3/S3-Browser-1.0.4.zip</guid>
             <title>Version 1.0.4</title> 
             <description>
