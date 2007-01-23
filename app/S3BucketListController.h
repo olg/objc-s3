@@ -8,7 +8,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "S3BucketOperations.h"
 #import "S3ActiveWindowController.h"
 
 @class S3Connection;

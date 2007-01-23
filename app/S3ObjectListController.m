@@ -12,10 +12,12 @@
 #import "S3Extensions.h"
 #import "S3Connection.h"
 #import "S3Bucket.h"
-#import "S3ObjectOperations.h"
 #import "S3Application.h"
 #import "S3ObjectDownloadOperation.h"
+#import "S3ObjectStreamedUploadOperation.h"
 #import "S3ObjectUploadOperation.h"
+#import "S3ObjectListOperation.h"
+#import "S3ObjectDeleteOperation.h"
 
 #define SHEET_CANCEL 0
 #define SHEET_OK 1

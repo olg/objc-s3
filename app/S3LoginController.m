@@ -10,7 +10,7 @@
 #import "S3Connection.h"
 #import "S3LoginController.h"
 #import "S3BucketListController.h"
-#import "S3BucketOperations.h"
+#import "S3BucketListOperation.h"
 
 @implementation S3LoginController
 

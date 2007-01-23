@@ -1,34 +1,15 @@
 //
-//  S3ObjectOperations.m
+//  S3ObjectListOperation.m
 //  S3-Objc
 //
-//  Created by Olivier Gutknecht on 4/9/06.
-//  Copyright 2006 Olivier Gutknecht. All rights reserved.
+//  Created by Olivier Gutknecht on 23/01/07.
+//  Copyright 2007 __MyCompanyName__. All rights reserved.
 //
 
-#import "S3ObjectOperations.h"
-#import "S3Owner.h"
-#import "S3Connection.h"
-#import "S3Bucket.h"
+#import "S3ObjectListOperation.h"
 #import "S3Object.h"
 #import "S3Extensions.h"
 
-
-@implementation S3ObjectDeleteOperation
-
--(NSString*)kind
-{
-	return @"Object deletion";
-}
-
-+(S3ObjectDeleteOperation*)objectDeletionWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b object:(S3Object*)o;
-{
-	NSURLRequest* rootConn = [c makeRequestForMethod:@"DELETE" withResource:[c resourceForBucket:b key:[o key]]];
-	S3ObjectDeleteOperation* op = [[[S3ObjectDeleteOperation alloc] initWithRequest:rootConn delegate:d] autorelease];
-	return op;
-}
-
-@end
 
 @implementation S3ObjectListOperation
 
@@ -114,7 +95,7 @@
     
     if (nm==nil)
         return nil;
-
+    
     S3ObjectListOperation* op = [S3ObjectListOperation objectListWithConnection:[self connection] delegate:_delegate bucket:_bucket marker:nm];
     return op;
 }
@@ -126,19 +107,17 @@
 	NSXMLElement* n;
 	
 	NSEnumerator* e = [[root nodesForXPath:@"//Contents" error:&_error] objectEnumerator];
-	NSMutableArray* result = [NSMutableArray array];
-	while (n=[e nextObject])
-	{
-		S3Object* b = [S3Object objectWithXMLNode:n];
-		if (b!=nil) {
-			[result addObject:b];
-			[b setBucket:_bucket];
-		}
-	}
-	return result;
+        NSMutableArray* result = [NSMutableArray array];
+        while (n=[e nextObject])
+        {
+            S3Object* b = [S3Object objectWithXMLNode:n];
+            if (b!=nil) {
+                [result addObject:b];
+                [b setBucket:_bucket];
+            }
+        }
+        return result;
 }
 
 @end
-
-
 

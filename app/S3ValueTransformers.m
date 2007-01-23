@@ -7,6 +7,7 @@
 //
 
 #import "S3ValueTransformers.h"
+#import "S3Extensions.h"
 
 
 @implementation S3OperationSummarizer

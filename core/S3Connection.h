@@ -7,7 +7,7 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "S3BucketOperations.h"
+#import "S3Bucket.h"
 
 #define DEFAULT_HOST @"s3.amazonaws.com"
 #define DEFAULT_PORT 80

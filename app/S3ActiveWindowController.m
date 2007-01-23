@@ -11,7 +11,7 @@
 #import "S3Connection.h"
 #import "S3Extensions.h"
 #import "S3Application.h"
-#import "S3ObjectOperations.h"
+#import "S3ListOperation.h"
 
 
 #define MAX_ACTIVE_OPERATIONS 4

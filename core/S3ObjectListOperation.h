@@ -1,27 +1,15 @@
 //
-//  S3ObjectOperations.h
+//  S3ObjectListOperation.h
 //  S3-Objc
 //
-//  Created by Olivier Gutknecht on 4/9/06.
-//  Copyright 2006 Olivier Gutknecht. All rights reserved.
+//  Created by Olivier Gutknecht on 23/01/07.
+//  Copyright 2007 __MyCompanyName__. All rights reserved.
 //
 
 #import <Cocoa/Cocoa.h>
-#import "S3Operation.h"
-
-@class S3Owner;
-@class S3Object;
-@class S3Bucket;
-@class S3Connection;
-
-
-@interface S3ObjectDeleteOperation : S3NSURLConnectionOperation
-
-+(S3ObjectDeleteOperation*)objectDeletionWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b object:(S3Object*)o;
-
-@end
-
-// Bucket operations
+#import "S3ListOperation.h"
+#import "S3Connection.h"
+#import "S3Bucket.h"
 
 @interface S3ObjectListOperation : S3ListOperation {
 	S3Bucket* _bucket;

@@ -12,6 +12,13 @@
 #define S3_ERROR_HTTP_STATUS_KEY @"HTTPStatusKey"
 #define S3_ERROR_DOMAIN @"S3"
 
+// These keys are also used in nib file, for bindings
+
+#define FILEDATA_PATH @"path"
+#define FILEDATA_KEY  @"key"
+#define FILEDATA_TYPE @"mime"
+#define FILEDATA_SIZE @"size"
+
 typedef enum _S3OperationState {
 	S3OperationDone = 1,
 	S3OperationError = 2,
@@ -52,18 +59,4 @@ typedef enum _S3OperationState {
 
 @end
 
-@interface S3NSURLConnectionOperation : S3Operation {
-	NSHTTPURLResponse* _response;
-	NSURLRequest* _request;
-	NSURLConnection* _connection;
-	NSMutableData* _data;
-}
-
--(id)initWithRequest:(NSURLRequest*)request delegate:(id)delegate;
-
-@end
-
-@interface S3ListOperation : S3NSURLConnectionOperation
-
-@end
 

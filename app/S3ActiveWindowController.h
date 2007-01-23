@@ -7,7 +7,6 @@
 //
 
 #import <Cocoa/Cocoa.h>
-
 #import "S3Operation.h"
 
 @class S3Connection;
