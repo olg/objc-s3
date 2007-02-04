@@ -7,7 +7,6 @@
 //
 
 #import "S3Application.h"
-#import "S3OperationQueue.h"
 #import "S3Connection.h"
 #import "S3LoginController.h"
 #import "S3OperationController.h"

@@ -7,8 +7,7 @@
 //
 
 #import <Cocoa/Cocoa.h>
-
-@class S3OperationQueue;
+#import "S3OperationQueue.h"
 
 @interface S3Application : NSApplication {
 	NSMutableDictionary* _controlers;

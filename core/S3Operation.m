@@ -27,6 +27,11 @@
 	[super dealloc];
 }
 
+- (id)delegate
+{
+	return _delegate; 
+}
+
 - (NSString *)status
 {
     return _status; 

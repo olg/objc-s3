@@ -45,6 +45,7 @@ typedef enum _S3OperationState {
 }
 
 - (id)initWithDelegate:(id)delegate;
+- (id)delegate;
 - (BOOL)active;
 - (void)setActive:(BOOL)flag;
 - (BOOL)operationSuccess;

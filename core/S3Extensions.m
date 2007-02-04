@@ -63,17 +63,18 @@
 }
 
 
--(BOOL)containsObjectOfClass:(Class)c;
+-(BOOL)hasObjectSatisfying:(SEL)aSelector withArgument:(id)argument;
 {
     NSEnumerator* e = [self objectEnumerator];
     id o;
     while (o = [e nextObject])
     {
-        if ([o isKindOfClass:c])
+        if ([o performSelector:aSelector withObject:argument])
             return TRUE;
     }
     return FALSE;
 }
+
 @end
 
 @implementation NSDictionary (URL)

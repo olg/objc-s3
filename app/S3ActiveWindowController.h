@@ -15,7 +15,7 @@
 
 @interface S3ActiveWindowController : NSWindowController <S3OperationDelegate> {
 	S3Connection* _connection;
-	NSMutableArray* _currentOperations;
+	int _operationCount;
 }
 
 - (S3Connection *)connection;
@@ -25,9 +25,7 @@
 - (void)operationDidFail:(S3Operation*)o;
 - (void)operationDidFinish:(S3Operation*)o;
 
-- (NSMutableArray *)currentOperations;
-- (void)setCurrentOperations:(NSMutableArray *)aCurrentOperations;
-- (void)removeFromCurrentOperations:(S3Operation*)op;
 - (void)addToCurrentOperations:(S3Operation*)op;
+- (BOOL)hasActiveOperations;
 
 @end

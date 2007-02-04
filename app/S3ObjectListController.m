@@ -178,7 +178,7 @@
         if ([[standardUserDefaults objectForKey:@"norefresh"] boolValue] == TRUE)
             return;
 		// Simple heuristics: if we still have something in the operation queue, no need to refresh now
-		if ([_currentOperations count]==0)
+		if (![self hasActiveOperations])
 			[self refresh:self];
 	}
 }
