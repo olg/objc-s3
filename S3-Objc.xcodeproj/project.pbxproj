@@ -39,34 +39,16 @@
 		778B5DCE09E1817D002AF32D /* S3BucketListController.m in Sources */ = {isa = PBXBuildFile; fileRef = 778B5DCD09E1817D002AF32D /* S3BucketListController.m */; };
 		778B5E0709E18F30002AF32D /* Buckets.nib in Resources */ = {isa = PBXBuildFile; fileRef = 778B5E0509E18F30002AF32D /* Buckets.nib */; };
 		778B5E0A09E18FE2002AF32D /* S3Application.m in Sources */ = {isa = PBXBuildFile; fileRef = 778B5E0909E18FE2002AF32D /* S3Application.m */; };
-		778C8AB70B659674006212F9 /* S3ValueTransformers.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 778C8AB50B659674006212F9 /* S3ValueTransformers.h */; };
 		778C8AB80B659674006212F9 /* S3ValueTransformers.m in Sources */ = {isa = PBXBuildFile; fileRef = 778C8AB60B659674006212F9 /* S3ValueTransformers.m */; };
-		778C8B970B659991006212F9 /* S3NSURLConnectionOperation.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 778C8B950B659991006212F9 /* S3NSURLConnectionOperation.h */; };
 		778C8B980B659991006212F9 /* S3NSURLConnectionOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 778C8B960B659991006212F9 /* S3NSURLConnectionOperation.m */; };
-		778C8BA50B6599E2006212F9 /* S3ListOperation.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 778C8BA30B6599E2006212F9 /* S3ListOperation.h */; };
 		778C8BA60B6599E2006212F9 /* S3ListOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 778C8BA40B6599E2006212F9 /* S3ListOperation.m */; };
-		778C8BB10B659A42006212F9 /* S3ObjectStreamedUploadOperation.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 778C8BAF0B659A42006212F9 /* S3ObjectStreamedUploadOperation.h */; };
 		778C8BB20B659A42006212F9 /* S3ObjectStreamedUploadOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 778C8BB00B659A42006212F9 /* S3ObjectStreamedUploadOperation.m */; };
-		778C8BC40B659AED006212F9 /* S3BucketListOperation.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 778C8BC20B659AED006212F9 /* S3BucketListOperation.h */; };
 		778C8BC50B659AED006212F9 /* S3BucketListOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 778C8BC30B659AED006212F9 /* S3BucketListOperation.m */; };
-		778C8BCF0B659B28006212F9 /* S3BucketDeleteOperation.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 778C8BCD0B659B28006212F9 /* S3BucketDeleteOperation.h */; };
 		778C8BD00B659B28006212F9 /* S3BucketDeleteOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 778C8BCE0B659B28006212F9 /* S3BucketDeleteOperation.m */; };
-		778C8BDB0B659B59006212F9 /* S3BucketAddOperation.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 778C8BD90B659B59006212F9 /* S3BucketAddOperation.h */; };
 		778C8BDC0B659B59006212F9 /* S3BucketAddOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 778C8BDA0B659B59006212F9 /* S3BucketAddOperation.m */; };
-		778C8BEA0B659BF3006212F9 /* S3ObjectDeleteOperation.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 778C8BE80B659BF3006212F9 /* S3ObjectDeleteOperation.h */; };
 		778C8BEB0B659BF3006212F9 /* S3ObjectDeleteOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 778C8BE90B659BF3006212F9 /* S3ObjectDeleteOperation.m */; };
-		778C8BF70B659C18006212F9 /* S3ObjectListOperation.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 778C8BF50B659C18006212F9 /* S3ObjectListOperation.h */; };
 		778C8BF80B659C18006212F9 /* S3ObjectListOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 778C8BF60B659C18006212F9 /* S3ObjectListOperation.m */; };
-		778C8CC00B659E7C006212F9 /* S3Connection.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 775D396409DF44BF00B16BE3 /* S3Connection.h */; };
-		778C8CC10B659E7D006212F9 /* S3Extensions.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7794949909DD9B2300A5DEB7 /* S3Extensions.h */; };
-		778C8CC20B659E7E006212F9 /* S3Object.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7777EB3209C7929900EC8148 /* S3Object.h */; };
-		778C8CC30B659E7F006212F9 /* S3ObjectDownloadOperation.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 30BA79090A91F0D100E4E2A9 /* S3ObjectDownloadOperation.h */; };
-		778C8CC40B659E82006212F9 /* S3ObjectUploadOperation.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 30BA7C7D0A93A92800E4E2A9 /* S3ObjectUploadOperation.h */; };
-		778C8CC50B659E83006212F9 /* S3Operation.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 775D392A09DF2BA300B16BE3 /* S3Operation.h */; };
-		778C8CC60B659E84006212F9 /* S3Owner.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7777EB2A09C7923500EC8148 /* S3Owner.h */; };
-		778C8CCA0B659E94006212F9 /* S3Bucket.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7777EB3B09C79E6F00EC8148 /* S3Bucket.h */; };
 		7794949B09DD9B2300A5DEB7 /* S3Extensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 7794949A09DD9B2300A5DEB7 /* S3Extensions.m */; };
-		77AEA4810B762CE3000BB6A6 /* S3OperationQueue.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 77AEA47F0B762CE3000BB6A6 /* S3OperationQueue.h */; };
 		77AEA4820B762CE3000BB6A6 /* S3OperationQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 77AEA4800B762CE3000BB6A6 /* S3OperationQueue.m */; };
 		77BC305809E800750055FD75 /* S3OperationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 77BC305709E800750055FD75 /* S3OperationController.m */; };
 		77BC305B09E8009A0055FD75 /* Operations.nib in Resources */ = {isa = PBXBuildFile; fileRef = 77BC305909E8009A0055FD75 /* Operations.nib */; };
@@ -85,24 +67,6 @@
 			dstSubfolderSpec = 10;
 			files = (
 				30D774AF0B406DC400C01A78 /* Sparkle.framework in CopyFiles */,
-				778C8AB70B659674006212F9 /* S3ValueTransformers.h in CopyFiles */,
-				778C8B970B659991006212F9 /* S3NSURLConnectionOperation.h in CopyFiles */,
-				778C8BA50B6599E2006212F9 /* S3ListOperation.h in CopyFiles */,
-				778C8BB10B659A42006212F9 /* S3ObjectStreamedUploadOperation.h in CopyFiles */,
-				778C8BC40B659AED006212F9 /* S3BucketListOperation.h in CopyFiles */,
-				778C8BCF0B659B28006212F9 /* S3BucketDeleteOperation.h in CopyFiles */,
-				778C8BDB0B659B59006212F9 /* S3BucketAddOperation.h in CopyFiles */,
-				778C8BEA0B659BF3006212F9 /* S3ObjectDeleteOperation.h in CopyFiles */,
-				778C8BF70B659C18006212F9 /* S3ObjectListOperation.h in CopyFiles */,
-				778C8CC00B659E7C006212F9 /* S3Connection.h in CopyFiles */,
-				778C8CC10B659E7D006212F9 /* S3Extensions.h in CopyFiles */,
-				778C8CC20B659E7E006212F9 /* S3Object.h in CopyFiles */,
-				778C8CC30B659E7F006212F9 /* S3ObjectDownloadOperation.h in CopyFiles */,
-				778C8CC40B659E82006212F9 /* S3ObjectUploadOperation.h in CopyFiles */,
-				778C8CC50B659E83006212F9 /* S3Operation.h in CopyFiles */,
-				778C8CC60B659E84006212F9 /* S3Owner.h in CopyFiles */,
-				778C8CCA0B659E94006212F9 /* S3Bucket.h in CopyFiles */,
-				77AEA4810B762CE3000BB6A6 /* S3OperationQueue.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
