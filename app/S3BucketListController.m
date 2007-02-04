@@ -36,6 +36,12 @@
 	[toolbar setSizeMode:NSToolbarSizeModeDefault];
 	[toolbar setDisplayMode:NSToolbarDisplayModeDefault];
 	[[self window] setToolbar:toolbar];
+
+	NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
+	[dateFormatter setDateStyle:NSDateFormatterShortStyle];
+	[dateFormatter setTimeStyle:NSDateFormatterMediumStyle];
+	[dateFormatter setTimeZone:[NSTimeZone defaultTimeZone]];
+	[[[[[[self window] contentView] viewWithTag:10] tableColumnWithIdentifier:@"creationDate"] dataCell] setFormatter:dateFormatter];
 }
 
 - (NSArray*)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar

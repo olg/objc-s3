@@ -17,6 +17,8 @@
 @implementation S3Application
 
 + (void)initialize {
+    [NSDateFormatter setDefaultFormatterBehavior:NSDateFormatterBehavior10_4];
+    
     S3FileSizeTransformer *fileSizeTransformer = [[[S3FileSizeTransformer alloc] init] autorelease];
     [NSValueTransformer setValueTransformer:fileSizeTransformer forName:@"S3FileSizeTransformer"];
 }

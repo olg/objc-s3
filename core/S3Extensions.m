@@ -155,7 +155,9 @@
 
 -(NSCalendarDate*)dateValue
 {
-	return [NSCalendarDate dateWithString:[self stringValue] calendarFormat:@"%Y-%m-%dT%H:%M:%S.%FZ"];
+	id s = [[self stringValue] stringByAppendingString:@" +0000"];
+	id d = [NSCalendarDate dateWithString:s calendarFormat:@"%Y-%m-%dT%H:%M:%S.%FZ %z"];
+	return d;
 }
 
 @end
