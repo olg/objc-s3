@@ -8,16 +8,15 @@
 
 #import <Cocoa/Cocoa.h>
 
+@class S3OperationQueue;
 
 @interface S3Application : NSApplication {
-	NSMutableArray* _operations;
 	NSMutableDictionary* _controlers;
+    S3OperationQueue* _queue;
 }
 
 -(IBAction)openConnection:(id)sender;
 -(IBAction)showOperationConsole:(id)sender;
-
--(void)logOperation:(id)op;
--(void)unlogOperation:(id)op;
+-(S3OperationQueue*)queue;
 
 @end

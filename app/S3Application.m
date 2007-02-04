@@ -7,6 +7,7 @@
 //
 
 #import "S3Application.h"
+#import "S3OperationQueue.h"
 #import "S3Connection.h"
 #import "S3LoginController.h"
 #import "S3OperationController.h"
@@ -26,8 +27,8 @@
 -(id)init
 {
 	[super init];
-	_operations = [[NSMutableArray alloc] init];
 	_controlers = [[NSMutableDictionary alloc] init];
+	_queue = [[S3OperationQueue alloc] init];
 	return self;
 }
 
@@ -85,52 +86,9 @@
     [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://people.no-distance.net/ol/software/s3/"]];
 }
 
-
-#pragma mark -
-#pragma mark Key-value coding
-
-- (unsigned int)countOfOperations 
+-(S3OperationQueue*)queue
 {
-    return [_operations count];
-}
-
-- (id)objectInOperationsAtIndex:(unsigned int)index 
-{
-    return [_operations objectAtIndex:index];
-}
-
-- (void)insertObject:(id)anObject inOperationsAtIndex:(unsigned int)index 
-{
-    [_operations insertObject:anObject atIndex:index];
-}
-
-- (void)removeObjectFromOperationsAtIndex:(unsigned int)index 
-{
-    [_operations removeObjectAtIndex:index];
-}
-
-- (void)replaceObjectInOperationsAtIndex:(unsigned int)index withObject:(id)anObject 
-{
-    [_operations replaceObjectAtIndex:index withObject:anObject];
-}
-
-
--(void)logOperation:(id)op
-{
-	[self insertObject:op inOperationsAtIndex:[self countOfOperations]];
-}
-
--(void)unlogOperation:(id)op
-{
-    NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
-    if ([[standardUserDefaults objectForKey:@"autoclean"] boolValue] == TRUE)
-    {   
-        unsigned i = [_operations indexOfObject:op];
-        if (i != NSNotFound) {
-            [[op retain] autorelease];
-            [self removeObjectFromOperationsAtIndex:i];			
-        }
-    }
+    return _queue;
 }
 
 @end

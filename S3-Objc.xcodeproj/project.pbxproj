@@ -66,6 +66,8 @@
 		778C8CC60B659E84006212F9 /* S3Owner.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7777EB2A09C7923500EC8148 /* S3Owner.h */; };
 		778C8CCA0B659E94006212F9 /* S3Bucket.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7777EB3B09C79E6F00EC8148 /* S3Bucket.h */; };
 		7794949B09DD9B2300A5DEB7 /* S3Extensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 7794949A09DD9B2300A5DEB7 /* S3Extensions.m */; };
+		77AEA4810B762CE3000BB6A6 /* S3OperationQueue.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 77AEA47F0B762CE3000BB6A6 /* S3OperationQueue.h */; };
+		77AEA4820B762CE3000BB6A6 /* S3OperationQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 77AEA4800B762CE3000BB6A6 /* S3OperationQueue.m */; };
 		77BC305809E800750055FD75 /* S3OperationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 77BC305709E800750055FD75 /* S3OperationController.m */; };
 		77BC305B09E8009A0055FD75 /* Operations.nib in Resources */ = {isa = PBXBuildFile; fileRef = 77BC305909E8009A0055FD75 /* Operations.nib */; };
 		77BC334F09E852D90055FD75 /* S3ClickableURLField.m in Sources */ = {isa = PBXBuildFile; fileRef = 77BC334E09E852D90055FD75 /* S3ClickableURLField.m */; };
@@ -100,6 +102,7 @@
 				778C8CC50B659E83006212F9 /* S3Operation.h in CopyFiles */,
 				778C8CC60B659E84006212F9 /* S3Owner.h in CopyFiles */,
 				778C8CCA0B659E94006212F9 /* S3Bucket.h in CopyFiles */,
+				77AEA4810B762CE3000BB6A6 /* S3OperationQueue.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -178,6 +181,8 @@
 		778C8BF60B659C18006212F9 /* S3ObjectListOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3ObjectListOperation.m; sourceTree = "<group>"; };
 		7794949909DD9B2300A5DEB7 /* S3Extensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3Extensions.h; sourceTree = "<group>"; };
 		7794949A09DD9B2300A5DEB7 /* S3Extensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3Extensions.m; sourceTree = "<group>"; };
+		77AEA47F0B762CE3000BB6A6 /* S3OperationQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3OperationQueue.h; sourceTree = "<group>"; };
+		77AEA4800B762CE3000BB6A6 /* S3OperationQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3OperationQueue.m; sourceTree = "<group>"; };
 		77BC305609E800750055FD75 /* S3OperationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3OperationController.h; sourceTree = "<group>"; };
 		77BC305709E800750055FD75 /* S3OperationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3OperationController.m; sourceTree = "<group>"; };
 		77BC305A09E8009A0055FD75 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/Operations.nib; sourceTree = "<group>"; };
@@ -374,6 +379,8 @@
 				778C8B960B659991006212F9 /* S3NSURLConnectionOperation.m */,
 				7794949909DD9B2300A5DEB7 /* S3Extensions.h */,
 				7794949A09DD9B2300A5DEB7 /* S3Extensions.m */,
+				77AEA47F0B762CE3000BB6A6 /* S3OperationQueue.h */,
+				77AEA4800B762CE3000BB6A6 /* S3OperationQueue.m */,
 			);
 			name = "base classes";
 			sourceTree = "<group>";
@@ -489,6 +496,7 @@
 				778C8BDC0B659B59006212F9 /* S3BucketAddOperation.m in Sources */,
 				778C8BEB0B659BF3006212F9 /* S3ObjectDeleteOperation.m in Sources */,
 				778C8BF80B659C18006212F9 /* S3ObjectListOperation.m in Sources */,
+				77AEA4820B762CE3000BB6A6 /* S3OperationQueue.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

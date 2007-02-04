@@ -12,7 +12,7 @@
 #import "S3Extensions.h"
 #import "S3Application.h"
 #import "S3ListOperation.h"
-
+#import "S3OperationQueue.h"
 
 #define MAX_ACTIVE_OPERATIONS 4
 
@@ -66,7 +66,7 @@
 	[self didChangeValueForKey:@"currentOperations"];
 	
 	if ([op state]==S3OperationDone)
-		[NSApp unlogOperation:op];
+		[(S3OperationQueue*)[NSApp queue] unlogOperation:op];
 	
 	if (![self canAcceptActiveOperations])
 		return;
@@ -95,7 +95,7 @@
 	
 	[self willChangeValueForKey:@"currentOperations"];
 	[_currentOperations addObject:op];
-	[(S3Application*)NSApp logOperation:op];
+	[(S3OperationQueue*)[NSApp queue] logOperation:op];
 	[self didChangeValueForKey:@"currentOperations"];
 	
 	if ([self canAcceptActiveOperations])
