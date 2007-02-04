@@ -25,7 +25,6 @@
 
 @interface NSArray (Comfort)
 
--(BOOL)containsObjectOfClass:(Class)c;
 -(NSArray*)expandPaths;
 -(BOOL)hasObjectSatisfying:(SEL)aSelector withArgument:(id)argument;
 
