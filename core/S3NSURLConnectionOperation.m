@@ -50,7 +50,7 @@
 	// Houston, we have a problem 
 	NSMutableDictionary* dictionary = [NSMutableDictionary dictionary];
 	NSArray* a;
-	NSXMLDocument* d = [[[NSXMLDocument alloc] initWithData:_data options:NSXMLDocumentTidyXML error:&_error] autorelease];
+	NSXMLDocument* d = [[[NSXMLDocument alloc] initWithData:_data options:NSXMLNodeOptionsNone error:&_error] autorelease];
 	
 	a = [[d rootElement] nodesForXPath:@"//Code" error:&_error];
         if ([a count]==1)

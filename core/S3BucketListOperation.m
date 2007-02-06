@@ -26,7 +26,7 @@
 
 -(S3Owner*)owner
 {
-	NSXMLDocument* d = [[[NSXMLDocument alloc] initWithData:_data options:NSXMLDocumentTidyXML error:&_error] autorelease];
+	NSXMLDocument* d = [[[NSXMLDocument alloc] initWithData:_data options:NSXMLNodeOptionsNone error:&_error] autorelease];
 	NSArray* a = [[d rootElement] nodesForXPath:@"//Owner" error:&_error];
         if ([a count]==1)
             return [S3Owner ownerWithXMLNode:[a objectAtIndex:0]];
@@ -37,7 +37,7 @@
 -(NSMutableArray*)bucketList
 {
 	NSXMLElement* n;
-	NSXMLDocument* d = [[[NSXMLDocument alloc] initWithData:_data options:NSXMLDocumentTidyXML error:&_error] autorelease];
+	NSXMLDocument* d = [[[NSXMLDocument alloc] initWithData:_data options:NSXMLNodeOptionsNone error:&_error] autorelease];
     
 	NSEnumerator* e = [[[d rootElement] nodesForXPath:@"//Bucket" error:&_error] objectEnumerator];
         NSMutableArray* result = [NSMutableArray array];

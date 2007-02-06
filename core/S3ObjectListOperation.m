@@ -67,7 +67,7 @@
 -(NSMutableDictionary*)metadata
 {
 	NSMutableDictionary* dictionary = [NSMutableDictionary dictionary];
-	NSXMLDocument* d = [[[NSXMLDocument alloc] initWithData:_data options:NSXMLDocumentTidyXML error:&_error] autorelease];
+	NSXMLDocument* d = [[[NSXMLDocument alloc] initWithData:_data options:NSXMLNodeOptionsNone error:&_error] autorelease];
 	NSXMLElement* root = [d rootElement];
 	
 	[dictionary safeSetObject:[[root elementForName:@"Name"] stringValue] forKey:@"Name"];
@@ -102,7 +102,7 @@
 
 -(NSMutableArray*)objects
 {
-	NSXMLDocument* d = [[[NSXMLDocument alloc] initWithData:_data options:NSXMLDocumentTidyXML error:&_error] autorelease];
+	NSXMLDocument* d = [[[NSXMLDocument alloc] initWithData:_data options:NSXMLNodeOptionsNone error:&_error] autorelease];
 	NSXMLElement* root = [d rootElement];
 	NSXMLElement* n;
 	
