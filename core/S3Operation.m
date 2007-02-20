@@ -10,7 +10,7 @@
 
 @implementation S3Operation
 
--(id)initWithDelegate:(id)delegate
+- (id)initWithDelegate:(id)delegate
 {
 	[super init];
 	_delegate = delegate;
@@ -20,7 +20,7 @@
 	return self;
 }
 
--(void)dealloc
+- (void)dealloc
 {
 	[_status release];
 	[_error release];
@@ -30,6 +30,11 @@
 - (id)delegate
 {
 	return _delegate; 
+}
+
+- (void)setDelegate:(id)delegate
+{
+    _delegate = delegate;
 }
 
 - (NSString *)status

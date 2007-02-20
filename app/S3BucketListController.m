@@ -28,6 +28,9 @@
 
 -(void)awakeFromNib
 {
+    if ([S3ActiveWindowController instancesRespondToSelector:@selector(awakeFromNib)] == YES) {
+        [super awakeFromNib];
+    }
 	NSToolbar* toolbar = [[[NSToolbar alloc] initWithIdentifier:@"BucketsToolbar"] autorelease];
 	[toolbar setDelegate:self];
 	[toolbar setVisible:YES];
@@ -42,6 +45,7 @@
 	[dateFormatter setTimeStyle:NSDateFormatterMediumStyle];
 	[dateFormatter setTimeZone:[NSTimeZone defaultTimeZone]];
 	[[[[[[self window] contentView] viewWithTag:10] tableColumnWithIdentifier:@"creationDate"] dataCell] setFormatter:dateFormatter];
+    [[NSApp queue] addQueueListener:self];
 }
 
 - (NSArray*)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar
@@ -109,9 +113,15 @@
 	[NSApp endSheet:addSheet returnCode:SHEET_OK];
 }
 
--(void)operationDidFinish:(S3Operation*)o
+-(void)s3OperationDidFinish:(NSNotification *)notification
 {
-	[super operationDidFinish:o];
+    S3Operation *o = [[notification userInfo] objectForKey:S3OperationObjectKey];
+    unsigned index = [_operations indexOfObjectIdenticalTo:o];
+    if (index == NSNotFound) {
+        return;
+    }
+
+    [super s3OperationDidFinish:notification];
 
 	if ([o isKindOfClass:[S3BucketListOperation class]]) {
 		[self setBuckets:[(S3BucketListOperation*)o bucketList]];
@@ -130,14 +140,14 @@
 	NSEnumerator* e = [[_bucketsController selectedObjects] objectEnumerator];
 	while (b = [e nextObject])
 	{
-		S3BucketDeleteOperation* op = [S3BucketDeleteOperation bucketDeletionWithConnection:_connection delegate:self bucket:b];
+		S3BucketDeleteOperation* op = [S3BucketDeleteOperation bucketDeletionWithConnection:_connection delegate:[NSApp queue] bucket:b];
 		[self addToCurrentOperations:op];
 	}
 }
 
 -(IBAction)refresh:(id)sender
 {
-	S3BucketListOperation* op = [S3BucketListOperation bucketListOperationWithConnection:_connection delegate:self];
+	S3BucketListOperation* op = [S3BucketListOperation bucketListOperationWithConnection:_connection delegate:[NSApp queue]];
 	[self addToCurrentOperations:op];
 }
 
@@ -147,7 +157,7 @@
     [sheet orderOut:self];
 	if (returnCode==SHEET_OK)
 	{
-		S3BucketAddOperation* op = [S3BucketAddOperation bucketAddWithConnection:_connection delegate:self name:_name];
+		S3BucketAddOperation* op = [S3BucketAddOperation bucketAddWithConnection:_connection delegate:[NSApp queue] name:_name];
 		[self addToCurrentOperations:op];
 	}
 }
@@ -227,8 +237,13 @@
     _buckets = [aBuckets retain];
 }
 
+#pragma mark -
+#pragma mark Dealloc
+
 -(void)dealloc
 {
+    [[NSApp queue] removeQueueListener:self];
+
 	[self setName:nil];
 	[self setBucketsOwner:nil];
 	[self setBuckets:nil];

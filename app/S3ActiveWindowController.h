@@ -7,23 +7,19 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "S3Operation.h"
 
 @class S3Connection;
+@class S3Operation;
 
 // This class handles all operation-based window by maintaining an active/pending operation queue
 
-@interface S3ActiveWindowController : NSWindowController <S3OperationDelegate> {
+@interface S3ActiveWindowController : NSWindowController {
 	S3Connection* _connection;
-	int _operationCount;
+    NSMutableArray *_operations;
 }
 
 - (S3Connection *)connection;
 - (void)setConnection:(S3Connection *)aConnection;
-
-- (void)operationStateChange:(S3Operation*)o;
-- (void)operationDidFail:(S3Operation*)o;
-- (void)operationDidFinish:(S3Operation*)o;
 
 - (void)addToCurrentOperations:(S3Operation*)op;
 - (BOOL)hasActiveOperations;

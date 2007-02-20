@@ -13,36 +13,24 @@
 
 #define MAX_ACTIVE_OPERATIONS 4
 
+/* Notifications */
+NSString *S3OperationStateDidChangeNotification = @"S3OperationStateDidChangeNotification";
+NSString *S3OperationDidFailNotification = @"S3OperationDidFailNotification";
+NSString *S3OperationDidFinishNotification = @"S3OperationDidFinishNotification";
 
-@interface S3Operation (RefreshComparator)
-
--(BOOL)isRefreshOperationWithDelegate:(id)o;
-
-@end
-
-@implementation S3Operation (RefreshComparator)
-
--(BOOL)isRefreshOperationWithDelegate:(id)o
-{
-    if ([self isKindOfClass:[S3ListOperation class]])
-		if ([self delegate]==o)
-            return TRUE;
-    return FALSE;
-}
-
-@end
-
+/* Notification UserInfo Keys */
+NSString *S3OperationObjectKey = @"S3OperationObjectKey";
 
 @implementation S3OperationQueue
 
--(id)init
+- (id)init
 {
 	[super init];
 	_operations = [[NSMutableArray alloc] init];
 	return self;
 }
 
--(void)dealloc
+- (void)dealloc
 {
 	[_operations release];
 	[_currentOperations release];
@@ -50,13 +38,43 @@
 	[super dealloc];
 }
 
--(void)operationStateChange:(S3Operation*)o;
+#pragma mark -
+#pragma mark Convenience Notification Registration
+
+- (void)addQueueListener:(id)obj
 {
+    if ([obj respondsToSelector:@selector(s3OperationStateDidChange:)]) {
+        [[NSNotificationCenter defaultCenter] addObserver:obj selector:@selector(s3OperationStateDidChange:) name:S3OperationStateDidChangeNotification object:self];
+    }
+    if ([obj respondsToSelector:@selector(S3OperationDidFail:)]) {
+        [[NSNotificationCenter defaultCenter] addObserver:obj selector:@selector(s3OperationDidFail:) name:S3OperationDidFailNotification object:self];
+    }
+    if ([obj respondsToSelector:@selector(s3OperationDidFinish:)]) {
+        [[NSNotificationCenter defaultCenter] addObserver:obj selector:@selector(s3OperationDidFinish:) name:S3OperationDidFinishNotification object:self];
+    }
+}
+
+- (void)removeQueueListener:(id)obj
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:obj name:S3OperationStateDidChangeNotification object:self];
+    [[NSNotificationCenter defaultCenter] removeObserver:obj name:S3OperationDidFailNotification object:self];
+    [[NSNotificationCenter defaultCenter] removeObserver:obj name:S3OperationDidFinishNotification object:self];
+}
+
+#pragma mark -
+#pragma mark S3OperationDelegate Protocol Methods
+
+-(void)operationStateDidChange:(S3Operation*)o;
+{
+    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:o, S3OperationObjectKey, nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:S3OperationStateDidChangeNotification object:self userInfo:dict];
 }
 
 -(void)operationDidFail:(S3Operation*)o
 {
 	[self removeFromCurrentOperations:o];
+    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:o, S3OperationObjectKey, nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:S3OperationDidFailNotification object:self userInfo:dict];
 }
 
 -(void)operationDidFinish:(S3Operation*)o
@@ -67,6 +85,8 @@
 		return;
 	}
 	[self removeFromCurrentOperations:o];
+    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:o, S3OperationObjectKey, nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:S3OperationDidFinishNotification object:self userInfo:dict];
 }
 
 #pragma mark -
@@ -171,8 +191,8 @@
 	
 	// Refresh operations should not be queued if another one is already in place
 	if ([op isKindOfClass:[S3ListOperation class]])
-		if ([_currentOperations hasObjectSatisfying:@selector(isRefreshOperationWithDelegate:) withArgument:[op delegate]])
-            return FALSE;					
+		if ([_currentOperations hasObjectSatisfying:@selector(isMemberOfClass:) withArgument:[op class]])
+            return FALSE;
     
 	[self willChangeValueForKey:@"currentOperations"];
 	[_currentOperations addObject:op];

@@ -78,8 +78,8 @@
 -(NSURLRequest *)connection:(NSURLConnection *)connection willSendRequest:(NSURLRequest *)request redirectResponse:(NSURLResponse *)redirectResponse
 {
     [self setStatus:@"Redirected"];
-	if ([_delegate respondsToSelector:@selector(operationStateChange:)])
-		[(id)_delegate operationStateChange:self];	
+	if ([_delegate respondsToSelector:@selector(s3OperationStateDidChange:)])
+		[(id)_delegate operationStateDidChange:self];	
 	return request;
 }
 
@@ -90,7 +90,7 @@
 	[self didChangeValueForKey:@"data"];
     [self setStatus:@"Connected to server"];
 	if ([_delegate respondsToSelector:@selector(operationStateChange:)])
-		[_delegate operationStateChange:self];
+		[_delegate operationStateDidChange:self];
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
@@ -99,7 +99,7 @@
 	[self didChangeValueForKey:@"data"];
     [self setStatus:@"Receiving data"];
 	if ([_delegate respondsToSelector:@selector(operationStateChange:)])
-		[_delegate operationStateChange:self];
+		[_delegate operationStateDidChange:self];
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {

@@ -18,6 +18,7 @@
 #import "S3ObjectUploadOperation.h"
 #import "S3ObjectListOperation.h"
 #import "S3ObjectDeleteOperation.h"
+#import "S3OperationQueue.h"
 
 #define SHEET_CANCEL 0
 #define SHEET_OK 1
@@ -33,6 +34,9 @@
 
 -(void)awakeFromNib
 {
+    if ([S3ActiveWindowController instancesRespondToSelector:@selector(awakeFromNib)] == YES) {
+        [super awakeFromNib];
+    }
 	NSToolbar* toolbar = [[[NSToolbar alloc] initWithIdentifier:@"ObjectsToolbar"] autorelease];
 	[toolbar setDelegate:self];
 	[toolbar setVisible:YES];
@@ -49,6 +53,8 @@
 	[[[[[[self window] contentView] viewWithTag:10] tableColumnWithIdentifier:@"lastModified"] dataCell] setFormatter:dateFormatter];
 
 	[_objectsController setFileOperationsDelegate:self];
+    
+    [[NSApp queue] addQueueListener:self];
 }
 
 - (NSArray*)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar
@@ -143,9 +149,15 @@
 	[NSApp endSheet:[sender window] returnCode:SHEET_OK];
 }
 
--(void)operationDidFinish:(S3Operation*)op
+-(void)s3OperationDidFinish:(NSNotification *)notification
 {
-	[super operationDidFinish:op];
+    S3Operation *op = [[notification userInfo] objectForKey:S3OperationObjectKey];
+    unsigned index = [_operations indexOfObjectIdenticalTo:op];
+    if (index == NSNotFound) {
+        return;
+    }
+
+    [super s3OperationDidFinish:notification];
 
 #ifdef S3_DOWNLOADS_NSURLCONNECTION
 	if ([op isKindOfClass:[S3ObjectDownloadOperation class]]) {
@@ -181,6 +193,7 @@
 		if (![self hasActiveOperations])
 			[self refresh:self];
 	}
+    
 }
 
 #pragma mark -
@@ -189,7 +202,7 @@
 -(IBAction)refresh:(id)sender
 {
     [self setObjects:[NSMutableArray array]];
-	S3ObjectListOperation* op = [S3ObjectListOperation objectListWithConnection:_connection delegate:self bucket:_bucket];
+	S3ObjectListOperation* op = [S3ObjectListOperation objectListWithConnection:_connection delegate:[NSApp queue] bucket:_bucket];
 	[self addToCurrentOperations:op];
 }
 
@@ -211,7 +224,7 @@
 	NSEnumerator* e = [[_objectsController arrangedObjects] objectEnumerator];
 	while (b = [e nextObject])
 	{
-		S3ObjectDeleteOperation* op = [S3ObjectDeleteOperation objectDeletionWithConnection:_connection delegate:self bucket:_bucket object:b];
+		S3ObjectDeleteOperation* op = [S3ObjectDeleteOperation objectDeletionWithConnection:_connection delegate:[NSApp queue] bucket:_bucket object:b];
 		[self addToCurrentOperations:op];
 
 	}
@@ -223,7 +236,7 @@
 	NSEnumerator* e = [[_objectsController selectedObjects] objectEnumerator];
 	while (b = [e nextObject])
 	{
-		S3ObjectDeleteOperation* op = [S3ObjectDeleteOperation objectDeletionWithConnection:_connection delegate:self bucket:_bucket object:b];
+		S3ObjectDeleteOperation* op = [S3ObjectDeleteOperation objectDeletionWithConnection:_connection delegate:[NSApp queue] bucket:_bucket object:b];
 		[self addToCurrentOperations:op];
 	}
 }
@@ -235,7 +248,7 @@
 	while (b = [e nextObject])
 	{
 #ifdef S3_DOWNLOADS_NSURLCONNECTION
-		S3ObjectDownloadOperation* op = [S3ObjectDownloadOperation objectDownloadWithConnection:_connection delegate:self bucket:_bucket object:b];
+		S3ObjectDownloadOperation* op = [S3ObjectDownloadOperation objectDownloadWithConnection:_connection delegate:[NSApp queue] bucket:_bucket object:b];
 		[self addToCurrentOperations:op];
 #else
 		NSSavePanel* sp = [NSSavePanel savePanel];
@@ -244,7 +257,7 @@
 		if (n==nil) n = @"Untitled";
 		runResult = [sp runModalForDirectory:nil file:n];
 		if (runResult == NSOKButton) {
-			S3ObjectDownloadOperation* op = [S3ObjectDownloadOperation objectDownloadWithConnection:_connection delegate:self bucket:_bucket object:b toPath:[sp filename]];
+			S3ObjectDownloadOperation* op = [S3ObjectDownloadOperation objectDownloadWithConnection:_connection delegate:[NSApp queue] bucket:_bucket object:b toPath:[sp filename]];
 			[self addToCurrentOperations:op];
 		}
 #endif
@@ -273,9 +286,9 @@
 
     // If it's a small file, no need for streamed operation (and we can cover easily both kind of upload ops in tests)
     if (hasProxy || ([size longLongValue] < 16384))
-        op = [S3ObjectUploadOperation objectUploadWithConnection:_connection delegate:self bucket:_bucket data:data acl:acl];
+        op = [S3ObjectUploadOperation objectUploadWithConnection:_connection delegate:[NSApp queue] bucket:_bucket data:data acl:acl];
     else 
-        op = [S3ObjectStreamedUploadOperation objectUploadWithConnection:_connection delegate:self bucket:_bucket data:data acl:acl];
+        op = [S3ObjectStreamedUploadOperation objectUploadWithConnection:_connection delegate:[NSApp queue] bucket:_bucket data:data acl:acl];
     
 	[self addToCurrentOperations:op];
 
@@ -456,6 +469,8 @@
 
 -(void)dealloc
 {
+    [[NSApp queue] removeQueueListener:self];
+    
 	[self setObjects:nil];
 	[self setObjectsInfo:nil];
 	[self setBucket:nil];

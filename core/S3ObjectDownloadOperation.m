@@ -62,8 +62,8 @@
 - (NSURLRequest *)download:(NSURLDownload *)download willSendRequest:(NSURLRequest *)request redirectResponse:(NSURLResponse *)redirectResponse;
 {
     [self setStatus:@"Redirected"];
-	if ([_delegate respondsToSelector:@selector(operationStateChange:)])
-		[(id)_delegate operationStateChange:self];	
+	if ([_delegate respondsToSelector:@selector(operationStateDidChange:)])
+		[(id)_delegate operationStateDidChange:self];	
 	return request;
 }
 
@@ -71,8 +71,8 @@
 {
 	[self setResponse:(NSHTTPURLResponse*)response];
     [self setStatus:@"Connected to server"];
-	if ([_delegate respondsToSelector:@selector(operationStateChange:)])
-		[_delegate operationStateChange:self];
+	if ([_delegate respondsToSelector:@selector(operationStateDidChange:)])
+		[_delegate operationStateDidChange:self];
 }
 
 - (void)download:(NSURLDownload *)download didReceiveDataOfLength:(unsigned)length 

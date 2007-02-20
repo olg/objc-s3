@@ -15,43 +15,62 @@
 
 @implementation S3ActiveWindowController
 
+- (void)awakeFromNib
+{
+    _operations = [[NSMutableArray alloc] init];
+}
+
 -(void)didPresentErrorWithRecovery:(BOOL)didRecover contextInfo:(void *)contextInfo
 {
 }
 
--(void)operationStateChange:(S3Operation*)o;
+#pragma mark -
+#pragma mark S3OperationQueue Notifications
+
+-(void)s3OperationStateDidChange:(NSNotification *)notification
 {
-    [[NSApp queue] operationStateChange:o];
 }
 
--(void)operationDidFail:(S3Operation*)o
+-(void)s3OperationDidFail:(NSNotification *)notification
 {
+    S3Operation *o = [[notification userInfo] objectForKey:S3OperationObjectKey];
+    unsigned index = [_operations indexOfObjectIdenticalTo:o];
+    if (index == NSNotFound) {
+        return;
+    }
+
 	[self willChangeValueForKey:@"hasActiveOperations"];
-	[[NSApp queue] operationDidFail:o];
 	[[self window] presentError:[o error] modalForWindow:[self window] delegate:self didPresentSelector:@selector(didPresentErrorWithRecovery:contextInfo:) contextInfo:nil];
-	_operationCount--;
+	[_operations removeObjectAtIndex:index];
 	[self didChangeValueForKey:@"hasActiveOperations"];
 }
 
--(void)operationDidFinish:(S3Operation*)o
+-(void)s3OperationDidFinish:(NSNotification *)notification
 {
+    S3Operation *operation = [[notification userInfo] objectForKey:S3OperationObjectKey];
+    unsigned index = [_operations indexOfObjectIdenticalTo:operation];
+    if (index == NSNotFound) {
+        return;
+    }
+    
 	[self willChangeValueForKey:@"hasActiveOperations"];
-	[[NSApp queue] operationDidFinish:o];
-	_operationCount--;
+	[_operations removeObjectAtIndex:index];
 	[self didChangeValueForKey:@"hasActiveOperations"];
 }
+
+#pragma mark -
 
 -(void)addToCurrentOperations:(S3Operation*)op
 {
 	[self willChangeValueForKey:@"hasActiveOperations"];
 	if ([[NSApp queue] addToCurrentOperations:op])
-		_operationCount++;
+		[_operations addObject:op];
 	[self didChangeValueForKey:@"hasActiveOperations"];
 }
 
 -(BOOL)hasActiveOperations
 {
-	return (_operationCount>0);
+	return ([_operations count] > 0);
 }
 
 - (S3Connection *)connection
@@ -65,9 +84,13 @@
     _connection = [aConnection retain];
 }
 
+#pragma mark -
+#pragma mark Dealloc
+
 -(void)dealloc
 {
 	[self setConnection:nil];
+    [_operations release];
 	[super dealloc];
 }
 

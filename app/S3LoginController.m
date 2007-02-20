@@ -11,17 +11,22 @@
 #import "S3LoginController.h"
 #import "S3BucketListController.h"
 #import "S3BucketListOperation.h"
+#import "S3OperationQueue.h"
 
 @implementation S3LoginController
 
 -(void)awakeFromNib
 {
+    if ([S3ActiveWindowController instancesRespondToSelector:@selector(awakeFromNib)] == YES) {
+        [super awakeFromNib];
+    }
 	[[self window] setDefaultButtonCell:[_defaultButton cell]];
 	[[self window] setDelegate:self];
 	[_connection addObserver:self
 			  forKeyPath:@"accessKeyID" 
                  options:NSKeyValueObservingOptionNew
 				 context:NULL];
+    [[NSApp queue] addQueueListener:self];
 }
 
 -(void)windowDidLoad
@@ -50,20 +55,27 @@
 	[self checkPasswordInKeychain];
 }
 
--(void)operationDidFinish:(S3Operation*)o
+-(void)s3OperationDidFinish:(NSNotification *)notification
 {
-	[super operationDidFinish:o];
-	
+    S3Operation *operation = [[notification userInfo] objectForKey:S3OperationObjectKey];
+    unsigned index = [_operations indexOfObjectIdenticalTo:operation];
+    if (index == NSNotFound) {
+        return;
+    }
+
+    [super s3OperationDidFinish:notification];
+
 	[[NSUserDefaults standardUserDefaults] setObject:[_connection accessKeyID] forKey:DEFAULT_USER];
 	if ([_keychainCheckbox state] == NSOnState)
 		[_connection storeSecretAccessKeyInKeychain];
-    
+
 	S3BucketListController* c = [[[S3BucketListController alloc] initWithWindowNibName:@"Buckets"] autorelease];
 	[c setConnection:_connection];
 	[c showWindow:self];
 	[c retain];			
-	[c setBuckets:[(S3BucketListOperation*)o bucketList]];
-	[c setBucketsOwner:[(S3BucketListOperation*)o owner]];	
+	[c setBuckets:[(S3BucketListOperation *)operation bucketList]];
+	[c setBucketsOwner:[(S3BucketListOperation*)operation owner]];
+
 	[self close];
 }
 
@@ -77,7 +89,7 @@
 
 -(IBAction)connect:(id)sender
 {
-	S3BucketListOperation* op = [S3BucketListOperation bucketListOperationWithConnection:_connection delegate:self];
+	S3BucketListOperation* op = [S3BucketListOperation bucketListOperationWithConnection:_connection delegate:[NSApp queue]];
 	[self addToCurrentOperations:op];
 }
 
@@ -90,5 +102,13 @@
         [_connection trySetupSecretAccessKeyFromKeychain];
 }
 
+#pragma mark -
+#pragma mark Dealloc
+
+- (void)dealloc
+{
+    [[NSApp queue] removeQueueListener:self];
+    [super dealloc];
+}
 
 @end
