@@ -10,36 +10,35 @@
 
 #import "S3Connection.h"
 #import "S3Object.h"
-
-#ifndef S3_DOWNLOADS_NSURLCONNECTION
+#import "S3TransferRateCalculator.h"
 
 @implementation S3ObjectDownloadOperation
 
--(NSData*)data
+- (NSData *)data
 {
 	return [NSData data];
 }
 
--(id)initWithRequest:(NSURLRequest*)request delegate:(id)delegate toPath:(NSString*)path forSize:(long long)size
+- (id)initWithRequest:(NSURLRequest *)request toPath:(NSString *)path forSize:(long long)size
 {
-	[super initWithDelegate:delegate];
+	[super init];
 	_request = [request retain];
-    _connection = [[NSURLDownload alloc] initWithRequest:request delegate:self];
-	_size = size;
-	_percent = 0;
-	[_connection setDestination:path allowOverwrite:NO];
+    _urlDownloadConnection = [[NSURLDownload alloc] initWithRequest:request delegate:self];
+	[_urlDownloadConnection setDestination:path allowOverwrite:NO];
+    _rateCalculator = [[S3TransferRateCalculator alloc] init];
+    [_rateCalculator setObjective:-1];
 	return self;
 }
 
--(void)dealloc
+- (void)dealloc
 {
 	[_request release];
 	[_response release];
-	[_connection release];
+	[_urlDownloadConnection release];
 	[super dealloc];
 }
 
--(NSString*)kind
+- (NSString *)kind
 {
 	return @"Object download";
 }
@@ -52,10 +51,10 @@
     _response = aResponse;
 }
 
-+(S3ObjectDownloadOperation*)objectDownloadWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b object:(S3Object*)o toPath:(NSString*)path;
++ (S3ObjectDownloadOperation*)objectDownloadWithConnection:(S3Connection *)c bucket:(S3Bucket *)b object:(S3Object *)o toPath:(NSString *)path;
 {
-	NSURLRequest* rootConn = [c makeRequestForMethod:@"GET" withResource:[c resourceForBucket:b key:[o key]]];
-	S3ObjectDownloadOperation* op = [[[S3ObjectDownloadOperation alloc] initWithRequest:rootConn delegate:d toPath:path forSize:[o size]] autorelease];
+	NSURLRequest *rootConn = [c makeRequestForMethod:@"GET" withResource:[c resourceForBucket:b key:[o key]]];
+	S3ObjectDownloadOperation *op = [[[S3ObjectDownloadOperation alloc] initWithRequest:rootConn toPath:path forSize:[o size]] autorelease];
 	return op;
 }
 
@@ -69,24 +68,17 @@
 
 - (void)download:(NSURLDownload *)download didReceiveResponse:(NSURLResponse *)response
 {
-	[self setResponse:(NSHTTPURLResponse*)response];
+	[self setResponse:(NSHTTPURLResponse *)response];
     [self setStatus:@"Connected to server"];
+    [_rateCalculator startTransferRateCalculator];
 	if ([_delegate respondsToSelector:@selector(operationStateDidChange:)])
 		[_delegate operationStateDidChange:self];
 }
 
 - (void)download:(NSURLDownload *)download didReceiveDataOfLength:(unsigned)length 
 {
-	if (_size!=-1)
-	{
-		_received = _received + length;
-		int percent = _received * 100.0 / _size;
-		if (_percent != percent) 
-		{
-			[self setStatus:[NSString stringWithFormat:@"Receiving data %d %%",percent]];
-			_percent = percent;
-		}
-	}	
+    [_rateCalculator addBytesTransfered:length];
+    [self setStatus:[NSString stringWithFormat:@"Receiving data %@%% (%@ %@/%@) %@",[_rateCalculator stringForObjectivePercentageCompleted], [_rateCalculator stringForCalculatedTransferRate], [_rateCalculator stringForShortDisplayUnit], [_rateCalculator stringForShortRateUnit], [_rateCalculator stringForEstimatedTimeRemaining]]];
 }
 
 - (BOOL)download:(NSURLDownload *)download shouldDecodeSourceDataOfMIMEType:(NSString *)encodingType
@@ -96,8 +88,7 @@
 
 - (void)downloadDidFinish:(NSURLDownload *)download
 {
-    [self setStatus:@"Done"];
-	[self setActive:NO];
+    [_rateCalculator stopTransferRateCalculator];
 	[self setState:S3OperationDone];
 	[self retain];
 	[_delegate operationDidFinish:self];
@@ -105,29 +96,29 @@
 }
 
 - (void)download:(NSURLDownload *)download didFailWithError:(NSError *)error {
+    [_rateCalculator stopTransferRateCalculator];
 	[self setError:error];
-    [self setStatus:@"Error"];
-	[self setActive:NO];
 	[self setState:S3OperationError];
 	[_delegate operationDidFail:self];
 }
 
--(void)stop:(id)sender
-{	
-	NSDictionary* d = [NSDictionary dictionaryWithObjectsAndKeys:@"Cancel",NSLocalizedDescriptionKey,
-		@"This operation has been cancelled",NSLocalizedDescriptionKey,nil];
-	[_connection cancel];
+- (void)stop:(id)sender
+{
+    if ([self active] == NO) {
+        return;
+    }
+	NSDictionary *d = [NSDictionary dictionaryWithObjectsAndKeys:@"This operation has been cancelled",NSLocalizedDescriptionKey,nil];
+	[_urlDownloadConnection cancel];
+    [_rateCalculator stopTransferRateCalculator];
 	[self setError:[NSError errorWithDomain:S3_ERROR_DOMAIN code:-1 userInfo:d]];
-	[self setStatus:@"Cancelled"];
-	[self setActive:NO];
-	[self setState:S3OperationError];
+	[self setState:S3OperationCanceled];
 	[_delegate operationDidFail:self];
 }
 
--(BOOL)operationSuccess
+- (BOOL)operationSuccess
 {
 	int status = [_response statusCode];
-	if (status/100==2)
+	if (status==200)
 		return TRUE;
 	
 	// Houston, we have a problem 
@@ -136,54 +127,8 @@
 	[dictionary setObject:[NSNumber numberWithInt:status] forKey:S3_ERROR_HTTP_STATUS_KEY];
 
 	[self setError:[NSError errorWithDomain:S3_ERROR_DOMAIN code:[_response statusCode] userInfo:dictionary]];
-	[self setStatus:@"Error"];
-	return FALSE;
+    [self setState:S3OperationError];
+    return FALSE;
 }
 
 @end
-
-#else
-
-@implementation S3ObjectDownloadOperation
-
--(void)dealloc
-{
-	[_object release];
-	[super dealloc];
-}
-
--(NSString*)kind
-{
-	return @"Object download";
-}
-
-+(S3ObjectDownloadOperation*)objectDownloadWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b object:(S3Object*)o;
-{
-	NSURLRequest* rootConn = [c makeRequestForMethod:@"GET" withResource:[c resourceForBucket:b key:[o key]]];
-	S3ObjectDownloadOperation* op = [[[S3ObjectDownloadOperation alloc] initWithRequest:rootConn delegate:d] autorelease];
-	[op setObject:o];
-	return op;
-}
-
--(NSData*)data
-{
-	return _data;
-}
-
-- (S3Object *)object
-{
-    return _object; 
-}
-
-- (void)setObject:(S3Object *)anObject
-{
-    [_object release];
-    _object = [anObject retain];
-}
-
-@end
-
-#endif
-
-
-

@@ -19,12 +19,12 @@
 @interface S3Connection : NSObject {
     BOOL _secure;
 	int _port;
-	NSString* _host;
+	NSString *_host;
     
-    NSString* _accessKeyID;
-	NSString* _secretAccessKey;
+    NSString *_accessKeyID;
+	NSString *_secretAccessKey;
 	
-	NSMutableArray* _operations;
+	NSMutableArray *_operations;
 }
 
 - (NSString *)accessKeyID;
@@ -37,16 +37,16 @@
 -(void)trySetupSecretAccessKeyFromKeychain;
 -(void)storeSecretAccessKeyInKeychain;
 
-- (NSMutableURLRequest*)makeRequestForMethod:(NSString*)method;
-- (NSMutableURLRequest*)makeRequestForMethod:(NSString*)method withResource:(NSString*)resource;
-- (NSMutableURLRequest*)makeRequestForMethod:(NSString*)method withResource:(NSString*)resource headers:(NSDictionary*)d;
+- (NSMutableURLRequest *)makeRequestForMethod:(NSString *)method;
+- (NSMutableURLRequest *)makeRequestForMethod:(NSString *)method withResource:(NSString *)resource;
+- (NSMutableURLRequest *)makeRequestForMethod:(NSString *)method withResource:(NSString *)resource headers:(NSDictionary *)d;
 
-- (NSURL*)urlForResource:(NSString*)resource;
-- (NSString*)resourceForBucket:(S3Bucket*)bucket key:(NSString*)key;
-- (NSString*)resourceForBucket:(S3Bucket*)bucket key:(NSString*)key;
-- (NSString*)resourceForBucket:(S3Bucket*)bucket parameters:(NSString*)parameters;
-- (NSString*)resourceForBucket:(S3Bucket*)bucket key:(NSString*)key parameters:(NSString*)parameters;
+- (NSURL *)urlForResource:(NSString *)resource;
+- (NSString *)resourceForBucket:(S3Bucket *)bucket key:(NSString *)key;
+- (NSString *)resourceForBucket:(S3Bucket *)bucket key:(NSString *)key;
+- (NSString *)resourceForBucket:(S3Bucket *)bucket parameters:(NSString *)parameters;
+- (NSString *)resourceForBucket:(S3Bucket *)bucket key:(NSString *)key parameters:(NSString *)parameters;
 
-- (CFHTTPMessageRef)createCFRequestForMethod:(NSString*)method withResource:(NSString*)resource headers:(NSDictionary*)d;
+- (CFHTTPMessageRef)createCFRequestForMethod:(NSString *)method withResource:(NSString *)resource headers:(NSDictionary *)d;
 
 @end

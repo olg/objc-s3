@@ -12,7 +12,7 @@
 
 @interface S3ObjectUploadOperation : S3NSURLConnectionOperation 
 
-+(S3ObjectUploadOperation*)objectUploadWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b data:(NSDictionary*)data acl:(NSString*)acl;
++ (S3ObjectUploadOperation *)objectUploadWithConnection:(S3Connection *)c bucket:(S3Bucket *)b data:(NSDictionary *)data acl:(NSString *)acl;
 
 @end
 

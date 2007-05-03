@@ -15,7 +15,7 @@
 
 @implementation S3Object
 
--(id)initWithData:(NSData*)data metaData:(NSDictionary*)dict;
+- (id)initWithData:(NSData *)data metaData:(NSDictionary *)dict;
 {
 	[super init];
 	[data retain];
@@ -24,7 +24,7 @@
 	return self;
 }
 
--(void)dealloc
+- (void)dealloc
 {
 	[_data release];
 	[_metadata release];
@@ -32,9 +32,9 @@
 	[super dealloc];
 }
 
-+(S3Object*)objectWithXMLNode:(NSXMLElement*)element
++ (S3Object *)objectWithXMLNode:(NSXMLElement *)element
 {
-	NSMutableDictionary* d = [NSMutableDictionary dictionary];
+	NSMutableDictionary *d = [NSMutableDictionary dictionary];
 	
 	[d safeSetObject:[[element elementForName:@"Key"] stringValue] forKey:@"key"];
 	[d safeSetObject:[[element elementForName:@"LastModified"] dateValue] forKey:@"lastModified"];
@@ -46,16 +46,16 @@
 	return [[[S3Object alloc] initWithData:nil metaData:d] autorelease];
 }
 
--(long long)size
+- (long long)size
 {
-	NSNumber* n = [_metadata objectForKey:@"size"];
+	NSNumber *n = [_metadata objectForKey:@"size"];
 	if (n==nil)
 		return -1;
 	else
 		return [n longLongValue];
 }
 
--(NSString*)key
+- (NSString *)key
 {
 	return [_metadata objectForKey:@"key"];
 }
@@ -73,7 +73,6 @@
 {
 	[_metadata safeSetObject:value forKey:key];
 }
-
 
 - (NSData *)data
 {
@@ -96,7 +95,6 @@
     [_metadata release];
     _metadata = [aMetadata retain];
 }
-
 
 - (S3Bucket *)bucket
 {

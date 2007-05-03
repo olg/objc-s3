@@ -13,13 +13,13 @@
 
 @implementation S3ObjectListOperation
 
--(void)dealloc
+- (void)dealloc
 {
 	[_bucket release];
 	[super dealloc];
 }
 
--(NSString*)kind
+- (NSString *)kind
 {
 	return @"Bucket content";
 }
@@ -47,28 +47,28 @@
     _s3connection = aConnection;
 }
 
-+(S3ObjectListOperation*)objectListWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b
++ (S3ObjectListOperation *)objectListWithConnection:(S3Connection *)c bucket:(S3Bucket *)b
 {
-    return [S3ObjectListOperation objectListWithConnection:c delegate:d bucket:b marker:nil];
+    return [S3ObjectListOperation objectListWithConnection:c bucket:b marker:nil];
 }
 
-+(S3ObjectListOperation*)objectListWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b marker:(NSString*)marker
++ (S3ObjectListOperation *)objectListWithConnection:(S3Connection *)c bucket:(S3Bucket *)b marker:(NSString *)marker
 {
-	NSMutableDictionary* params = [NSMutableDictionary dictionary];
+	NSMutableDictionary *params = [NSMutableDictionary dictionary];
     [params safeSetObject:marker forKey:@"marker"];
     
-	NSURLRequest* rootConn = [c makeRequestForMethod:@"GET" withResource:[c resourceForBucket:b parameters:[params queryString]] headers:nil];
-	S3ObjectListOperation* op = [[[S3ObjectListOperation alloc] initWithRequest:rootConn delegate:d] autorelease];
+	NSURLRequest *rootConn = [c makeRequestForMethod:@"GET" withResource:[c resourceForBucket:b parameters:[params queryString]] headers:nil];
+	S3ObjectListOperation *op = [[[S3ObjectListOperation alloc] initWithRequest:rootConn] autorelease];
     [op setConnection:c];
 	[op setBucket:b];
-	return op;
+	return op;	
 }
 
--(NSMutableDictionary*)metadata
+- (NSMutableDictionary *)metadata
 {
-	NSMutableDictionary* dictionary = [NSMutableDictionary dictionary];
-	NSXMLDocument* d = [[[NSXMLDocument alloc] initWithData:_data options:NSXMLNodeOptionsNone error:&_error] autorelease];
-	NSXMLElement* root = [d rootElement];
+	NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+	NSXMLDocument *d = [[[NSXMLDocument alloc] initWithData:_data options:NSXMLNodeOptionsNone error:&_error] autorelease];
+	NSXMLElement *root = [d rootElement];
 	
 	[dictionary safeSetObject:[[root elementForName:@"Name"] stringValue] forKey:@"Name"];
 	[dictionary safeSetObject:[[root elementForName:@"Marker"] stringValue] forKey:@"Marker"];
@@ -80,37 +80,37 @@
 	return dictionary;
 }
 
--(S3ObjectListOperation*)operationForNextChunk
+- (S3ObjectListOperation *)operationForNextChunk
 {
-    NSDictionary* d = [self metadata];
+    NSDictionary *d = [self metadata];
     if (![[d objectForKey:@"IsTruncated"] isEqualToString:@"true"])
         return nil;
     
-    NSString* nm = [d objectForKey:@"NextMarker"];
+    NSString *nm = [d objectForKey:@"NextMarker"];
     if (nm==nil)
     {
-        NSArray* objs = [self objects];
+        NSArray *objs = [self objects];
         nm = [[objs objectAtIndex:([objs count]-1)] key];
     }
     
     if (nm==nil)
         return nil;
     
-    S3ObjectListOperation* op = [S3ObjectListOperation objectListWithConnection:[self connection] delegate:_delegate bucket:_bucket marker:nm];
+    S3ObjectListOperation *op = [S3ObjectListOperation objectListWithConnection:[self connection] bucket:_bucket marker:nm];
     return op;
 }
 
--(NSMutableArray*)objects
+- (NSMutableArray *)objects
 {
-	NSXMLDocument* d = [[[NSXMLDocument alloc] initWithData:_data options:NSXMLNodeOptionsNone error:&_error] autorelease];
-	NSXMLElement* root = [d rootElement];
-	NSXMLElement* n;
+	NSXMLDocument *d = [[[NSXMLDocument alloc] initWithData:_data options:NSXMLNodeOptionsNone error:&_error] autorelease];
+	NSXMLElement *root = [d rootElement];
+	NSXMLElement *n;
 	
-	NSEnumerator* e = [[root nodesForXPath:@"//Contents" error:&_error] objectEnumerator];
-        NSMutableArray* result = [NSMutableArray array];
+	NSEnumerator *e = [[root nodesForXPath:@"//Contents" error:&_error] objectEnumerator];
+        NSMutableArray *result = [NSMutableArray array];
         while (n=[e nextObject])
         {
-            S3Object* b = [S3Object objectWithXMLNode:n];
+            S3Object *b = [S3Object objectWithXMLNode:n];
             if (b!=nil) {
                 [result addObject:b];
                 [b setBucket:_bucket];

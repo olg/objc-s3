@@ -12,7 +12,7 @@
 
 @implementation S3Bucket
 
--(id)initWithName:(NSString*)name creationDate:(NSDate*)date
+- (id)initWithName:(NSString *)name creationDate:(NSDate *)date
 {
 	[super init];
 	[self setName:name];
@@ -20,10 +20,10 @@
 	return self;
 }
 
-+(S3Bucket*)bucketWithXMLNode:(NSXMLElement*)element
++ (S3Bucket *)bucketWithXMLNode:(NSXMLElement *)element
 {
-	NSString* name = nil;
-	NSCalendarDate* date = nil;
+	NSString *name = nil;
+	NSCalendarDate *date = nil;
 
 	name = [[element elementForName:@"Name"] stringValue];
 	date = [[element elementForName:@"CreationDate"] dateValue];

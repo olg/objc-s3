@@ -20,6 +20,12 @@ NSString *S3OperationDidFinishNotification = @"S3OperationDidFinishNotification"
 
 /* Notification UserInfo Keys */
 NSString *S3OperationObjectKey = @"S3OperationObjectKey";
+NSString *S3OperationObjectForRetryKey = @"S3OperationObjectForRetryKey";
+
+@interface S3OperationQueue (PrivateAPI)
+- (void)removeFromCurrentOperations:(S3Operation *)op;
+- (void)startQualifiedOperations:(NSTimer *)timer;
+@end
 
 @implementation S3OperationQueue
 
@@ -27,6 +33,8 @@ NSString *S3OperationObjectKey = @"S3OperationObjectKey";
 {
 	[super init];
 	_operations = [[NSMutableArray alloc] init];
+	_currentOperations = [[NSMutableArray alloc] init];
+	_timer = [NSTimer scheduledTimerWithTimeInterval:0.20 target:self selector:@selector(startQualifiedOperations:) userInfo:nil repeats:YES];
 	return self;
 }
 
@@ -34,7 +42,8 @@ NSString *S3OperationObjectKey = @"S3OperationObjectKey";
 {
 	[_operations release];
 	[_currentOperations release];
-    
+	[_timer invalidate];
+	[_timer release];
 	[super dealloc];
 }
 
@@ -46,7 +55,7 @@ NSString *S3OperationObjectKey = @"S3OperationObjectKey";
     if ([obj respondsToSelector:@selector(s3OperationStateDidChange:)]) {
         [[NSNotificationCenter defaultCenter] addObserver:obj selector:@selector(s3OperationStateDidChange:) name:S3OperationStateDidChangeNotification object:self];
     }
-    if ([obj respondsToSelector:@selector(S3OperationDidFail:)]) {
+    if ([obj respondsToSelector:@selector(s3OperationDidFail:)]) {
         [[NSNotificationCenter defaultCenter] addObserver:obj selector:@selector(s3OperationDidFail:) name:S3OperationDidFailNotification object:self];
     }
     if ([obj respondsToSelector:@selector(s3OperationDidFinish:)]) {
@@ -64,145 +73,161 @@ NSString *S3OperationObjectKey = @"S3OperationObjectKey";
 #pragma mark -
 #pragma mark S3OperationDelegate Protocol Methods
 
--(void)operationStateDidChange:(S3Operation*)o;
+- (void)operationStateDidChange:(S3Operation *)o;
 {
     NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:o, S3OperationObjectKey, nil];
     [[NSNotificationCenter defaultCenter] postNotificationName:S3OperationStateDidChangeNotification object:self userInfo:dict];
 }
 
--(void)operationDidFail:(S3Operation*)o
+- (void)operationDidFail:(S3Operation *)o
 {
+    // Retain object while it's in flux must be released at end!
+    [o retain];
 	[self removeFromCurrentOperations:o];
-    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:o, S3OperationObjectKey, nil];
+    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:o, S3OperationObjectKey, nil];
+    // TODO: Figure out if the operation needs to be retried and send a new
+    // retry operation object to be retried as S3OperationObjectForRetryKey.      
+    // It appears valid retry on error codes: OperationAborted, InternalError
+    if ([o state] == S3OperationError && [o allowsRetry] == YES) {
+        NSDictionary *errorDict = [[o error] userInfo];
+        NSString *errorCode = [errorDict objectForKey:S3_ERROR_CODE_KEY];
+        if ([errorCode isEqualToString:@"InternalError"] == YES || [errorCode isEqualToString:@"OperationAborted"] || errorCode == nil) {
+            // TODO: Create a retry operation from failed operation and add it to the operations to be performed.
+            //S3Operation *retryOperation = nil;
+            //[dict setObject:retryOperation forKey:S3OperationObjectForRetryKey];
+            //[self addToCurrentOperations:retryOperation];            
+        }
+    }
     [[NSNotificationCenter defaultCenter] postNotificationName:S3OperationDidFailNotification object:self userInfo:dict];
+    // Object is out of flux
+    [o release];
 }
 
--(void)operationDidFinish:(S3Operation*)o
+- (void)operationDidFinish:(S3Operation *)o
 {
 	BOOL b = [o operationSuccess];
 	if (!b) {
 		[self operationDidFail:o];
 		return;
 	}
+    // Retain object while it's in flux must be released at end!
+    [o retain];
 	[self removeFromCurrentOperations:o];
     NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:o, S3OperationObjectKey, nil];
     [[NSNotificationCenter defaultCenter] postNotificationName:S3OperationDidFinishNotification object:self userInfo:dict];
+    // Object out of flux
+    [o release];
 }
 
 #pragma mark -
 #pragma mark Key-value coding
+
+- (BOOL)accessInstanceVariablesDirectly
+{
+    return NO;
+}
 
 - (NSMutableArray *)currentOperations
 {
     return _currentOperations; 
 }
 
-- (unsigned int)countOfOperations 
+- (NSMutableArray *)operations
 {
-    return [_operations count];
-}
-
-- (id)objectInOperationsAtIndex:(unsigned int)index 
-{
-    return [_operations objectAtIndex:index];
-}
-
-- (void)insertObject:(id)anObject inOperationsAtIndex:(unsigned int)index 
-{
-    [_operations insertObject:anObject atIndex:index];
-}
-
-- (void)removeObjectFromOperationsAtIndex:(unsigned int)index 
-{
-    [_operations removeObjectAtIndex:index];
-}
-
-- (void)replaceObjectInOperationsAtIndex:(unsigned int)index withObject:(id)anObject 
-{
-    [_operations replaceObjectAtIndex:index withObject:anObject];
+    return _operations;
 }
 
 #pragma mark -
 #pragma mark High-level operations
 
--(void)logOperation:(id)op
+- (void)logOperation:(id)op
 {
-	[self insertObject:op inOperationsAtIndex:[self countOfOperations]];
+    [self willChangeValueForKey:@"operations"];
+	[_operations addObject:op];
+    [self didChangeValueForKey:@"operations"];
 }
 
--(void)unlogOperation:(id)op
+- (void)unlogOperation:(id)op
 {
     NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
     if ([[standardUserDefaults objectForKey:@"autoclean"] boolValue] == TRUE)
     {   
-        unsigned i = [_operations indexOfObject:op];
-        if (i != NSNotFound) {
-            [[op retain] autorelease];
-            [self removeObjectFromOperationsAtIndex:i];			
-        }
+        [self willChangeValueForKey:@"operations"];
+        [_operations removeObject:op];
+        [self didChangeValueForKey:@"operations"];
     }
 }
 
--(int)canAcceptActiveOperations
+- (int)canAcceptPendingOperations
 {
-	int active = MAX_ACTIVE_OPERATIONS;
-	NSEnumerator* e = [_currentOperations objectEnumerator];
-	S3Operation* o;
+	int available = MAX_ACTIVE_OPERATIONS;
+	NSEnumerator *e = [_currentOperations objectEnumerator];
+	S3Operation *o;
 	while (o = [e nextObject])
 	{
 		if ([o state]==S3OperationActive)
 		{
-			active--;
-			if (active==0)
-				return FALSE;
+			available--;
+			if (available == 0)
+				return available;
 		}
 	}
-	return TRUE;
+	return available;
 }
 
--(void)removeFromCurrentOperations:(S3Operation*)op
+- (void)removeFromCurrentOperations:(S3Operation *)op
 {
+    if ([op state]==S3OperationActive) {
+        return;
+    }
+        
 	[self willChangeValueForKey:@"currentOperations"];
 	[_currentOperations removeObject:op];
 	[self didChangeValueForKey:@"currentOperations"];
 	
-	if ([op state]==S3OperationDone)
-		[self unlogOperation:op];
-	
-	if (![self canAcceptActiveOperations])
-		return;
-	
-	NSEnumerator* e = [_currentOperations objectEnumerator];
-	S3Operation* o;
-	while (o = [e nextObject])
-	{
-		if ([o state]==S3OperationPending)
-		{
-			[o start:self];
-			return;
-		}
-	}
+	if ([op state]==S3OperationDone) {
+		[self unlogOperation:op];        
+    }
 }
 
--(BOOL)addToCurrentOperations:(S3Operation*)op
+- (BOOL)addToCurrentOperations:(S3Operation *)op
 {
-	if (_currentOperations==nil)
-		_currentOperations = [[NSMutableArray alloc] init];
-	
-	// Refresh operations should not be queued if another one is already in place
-	if ([op isKindOfClass:[S3ListOperation class]])
-		if ([_currentOperations hasObjectSatisfying:@selector(isMemberOfClass:) withArgument:[op class]])
-            return FALSE;
-    
 	[self willChangeValueForKey:@"currentOperations"];
 	[_currentOperations addObject:op];
 	[self logOperation:op];
 	[self didChangeValueForKey:@"currentOperations"];
-	
-	if ([self canAcceptActiveOperations])
-		[op start:self];
+
+	// Ensure this operation has the queue as its delegate.
+	[op setDelegate:self];
     
     return TRUE;
+}
+
+- (void)startQualifiedOperations:(NSTimer *)timer
+{
+	int slotsAvailable = [self canAcceptPendingOperations];
+	NSEnumerator *e = [_currentOperations objectEnumerator];
+	S3Operation *o;
+    // Pending retries get priority start status.
+	while (o = [e nextObject]) {
+		if (slotsAvailable == 0) {
+			break;
+		}
+		if ([o state] == S3OperationPendingRetry) {
+			[o start:self];
+			slotsAvailable--;
+		}
+	}
+    e = [_currentOperations objectEnumerator];
+    while (o = [e nextObject]) {
+		if (slotsAvailable == 0) {
+			break;
+		}
+		if ([o state] == S3OperationPending) {
+			[o start:self];
+			slotsAvailable--;
+		}
+	}
 }
 
 @end

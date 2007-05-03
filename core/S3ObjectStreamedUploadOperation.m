@@ -7,21 +7,21 @@
 //
 
 #import "S3ObjectStreamedUploadOperation.h"
+#import "S3TransferRateCalculator.h"
 
 #define UPLOAD_HTTP_METHOD @"PUT"
 
-
 @implementation S3ObjectStreamedUploadOperation
 
--(id)initWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b data:(NSDictionary*)data acl:(NSString*)acl
+- (id)initWithConnection:(S3Connection *)c bucket:(S3Bucket *)b data:(NSDictionary *)data acl:(NSString *)acl
 {
-	[super initWithDelegate:d];
+	[super init];
 
-    NSString* mimeType = [data objectForKey:FILEDATA_TYPE];
-	_size = [[data objectForKey:FILEDATA_SIZE] longLongValue];
+    NSString *mimeType = [data objectForKey:FILEDATA_TYPE];
+	long long _size = [[data objectForKey:FILEDATA_SIZE] longLongValue];
 	_path = [[data objectForKey:FILEDATA_PATH] retain];
 	
-    NSMutableDictionary* headers = [NSMutableDictionary dictionary];
+    NSMutableDictionary *headers = [NSMutableDictionary dictionary];
     [headers setObject:acl forKey:XAMZACL];
 	[headers setObject:[[data objectForKey:FILEDATA_SIZE] stringValue] forKey:@"Content-Length"];
 	[headers setObject:@"CFNetwork" forKey:@"User-Agent"];
@@ -30,16 +30,18 @@
 	if ((mimeType!=nil) && (![[mimeType stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]))
 		[headers setObject:mimeType forKey:@"Content-Type"];
 
-	_percent = 0;
-	_obuffer = [[NSMutableData alloc] init];//
+	_obuffer = [[NSMutableData alloc] init];
 
 	_request = [c createCFRequestForMethod:UPLOAD_HTTP_METHOD withResource:[c resourceForBucket:b key:[data objectForKey:FILEDATA_KEY]] headers:headers];
 	_headerData = CFHTTPMessageCopySerializedMessage(_request);
-	
+
+	_rateCalculator = [[S3TransferRateCalculator alloc] init];
+    [_rateCalculator setObjective:_size];
+
 	return self;
 }
 
--(void)start:(id)sender
+- (void)start:(id)sender
 {
 	NSHost *host = [NSHost hostWithName:DEFAULT_HOST];
 	// _istream and _ostream are instance variables
@@ -58,18 +60,15 @@
 	[_istream open];
     [_ostream open];
     [_fstream open];	
-	[self setStatus:@"Active"];
-	[self setActive:TRUE];
 	[self setState:S3OperationActive];
-
 }
 
-+(S3ObjectStreamedUploadOperation*)objectUploadWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b data:(NSDictionary*)data acl:(NSString*)acl
++ (S3ObjectStreamedUploadOperation *)objectUploadWithConnection:(S3Connection *)c bucket:(S3Bucket *)b data:(NSDictionary *)data acl:(NSString *)acl
 {
-	return [[[S3ObjectStreamedUploadOperation alloc] initWithConnection:c delegate:d bucket:b data:data acl:acl] autorelease];;
+	return [[[S3ObjectStreamedUploadOperation alloc] initWithConnection:c bucket:b data:data acl:acl] autorelease];;
 }
 
--(NSData*)data
+- (NSData *)data
 {
 	if (_response == NULL)
 		return [NSData data];
@@ -79,6 +78,7 @@
 
 - (void)invalidate 
 {
+    [_rateCalculator stopTransferRateCalculator];
 	[_istream close];
 	[_ostream close];
 	[_fstream close];
@@ -97,37 +97,39 @@
 	_obuffer = nil;
 }
 
--(NSString*)kind
+- (NSString *)kind
 {
 	return @"Object upload";
 }
 
--(void)stop:(id)sender
+- (void)stop:(id)sender
 {	
-	NSDictionary* d = [NSDictionary dictionaryWithObjectsAndKeys:@"Cancel",NSLocalizedDescriptionKey,
-		@"This operation has been cancelled",NSLocalizedDescriptionKey,nil];
+    if ([self active] == NO) {
+        return;
+    }
+	NSDictionary* d = [NSDictionary dictionaryWithObjectsAndKeys:@"This operation has been cancelled",NSLocalizedDescriptionKey,nil];
 	[self invalidate];
 	[self setError:[NSError errorWithDomain:S3_ERROR_DOMAIN code:-1 userInfo:d]];
-	[self setStatus:@"Cancelled"];
-	[self setActive:NO];
-	[self setState:S3OperationError];
+	[self setState:S3OperationCanceled];
 	[_delegate operationDidFail:self];
 }
 
--(BOOL)operationSuccess
+- (BOOL)operationSuccess
 {
 	int status = CFHTTPMessageGetResponseStatusCode(_response);
-	if (status/100==2)
+	if (status == 200)
 		return TRUE;
 	
 	// Houston, we have a problem 
-	NSMutableDictionary* dictionary = [NSMutableDictionary dictionary];
-	NSArray* a;
-	NSXMLDocument* d = [[[NSXMLDocument alloc] initWithData:[self data] options:NSXMLNodeOptionsNone error:&_error] autorelease];
+	NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+	NSArray *a;
+	NSXMLDocument *d = [[[NSXMLDocument alloc] initWithData:[self data] options:NSXMLNodeOptionsNone error:&_error] autorelease];
 	
 	a = [[d rootElement] nodesForXPath:@"//Code" error:&_error];
-	if ([a count]==1)
-		[dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:NSLocalizedDescriptionKey];
+    if ([a count]==1) {
+        [dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:NSLocalizedDescriptionKey];            
+        [dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:S3_ERROR_CODE_KEY];
+    }
 	a = [[d rootElement] nodesForXPath:@"//Message" error:&_error];
 	if ([a count]==1)
 		[dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:NSLocalizedRecoverySuggestionErrorKey];
@@ -138,11 +140,13 @@
 	[dictionary setObject:[NSNumber numberWithInt:status] forKey:S3_ERROR_HTTP_STATUS_KEY];
 				
 	[self setError:[NSError errorWithDomain:S3_ERROR_DOMAIN code:status userInfo:dictionary]];
+    [self setState:S3OperationError];
 	return FALSE;
 }
 
--(void)dealloc
+- (void)dealloc
 {
+    [_rateCalculator release];
 	[_path release];
 	[_istream release];
 	[_ostream release];
@@ -160,8 +164,6 @@
 
 
 - (void)connectionDidFinishLoading {
-    [self setStatus:@"Done"];
-	[self setActive:NO];
 	[self setState:S3OperationDone];
 	[_delegate operationDidFinish:self];
 }
@@ -169,8 +171,6 @@
 
 - (void)connectionDidFailWithError:(NSError *)error {
 	[self setError:error];
-    [self setStatus:@"Error"];
-	[self setActive:NO];
 	[self setState:S3OperationError];
 	[_delegate operationDidFail:self];
 }
@@ -205,22 +205,18 @@
 			NSLog(@"Header data was not sent in just one write. Oops");
 		CFRelease(_headerData);
 		_headerData = NULL;
+		[_rateCalculator startTransferRateCalculator];
 	}
 	
     unsigned olen = [_obuffer length];
-    if (0 < olen) {
+    if (olen > 0) {
         int writ = [_ostream write:[_obuffer bytes] maxLength:olen];
+		[_rateCalculator addBytesTransfered:writ];
 
-		_sent = _sent + writ;
-		int percent = _sent * 100 / _size;
-		if (_percent != percent) 
-		{
-			[self setStatus:[NSString stringWithFormat:@"Sending data %d %%",percent]];
-			_percent = percent;
-		}
+		[self setStatus:[NSString stringWithFormat:@"Sending data %@%% (%@ %@/%@) %@",[_rateCalculator stringForObjectivePercentageCompleted], [_rateCalculator stringForCalculatedTransferRate], [_rateCalculator stringForShortDisplayUnit], [_rateCalculator stringForShortRateUnit], [_rateCalculator stringForEstimatedTimeRemaining]]];
         
         // buffer any unwritten bytes for later writing
-		if (writ < olen) {
+		if (olen > writ) {
             memmove([_obuffer mutableBytes], [_obuffer mutableBytes] + writ, olen - writ);
             [_obuffer setLength:olen - writ];
             return;
@@ -230,7 +226,7 @@
 	[self processFileBytes];
 	
 	
-	if (0 == [_obuffer length]) 
+	if ([_obuffer length] == 0)
 	{
 		if (([_fstream streamStatus]==NSStreamStatusAtEnd)||([_fstream streamStatus]==NSStreamStatusClosed)||([_fstream streamStatus]==NSStreamStatusError))
 		{
@@ -258,7 +254,7 @@
 
 // We fake KVO for the inspector pane.
 
--(id)valueForUndefinedKey:(NSString*)k
+- (id)valueForUndefinedKey:(NSString *)k
 {
 	if ([k isEqualToString:@"response"])
 		return self;
@@ -278,30 +274,30 @@
 	}
 	if ([keyPath isEqualToString:@"response.headersReceived"])
 	{
-		NSMutableArray* a = [NSMutableArray array];
+		NSMutableArray *a = [NSMutableArray array];
 		if (_response==NULL)
 			return a;
 		CFDictionaryRef h = CFHTTPMessageCopyAllHeaderFields(_response);
-		NSEnumerator* e = [(NSDictionary*)h keyEnumerator];
-		NSString* k;
+		NSEnumerator *e = [(NSDictionary*)h keyEnumerator];
+		NSString *k;
 		while (k = [e nextObject])
 		{
-			[a addObject:[NSDictionary dictionaryWithObjectsAndKeys:k,@"key",[(NSDictionary*)h objectForKey:k],@"value",nil]];
+			[a addObject:[NSDictionary dictionaryWithObjectsAndKeys:k,@"key",[(NSDictionary *)h objectForKey:k],@"value",nil]];
 		}
 		CFRelease(h);
 		return a;				
 	}
 	if ([keyPath isEqualToString:@"request.headersSent"])
 	{
-		NSMutableArray* a = [NSMutableArray array];
+		NSMutableArray *a = [NSMutableArray array];
 		if (_request==NULL)
 			return a;
 		CFDictionaryRef h = CFHTTPMessageCopyAllHeaderFields(_request);
-		NSEnumerator* e = [(NSDictionary*)h keyEnumerator];
-		NSString* k;
+		NSEnumerator *e = [(NSDictionary*)h keyEnumerator];
+		NSString *k;
 		while (k = [e nextObject])
 		{
-			[a addObject:[NSDictionary dictionaryWithObjectsAndKeys:k,@"key",[(NSDictionary*)h objectForKey:k],@"value",nil]];
+			[a addObject:[NSDictionary dictionaryWithObjectsAndKeys:k,@"key",[(NSDictionary *)h objectForKey:k],@"value",nil]];
 		}
 		CFRelease(h);
 		return a;		
@@ -364,7 +360,7 @@
 			{
 				[self invalidate];
 				if ([self incomingBytesIsComplete] == NO) {
-					NSMutableDictionary* dictionary = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"Transfer interrupted. End of stream occured before complete message", NSLocalizedDescriptionKey];
+					NSMutableDictionary *dictionary = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"Transfer interrupted. End of stream occured before complete message", NSLocalizedDescriptionKey];
 					[self connectionDidFailWithError:[NSError errorWithDomain:S3_ERROR_DOMAIN code:-1 userInfo:dictionary]];
 				}
 			}

@@ -16,14 +16,14 @@
 
 @implementation S3OperationController
 
-+ (void) initialize
++ (void)initialize
 {
 	[NSValueTransformer setValueTransformer:[[S3OperationSummarizer new] autorelease] forName:@"S3OperationSummarizer"];
 }
 
 -(void)awakeFromNib
 {
-	NSToolbar* toolbar = [[[NSToolbar alloc] initWithIdentifier:@"OperationConsoleToolbar"] autorelease];
+	NSToolbar *toolbar = [[[NSToolbar alloc] initWithIdentifier:@"OperationConsoleToolbar"] autorelease];
 	[toolbar setDelegate:self];
 	[toolbar setVisible:YES];
 	[toolbar setAllowsUserCustomization:YES];
@@ -33,7 +33,7 @@
 	[[self window] setToolbar:toolbar];
 }
 
-- (NSArray*)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar
+- (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar *)toolbar
 {
 	return [NSArray arrayWithObjects: NSToolbarSeparatorItemIdentifier,
 		NSToolbarSpaceItemIdentifier,
@@ -41,51 +41,54 @@
 		@"Stop", @"Remove", @"Info", nil];
 }
 
-- (NSArray*)toolbarDefaultItemIdentifiers:(NSToolbar*)toolbar
+- (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar*)toolbar
 {
 	return [NSArray arrayWithObjects: @"Info", @"Remove", NSToolbarFlexibleSpaceItemIdentifier, @"Stop", nil]; 
 }
 
-- (BOOL) validateToolbarItem:(NSToolbarItem*)theItem
+- (BOOL)validateToolbarItem:(NSToolbarItem *)theItem
 {
-	if ([[theItem itemIdentifier] isEqualToString:@"Remove"])
-	{	
+	if ([[theItem itemIdentifier] isEqualToString:@"Remove"]) {	
 		if (![_operationsArrayController canRemove])
-			return FALSE;
+			return NO;
 		
-		NSEnumerator* e = [[_operationsArrayController selectedObjects] objectEnumerator];
-		S3Operation* op;
+		NSEnumerator *e = [[_operationsArrayController selectedObjects] objectEnumerator];
+		S3Operation *op;
 		while (op = [e nextObject]) 
 		{
 			if (([op state]==S3OperationActive)||([op state]==S3OperationPending))
-				return FALSE;
+				return NO;
 		}
-		return TRUE;
+		return YES;
 	}
-	if ([[theItem itemIdentifier] isEqualToString:@"Stop"])
-	{	
-		NSEnumerator* e = [[_operationsArrayController selectedObjects] objectEnumerator];
-		S3Operation* op;
+	if ([[theItem itemIdentifier] isEqualToString:@"Stop"]) {	
+		NSEnumerator *e = [[_operationsArrayController selectedObjects] objectEnumerator];
+		S3Operation *op;
 		while (op = [e nextObject]) 
 		{
 			if (([op state]==S3OperationActive)||([op state]==S3OperationPending))
-				return TRUE;
+				return YES;
 		}
-		return FALSE;
+		return NO;
 	}
+    if ([[theItem itemIdentifier] isEqualToString:@"Info"]) {
+        if ([[_operationsArrayController selectedObjects] count] != 1) {
+            return NO;
+        }
+    }
 
-	return TRUE;
+	return YES;
 }
 
--(IBAction)remove:(id)sender;
+- (IBAction)remove:(id)sender;
 {
 	[_operationsArrayController remove:sender];
 }
 
--(IBAction)stop:(id)sender;
+- (IBAction)stop:(id)sender;
 {
-	NSEnumerator* e = [[_operationsArrayController selectedObjects] objectEnumerator];
-	S3Operation* op;
+	NSEnumerator *e = [[_operationsArrayController selectedObjects] objectEnumerator];
+	S3Operation *op;
 	while (op = [e nextObject]) 
 	{
 		if (([op state]==S3OperationActive)||([op state]==S3OperationPending))
@@ -93,7 +96,12 @@
 	}	
 }
 
-- (NSToolbarItem*)toolbar:(NSToolbar*)toolbar itemForItemIdentifier:(NSString*)itemIdentifier willBeInsertedIntoToolbar:(BOOL) flag
+- (IBAction)info:(id)sender
+{
+    [_infoPanel orderFront:self];
+}
+
+- (NSToolbarItem*)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag
 {
 	NSToolbarItem *item = [[NSToolbarItem alloc] initWithItemIdentifier: itemIdentifier];
 	
@@ -118,8 +126,8 @@
 		[item setLabel: NSLocalizedString(@"Info", nil)];
 		[item setPaletteLabel: [item label]];
 		[item setImage: [NSImage imageNamed: @"info.icns"]];
-		[item setTarget:_infoPanel];
-		[item setAction:@selector(orderFront:)];
+		[item setTarget:self];
+		[item setAction:@selector(info:)];
     }
 	
     return [item autorelease];

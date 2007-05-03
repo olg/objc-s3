@@ -13,6 +13,6 @@
 
 @interface S3ObjectDeleteOperation : S3NSURLConnectionOperation
 
-+(S3ObjectDeleteOperation*)objectDeletionWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b object:(S3Object*)o;
++ (S3ObjectDeleteOperation *)objectDeletionWithConnection:(S3Connection *)c bucket:(S3Bucket *)b object:(S3Object *)o;
 
 @end

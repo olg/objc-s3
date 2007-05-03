@@ -15,22 +15,22 @@
 
 @interface S3BucketListController : S3ActiveWindowController {
 	
-	NSMutableArray* _buckets;
-	S3Owner* _bucketsOwner;
+	NSMutableArray *_buckets;
+	S3Owner *_bucketsOwner;
 		
-	IBOutlet NSArrayController* _bucketsController;
+	IBOutlet NSArrayController *_bucketsController;
 
-	IBOutlet NSWindow* addSheet;
-	NSString* _name;
+	IBOutlet NSWindow *addSheet;
+	NSString *_name;
 }
 
--(IBAction)refresh:(id)sender;
--(IBAction)remove:(id)sender;
--(IBAction)add:(id)sender;
--(IBAction)open:(id)sender;
+- (IBAction)refresh:(id)sender;
+- (IBAction)remove:(id)sender;
+- (IBAction)add:(id)sender;
+- (IBAction)open:(id)sender;
 
--(IBAction)cancelSheet:(id)sender;
--(IBAction)closeSheet:(id)sender;
+- (IBAction)cancelSheet:(id)sender;
+- (IBAction)closeSheet:(id)sender;
 
 - (NSString *)name;
 - (void)setName:(NSString *)aName;

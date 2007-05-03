@@ -10,12 +10,12 @@
 #import "S3OperationQueue.h"
 
 @interface S3Application : NSApplication {
-	NSMutableDictionary* _controlers;
-    S3OperationQueue* _queue;
+    NSMutableDictionary *_controlers;
+    S3OperationQueue *_queue;
 }
 
--(IBAction)openConnection:(id)sender;
--(IBAction)showOperationConsole:(id)sender;
--(S3OperationQueue*)queue;
+- (IBAction)openConnection:(id)sender;
+- (IBAction)showOperationConsole:(id)sender;
+- (S3OperationQueue *)queue;
 
 @end

@@ -10,8 +10,8 @@
 #import "S3Operation.h"
 
 @interface S3OperationController : NSWindowController {
-	IBOutlet NSArrayController* _operationsArrayController;
-	IBOutlet NSWindow* _infoPanel;
+	IBOutlet NSArrayController *_operationsArrayController;
+	IBOutlet NSWindow *_infoPanel;
 }
 
 @end

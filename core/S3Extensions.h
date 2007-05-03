@@ -18,30 +18,30 @@
 
 @interface NSMutableDictionary (Comfort)
 
--(void)safeSetObject:(id)o forKey:(NSString*)k;
--(void)safeSetObject:(id)o forKey:(NSString*)k withValueForNil:(id)d;
+- (void)safeSetObject:(id)o forKey:(NSString *)k;
+- (void)safeSetObject:(id)o forKey:(NSString *)k withValueForNil:(id)d;
 
 @end
 
 @interface NSArray (Comfort)
 
--(NSArray*)expandPaths;
--(BOOL)hasObjectSatisfying:(SEL)aSelector withArgument:(id)argument;
+- (NSArray *)expandPaths;
+- (BOOL)hasObjectSatisfying:(SEL)aSelector withArgument:(id)argument;
 
 @end
 
 @interface NSDictionary (URL)
 
--(NSString*)queryString;
+-(NSString *)queryString;
 
 @end
 
 @interface NSXMLElement (Comfort)
 
--(NSXMLElement*)elementForName:(NSString*)n;
--(NSNumber*)longLongNumber;
--(NSNumber*)boolNumber;
--(NSCalendarDate*)dateValue;
+-(NSXMLElement *)elementForName:(NSString *)n;
+-(NSNumber *)longLongNumber;
+-(NSNumber *)boolNumber;
+-(NSCalendarDate *)dateValue;
 
 @end
 

@@ -23,7 +23,7 @@
     [NSValueTransformer setValueTransformer:fileSizeTransformer forName:@"S3FileSizeTransformer"];
 }
 
--(id)init
+- (id)init
 {
 	[super init];
 	_controlers = [[NSMutableDictionary alloc] init];
@@ -31,16 +31,16 @@
 	return self;
 }
 
--(IBAction)openConnection:(id)sender
+- (IBAction)openConnection:(id)sender
 {
-	S3Connection* cnx = [[[S3Connection alloc] init] autorelease];
-	S3LoginController* c = [[[S3LoginController alloc] initWithWindowNibName:@"Authentication"] autorelease];
+	S3Connection *cnx = [[[S3Connection alloc] init] autorelease];
+	S3LoginController *c = [[[S3LoginController alloc] initWithWindowNibName:@"Authentication"] autorelease];
 	[c setConnection:cnx];
 	[c showWindow:self];
 	[c retain];
 }
 
--(IBAction)showOperationConsole:(id)sender
+- (IBAction)showOperationConsole:(id)sender
 {
     // No-op, as everything is done in bindings
     // but we need a target/action for automatic enabling
@@ -51,12 +51,12 @@
     NSString* defaultKey = [[NSUserDefaults standardUserDefaults] stringForKey:DEFAULT_USER];
     if (defaultKey!=nil)
     {   
-        S3Connection* cnx = [[[S3Connection alloc] init] autorelease];
+        S3Connection *cnx = [[[S3Connection alloc] init] autorelease];
         [cnx setAccessKeyID:defaultKey];
         [cnx trySetupSecretAccessKeyFromKeychain];
         if ([cnx isReady])
         {
-            S3BucketListController* c = [[[S3BucketListController alloc] initWithWindowNibName:@"Buckets"] autorelease];
+            S3BucketListController *c = [[[S3BucketListController alloc] initWithWindowNibName:@"Buckets"] autorelease];
             [c setConnection:cnx];
             [c showWindow:self];
             [c refresh:self];
@@ -68,24 +68,29 @@
 - (void)finishLaunching
 {
 	[super finishLaunching];
-	S3OperationController* c = [[[S3OperationController alloc] initWithWindowNibName:@"Operations"] autorelease];
+	S3OperationController *c = [[[S3OperationController alloc] initWithWindowNibName:@"Operations"] autorelease];
 	[_controlers setObject:c forKey:@"Console"];
     
     NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
-    NSNumber* consoleVisible = [standardUserDefaults objectForKey:@"consolevisible"];
-    if (([consoleVisible boolValue] == TRUE)||(consoleVisible==nil)) // cover the migration cases 
-        [[_controlers objectForKey:@"Console"] showWindow:self];
+    NSNumber *consoleVisible = [standardUserDefaults objectForKey:@"consolevisible"];
+    // cover the migration cases 
+    if (([consoleVisible boolValue] == TRUE)||(consoleVisible==nil)) {
+        [[_controlers objectForKey:@"Console"] showWindow:self];        
+    } else {
+        // Load the window to be ready for the console to be shown.
+        [[_controlers objectForKey:@"Console"] window];
+    }
     
     if ([[standardUserDefaults objectForKey:@"autologin"] boolValue] == TRUE)
         [self tryAutoLogin];
 }
 
--(IBAction)showHelp:(id)sender
+- (IBAction)showHelp:(id)sender
 {
     [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://people.no-distance.net/ol/software/s3/"]];
 }
 
--(S3OperationQueue*)queue
+- (S3OperationQueue *)queue
 {
     return _queue;
 }

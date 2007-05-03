@@ -12,25 +12,25 @@
 
 @implementation S3ObjectUploadOperation
 
--(NSString*)kind
+- (NSString *)kind
 {
 	return @"Object upload";
 }
 
-+(S3ObjectUploadOperation*)objectUploadWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b data:(NSDictionary*)data acl:(NSString*)acl
++ (S3ObjectUploadOperation *)objectUploadWithConnection:(S3Connection *)c bucket:(S3Bucket *)b data:(NSDictionary *)data acl:(NSString *)acl
 {
-    NSString* mimeType = [data objectForKey:FILEDATA_TYPE];
-    NSData* content = [NSData dataWithContentsOfFile:[data objectForKey:FILEDATA_PATH]];
+    NSString *mimeType = [data objectForKey:FILEDATA_TYPE];
+    NSData *content = [NSData dataWithContentsOfFile:[data objectForKey:FILEDATA_PATH]];
     
-	NSDictionary* headers;
+	NSDictionary *headers;
 	if ((mimeType==nil) || ([[mimeType stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]))
 		headers = [NSDictionary dictionaryWithObject:acl forKey:XAMZACL];
 	else
 		headers = [NSDictionary dictionaryWithObjectsAndKeys:acl,XAMZACL,mimeType,@"Content-Type",nil];
 		
-	NSMutableURLRequest* rootConn = [c makeRequestForMethod:UPLOAD_HTTP_METHOD withResource:[c resourceForBucket:b key:[data objectForKey:FILEDATA_KEY]] headers:headers];
+	NSMutableURLRequest *rootConn = [c makeRequestForMethod:UPLOAD_HTTP_METHOD withResource:[c resourceForBucket:b key:[data objectForKey:FILEDATA_KEY]] headers:headers];
 	[rootConn setHTTPBody:content];
-	S3ObjectUploadOperation* op = [[[S3ObjectUploadOperation alloc] initWithRequest:rootConn delegate:d] autorelease];
+	S3ObjectUploadOperation *op = [[[S3ObjectUploadOperation alloc] initWithRequest:rootConn] autorelease];
 	return op;
 }
 

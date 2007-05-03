@@ -11,15 +11,15 @@
 
 @implementation S3BucketAddOperation
 
--(NSString*)kind
+- (NSString *)kind
 {
 	return @"Bucket addition";
 }
 
-+(S3BucketAddOperation*)bucketAddWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d name:(NSString*)name;
++ (S3BucketAddOperation *)bucketAddWithConnection:(S3Connection *)c name:(NSString *)name
 {
-	NSURLRequest* rootConn = [c makeRequestForMethod:@"PUT" withResource:name];
-	S3BucketAddOperation* op = [[[S3BucketAddOperation alloc] initWithRequest:rootConn delegate:d] autorelease];
+	NSURLRequest *rootConn = [c makeRequestForMethod:@"PUT" withResource:name];
+	S3BucketAddOperation *op = [[[S3BucketAddOperation alloc] initWithRequest:rootConn] autorelease];
 	return op;
 }
 

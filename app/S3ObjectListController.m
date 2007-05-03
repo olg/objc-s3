@@ -23,8 +23,6 @@
 #define SHEET_CANCEL 0
 #define SHEET_OK 1
 
-
-
 #define ACL_PRIVATE @"private"
 
 @implementation S3ObjectListController
@@ -32,12 +30,12 @@
 #pragma mark -
 #pragma mark Toolbar management
 
--(void)awakeFromNib
+- (void)awakeFromNib
 {
     if ([S3ActiveWindowController instancesRespondToSelector:@selector(awakeFromNib)] == YES) {
         [super awakeFromNib];
     }
-	NSToolbar* toolbar = [[[NSToolbar alloc] initWithIdentifier:@"ObjectsToolbar"] autorelease];
+	NSToolbar *toolbar = [[[NSToolbar alloc] initWithIdentifier:@"ObjectsToolbar"] autorelease];
 	[toolbar setDelegate:self];
 	[toolbar setVisible:YES];
 	[toolbar setAllowsUserCustomization:YES];
@@ -57,7 +55,7 @@
     [[NSApp queue] addQueueListener:self];
 }
 
-- (NSArray*)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar
+- (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar *)toolbar
 {
 	return [NSArray arrayWithObjects: NSToolbarSeparatorItemIdentifier,
 		NSToolbarSpaceItemIdentifier,
@@ -76,12 +74,12 @@
 	return YES;
 }
 
-- (NSArray*)toolbarDefaultItemIdentifiers:(NSToolbar*)toolbar
+- (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar *)toolbar
 {
 	return [NSArray arrayWithObjects: @"Upload", @"Download", @"Remove", NSToolbarSeparatorItemIdentifier,  @"Remove All", NSToolbarFlexibleSpaceItemIdentifier, @"Refresh", nil]; 
 }
 
-- (NSToolbarItem*)toolbar:(NSToolbar*)toolbar itemForItemIdentifier:(NSString*)itemIdentifier willBeInsertedIntoToolbar:(BOOL) flag
+- (NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL) flag
 {
 	NSToolbarItem *item = [[NSToolbarItem alloc] initWithItemIdentifier: itemIdentifier];
 	
@@ -134,7 +132,7 @@
 #pragma mark Misc Delegates
 
 
--(void)windowDidLoad
+- (void)windowDidLoad
 {
 	[self refresh:self];
 }
@@ -149,7 +147,22 @@
 	[NSApp endSheet:[sender window] returnCode:SHEET_OK];
 }
 
--(void)s3OperationDidFinish:(NSNotification *)notification
+- (void)s3OperationStateDidChange:(NSNotification *)notification
+{
+    S3Operation *op = [[notification userInfo] objectForKey:S3OperationObjectKey];
+    unsigned index = [_operations indexOfObjectIdenticalTo:op];
+    if (index == NSNotFound) {
+        return;
+    }
+    
+    [super s3OperationStateDidChange:notification];
+    
+    if ([op isKindOfClass:[S3ObjectListOperation class]] && [op state] == S3OperationActive) {
+        _needsRefresh = NO;
+    }
+}
+
+- (void)s3OperationDidFinish:(NSNotification *)notification
 {
     S3Operation *op = [[notification userInfo] objectForKey:S3OperationObjectKey];
     unsigned index = [_operations indexOfObjectIdenticalTo:op];
@@ -159,116 +172,113 @@
 
     [super s3OperationDidFinish:notification];
 
-#ifdef S3_DOWNLOADS_NSURLCONNECTION
-	if ([op isKindOfClass:[S3ObjectDownloadOperation class]]) {
-		NSData* d = [(S3ObjectDownloadOperation*)op data];
-		NSSavePanel* sp = [NSSavePanel savePanel];
-		int runResult;
-		NSString* n = [[(S3ObjectDownloadOperation*)op object] key];
-		if (n==nil) n = @"Untitled";
-		runResult = [sp runModalForDirectory:nil file:n];
-		
-		if (runResult == NSOKButton) {
-			if (![d writeToFile:[sp filename] atomically:YES])
-				NSBeep();
-		}
-	}
-#endif
 	if ([op isKindOfClass:[S3ObjectListOperation class]]) {
-		[self addObjects:[(S3ObjectListOperation*)op objects]];
+		[self addObjects:[(S3ObjectListOperation *)op objects]];
 		[self setObjectsInfo:[(S3ObjectListOperation*)op metadata]];
         
-        S3ObjectListOperation* next = [(S3ObjectListOperation*)op operationForNextChunk];
-        if (next!=nil)
-            [self addToCurrentOperations:next];
-
+        S3ObjectListOperation *next = [(S3ObjectListOperation *)op operationForNextChunk];
+        if (next!=nil) {
+            [self addToCurrentOperations:next];            
+        }
 	}
 	
-	if ([op isKindOfClass:[S3ObjectUploadOperation class]]||[op isKindOfClass:[S3ObjectStreamedUploadOperation class]]||[op isKindOfClass:[S3ObjectDeleteOperation class]])
+	if ([op isKindOfClass:[S3ObjectUploadOperation class]]||[op isKindOfClass:[S3ObjectStreamedUploadOperation class]]||[op isKindOfClass:[S3ObjectDeleteOperation class]]||_needsRefresh == YES)
 	{
         NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
         if ([[standardUserDefaults objectForKey:@"norefresh"] boolValue] == TRUE)
             return;
 		// Simple heuristics: if we still have something in the operation queue, no need to refresh now
-		if (![self hasActiveOperations])
-			[self refresh:self];
+		if (![self hasActiveOperations]) {
+			[self refresh:self];            
+        } else {
+            _needsRefresh = YES;
+        }
 	}
     
+}
+
+- (void)s3OperationDidFail:(NSNotification *)notification
+{
+    S3Operation *op = [[notification userInfo] objectForKey:S3OperationObjectKey];
+    unsigned index = [_operations indexOfObjectIdenticalTo:op];
+    if (index == NSNotFound) {
+        return;
+    }
+    
+    [super s3OperationDidFail:notification];
+    
+    if (_needsRefresh == YES && [self hasActiveOperations] == NO) {
+        [self refresh:self];
+    }
 }
 
 #pragma mark -
 #pragma mark Actions
 
--(IBAction)refresh:(id)sender
+- (IBAction)refresh:(id)sender
 {
     [self setObjects:[NSMutableArray array]];
-	S3ObjectListOperation* op = [S3ObjectListOperation objectListWithConnection:_connection delegate:[NSApp queue] bucket:_bucket];
+	S3ObjectListOperation *op = [S3ObjectListOperation objectListWithConnection:_connection bucket:_bucket];
 	[self addToCurrentOperations:op];
 }
 
 -(IBAction)removeAll:(id)sender
 {
-    NSAlert * alert = [[NSAlert alloc] init];
+    NSAlert *alert = [[NSAlert alloc] init];
     [alert setMessageText:NSLocalizedString(@"Remove all objects permanently?",nil)];
     [alert setInformativeText:NSLocalizedString(@"Warning: Are you sure you want to remove all objects in this bucket? This operation cannot be undone.",nil)];
     [alert addButtonWithTitle:NSLocalizedString(@"Cancel",nil)];
     [alert addButtonWithTitle:NSLocalizedString(@"Remove",nil)];
     if ([alert runModal] == NSAlertFirstButtonReturn)
-    {   
+    {
         [alert release];
         return;
     }
     [alert release];
     
-	S3Object* b;
-	NSEnumerator* e = [[_objectsController arrangedObjects] objectEnumerator];
+	S3Object *b;
+	NSEnumerator *e = [[_objectsController arrangedObjects] objectEnumerator];
 	while (b = [e nextObject])
 	{
-		S3ObjectDeleteOperation* op = [S3ObjectDeleteOperation objectDeletionWithConnection:_connection delegate:[NSApp queue] bucket:_bucket object:b];
-		[self addToCurrentOperations:op];
-
-	}
-}
-
--(IBAction)remove:(id)sender
-{
-	S3Object* b;
-	NSEnumerator* e = [[_objectsController selectedObjects] objectEnumerator];
-	while (b = [e nextObject])
-	{
-		S3ObjectDeleteOperation* op = [S3ObjectDeleteOperation objectDeletionWithConnection:_connection delegate:[NSApp queue] bucket:_bucket object:b];
+		S3ObjectDeleteOperation *op = [S3ObjectDeleteOperation objectDeletionWithConnection:_connection bucket:_bucket object:b];
 		[self addToCurrentOperations:op];
 	}
 }
 
--(IBAction)download:(id)sender
+- (IBAction)remove:(id)sender
 {
-	S3Object* b;
-	NSEnumerator* e = [[_objectsController selectedObjects] objectEnumerator];
+	S3Object *b;
+	NSEnumerator *e = [[_objectsController selectedObjects] objectEnumerator];
 	while (b = [e nextObject])
 	{
-#ifdef S3_DOWNLOADS_NSURLCONNECTION
-		S3ObjectDownloadOperation* op = [S3ObjectDownloadOperation objectDownloadWithConnection:_connection delegate:[NSApp queue] bucket:_bucket object:b];
+		S3ObjectDeleteOperation *op = [S3ObjectDeleteOperation objectDeletionWithConnection:_connection bucket:_bucket object:b];
 		[self addToCurrentOperations:op];
-#else
-		NSSavePanel* sp = [NSSavePanel savePanel];
+	}
+}
+
+- (IBAction)download:(id)sender
+{
+	S3Object *b;
+	NSEnumerator *e = [[_objectsController selectedObjects] objectEnumerator];
+	while (b = [e nextObject])
+	{
+		NSSavePanel *sp = [NSSavePanel savePanel];
 		int runResult;
-		NSString* n = [[b key] lastPathComponent];
+		NSString *n = [[b key] lastPathComponent];
 		if (n==nil) n = @"Untitled";
 		runResult = [sp runModalForDirectory:nil file:n];
 		if (runResult == NSOKButton) {
-			S3ObjectDownloadOperation* op = [S3ObjectDownloadOperation objectDownloadWithConnection:_connection delegate:[NSApp queue] bucket:_bucket object:b toPath:[sp filename]];
+			S3ObjectDownloadOperation *op = [S3ObjectDownloadOperation objectDownloadWithConnection:_connection bucket:_bucket object:b toPath:[sp filename]];
 			[self addToCurrentOperations:op];
 		}
-#endif
 	}
 }
 
 
--(void)uploadFile:(NSDictionary*)data acl:(NSString*)acl
+- (void)uploadFile:(NSDictionary *)data acl:(NSString *)acl
 {
-    NSString* path = [data objectForKey:FILEDATA_PATH];
-    NSNumber* size = [data objectForKey:FILEDATA_SIZE];
+    NSString *path = [data objectForKey:FILEDATA_PATH];
+    NSNumber *size = [data objectForKey:FILEDATA_SIZE];
     
 	if (![self acceptFileForImport:path])
     {   
@@ -278,7 +288,7 @@
         return;        
     }
 	
-    S3Operation* op;
+    S3Operation *op;
     
     CFDictionaryRef proxyDict = SCDynamicStoreCopyProxies(NULL); 
     BOOL hasProxy = (CFDictionaryGetValue(proxyDict, kSCPropNetProxiesHTTPProxy) != NULL);
@@ -286,25 +296,23 @@
 
     // If it's a small file, no need for streamed operation (and we can cover easily both kind of upload ops in tests)
     if (hasProxy || ([size longLongValue] < 16384))
-        op = [S3ObjectUploadOperation objectUploadWithConnection:_connection delegate:[NSApp queue] bucket:_bucket data:data acl:acl];
+        op = [S3ObjectUploadOperation objectUploadWithConnection:_connection bucket:_bucket data:data acl:acl];
     else 
-        op = [S3ObjectStreamedUploadOperation objectUploadWithConnection:_connection delegate:[NSApp queue] bucket:_bucket data:data acl:acl];
+        op = [S3ObjectStreamedUploadOperation objectUploadWithConnection:_connection bucket:_bucket data:data acl:acl];
     
 	[self addToCurrentOperations:op];
-
 }
 
--(void)uploadFiles
+- (void)uploadFiles
 {	
-	NSEnumerator* e = [[self uploadData] objectEnumerator];
-	NSDictionary* data;
+	NSEnumerator *e = [[self uploadData] objectEnumerator];
+	NSDictionary *data;
 
 	while (data = [e nextObject])
 		[self uploadFile:data acl:[self uploadACL]];		
 }
 
-
--(IBAction)upload:(id)sender
+- (IBAction)upload:(id)sender
 {
 	NSOpenPanel *oPanel = [[NSOpenPanel openPanel] retain];
 	[oPanel setAllowsMultipleSelection:YES];
@@ -322,24 +330,24 @@
 	[self uploadFiles];
 }
 
--(BOOL)acceptFileForImport:(NSString*)path
+- (BOOL)acceptFileForImport:(NSString *)path
 {
 	return [[NSFileManager defaultManager] isReadableFileAtPath:path];
 }
 
--(void)importFiles:(NSArray*)files withDialog:(BOOL)dialog
+- (void)importFiles:(NSArray *)files withDialog:(BOOL)dialog
 {
 	// First expand directories and only keep paths to files
-	NSArray* paths = [files expandPaths];
+	NSArray *paths = [files expandPaths];
 		
-	NSString* path;
-	NSEnumerator* e = [paths objectEnumerator];
-	NSMutableArray* filesInfo = [NSMutableArray array];
-	NSString* prefix = [NSString commonPathComponentInPaths:paths]; 
+	NSString *path;
+	NSEnumerator *e = [paths objectEnumerator];
+	NSMutableArray *filesInfo = [NSMutableArray array];
+	NSString *prefix = [NSString commonPathComponentInPaths:paths]; 
 	
 	while (path = [e nextObject])
 	{
-		NSMutableDictionary* info = [NSMutableDictionary dictionary];
+		NSMutableDictionary *info = [NSMutableDictionary dictionary];
 		[info setObject:path forKey:FILEDATA_PATH];
 		[info setObject:[path fileSizeForPath] forKey:FILEDATA_SIZE];
 		[info safeSetObject:[path mimeTypeForPath] forKey:FILEDATA_TYPE withValueForNil:@"application/octet-stream"];
@@ -385,7 +393,7 @@
 #pragma mark -
 #pragma mark Key-value coding
 
--(void)addObjects:(NSArray*)a
+- (void)addObjects:(NSArray *)a
 {
     [self willChangeValueForKey:@"objects"];
     [_objects addObjectsFromArray:a];
@@ -396,28 +404,29 @@
 {
     return _objects; 
 }
+
 - (void)setObjects:(NSMutableArray *)aObjects
 {
     [_objects release];
     _objects = [aObjects retain];
 }
 
-
 - (NSMutableDictionary *)objectsInfo
 {
     return _objectsInfo; 
 }
+
 - (void)setObjectsInfo:(NSMutableDictionary *)aObjectsInfo
 {
     [_objectsInfo release];
     _objectsInfo = [aObjectsInfo retain];
 }
 
-
 - (S3Bucket *)bucket
 {
     return _bucket; 
 }
+
 - (void)setBucket:(S3Bucket *)aBucket
 {
     [_bucket release];
@@ -428,6 +437,7 @@
 {
     return _uploadACL; 
 }
+
 - (void)setUploadACL:(NSString *)anUploadACL
 {
     [_uploadACL release];
@@ -438,6 +448,7 @@
 {
     return _uploadFilename; 
 }
+
 - (void)setUploadFilename:(NSString *)anUploadFilename
 {
     [_uploadFilename release];
@@ -448,6 +459,7 @@
 {
     return _uploadSize; 
 }
+
 - (void)setUploadSize:(NSString *)anUploadSize
 {
     [_uploadSize release];
@@ -458,6 +470,7 @@
 {
     return [[_uploadData retain] autorelease]; 
 }
+
 - (void)setUploadData:(NSMutableArray *)data
 {
     [_uploadData release];

@@ -11,12 +11,12 @@
 
 
 @interface S3NSURLConnectionOperation : S3Operation {
-	NSHTTPURLResponse* _response;
-	NSURLRequest* _request;
-	NSURLConnection* _connection;
+	NSHTTPURLResponse *_response;
+	NSURLRequest *_request;
+	NSURLConnection *_urlConnection;
 	NSMutableData* _data;
 }
 
--(id)initWithRequest:(NSURLRequest*)request delegate:(id)delegate;
+- (id)initWithRequest:(NSURLRequest *)request;
 
 @end

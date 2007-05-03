@@ -11,26 +11,25 @@
 
 @implementation S3NSURLConnectionOperation
 
--(id)initWithRequest:(NSURLRequest*)request delegate:(id)delegate
+- (id)initWithRequest:(NSURLRequest*)request
 {
-	[super initWithDelegate:delegate];
+	[super init];
 	_request = [request retain];
 	_data = [[NSMutableData alloc] init];
 	return self;
 }
 
--(void)start:(id)sender
+- (void)start:(id)sender
 {
-	_connection = [[NSURLConnection alloc] initWithRequest:_request delegate:self];
+	_urlConnection = [[NSURLConnection alloc] initWithRequest:_request delegate:self];
 	[self setState:S3OperationActive];
-	[self setStatus:@"Active"];
 }
 
--(void)dealloc
+- (void)dealloc
 {
 	[_request release];
 	[_response release];
-	[_connection release];
+	[_urlConnection release];
 	[_data release];
 	[super dealloc];
 }
@@ -41,41 +40,43 @@
     _response = [aResponse retain];
 }
 
--(BOOL)operationSuccess
+- (BOOL)operationSuccess
 {
 	int status = [_response statusCode];
-	if (status/100==2)
+	if (status == 200 || status == 204)
 		return TRUE;
 	
 	// Houston, we have a problem 
-	NSMutableDictionary* dictionary = [NSMutableDictionary dictionary];
-	NSArray* a;
-	NSXMLDocument* d = [[[NSXMLDocument alloc] initWithData:_data options:NSXMLNodeOptionsNone error:&_error] autorelease];
+	NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+	NSArray *a;
+	NSXMLDocument *d = [[[NSXMLDocument alloc] initWithData:_data options:NSXMLNodeOptionsNone error:&_error] autorelease];
 	
 	a = [[d rootElement] nodesForXPath:@"//Code" error:&_error];
-        if ([a count]==1)
-            [dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:NSLocalizedDescriptionKey];
-        a = [[d rootElement] nodesForXPath:@"//Message" error:&_error];
-            if ([a count]==1)
-                [dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:NSLocalizedRecoverySuggestionErrorKey];
-            a = [[d rootElement] nodesForXPath:@"//Resource" error:&_error];
-                if ([a count]==1)
-                    [dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:S3_ERROR_RESOURCE_KEY];
-                
-                [dictionary setObject:[NSNumber numberWithInt:status] forKey:S3_ERROR_HTTP_STATUS_KEY];
-                
-                [self setError:[NSError errorWithDomain:S3_ERROR_DOMAIN code:[_response statusCode] userInfo:dictionary]];
-                [self setStatus:@"Error"];
-                return FALSE;
+    if ([a count]==1) {
+        [dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:NSLocalizedDescriptionKey];            
+        [dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:S3_ERROR_CODE_KEY];
+    }
+    a = [[d rootElement] nodesForXPath:@"//Message" error:&_error];
+    if ([a count]==1)
+        [dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:NSLocalizedRecoverySuggestionErrorKey];
+    a = [[d rootElement] nodesForXPath:@"//Resource" error:&_error];
+    if ([a count]==1)
+        [dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:S3_ERROR_RESOURCE_KEY];
+
+    [dictionary setObject:[NSNumber numberWithInt:status] forKey:S3_ERROR_HTTP_STATUS_KEY];
+        
+    [self setError:[NSError errorWithDomain:S3_ERROR_DOMAIN code:[_response statusCode] userInfo:dictionary]];
+    [self setState:S3OperationError];
+    return FALSE;
 }
 
--(void)stop:(id)sender
+- (void)stop:(id)sender
 {	
-	[_connection cancel];
+	[_urlConnection cancel];
 	[super stop:sender];
 }
 
--(NSURLRequest *)connection:(NSURLConnection *)connection willSendRequest:(NSURLRequest *)request redirectResponse:(NSURLResponse *)redirectResponse
+- (NSURLRequest *)connection:(NSURLConnection *)connection willSendRequest:(NSURLRequest *)request redirectResponse:(NSURLResponse *)redirectResponse
 {
     [self setStatus:@"Redirected"];
 	if ([_delegate respondsToSelector:@selector(operationStateDidChange:)])
@@ -107,8 +108,6 @@
 		[self connection:connection didFailWithError:[self error]];
 		return;
 	}
-	[self setStatus:@"Done"];
-	[self setActive:NO];
 	[self setState:S3OperationDone];
 	[_delegate operationDidFinish:self];
 }
@@ -116,8 +115,6 @@
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
 	[self setError:error];
-    [self setStatus:@"Error"];
-	[self setActive:NO];
 	[self setState:S3OperationError];
 	[_delegate operationDidFail:self];
 }

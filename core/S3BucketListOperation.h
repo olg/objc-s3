@@ -13,9 +13,9 @@
 
 @interface S3BucketListOperation : S3ListOperation 
 
-+(S3BucketListOperation*)bucketListOperationWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d;
++ (S3BucketListOperation *)bucketListOperationWithConnection:(S3Connection *)c;
 
--(NSMutableArray*)bucketList;
--(S3Owner*)owner;
+-(NSMutableArray *)bucketList;
+-(S3Owner *)owner;
 
 @end

@@ -11,15 +11,15 @@
 
 @implementation S3BucketDeleteOperation
 
--(NSString*)kind
+- (NSString*)kind
 {
 	return @"Bucket deletion";
 }
 
-+(S3BucketDeleteOperation*)bucketDeletionWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b;
++ (S3BucketDeleteOperation *)bucketDeletionWithConnection:(S3Connection *)c bucket:(S3Bucket *)b
 {
-	NSURLRequest* rootConn = [c makeRequestForMethod:@"DELETE" withResource:[b name]];
-	S3BucketDeleteOperation* op = [[[S3BucketDeleteOperation alloc] initWithRequest:rootConn delegate:d] autorelease];
+	NSURLRequest *rootConn = [c makeRequestForMethod:@"DELETE" withResource:[b name]];
+	S3BucketDeleteOperation *op = [[[S3BucketDeleteOperation alloc] initWithRequest:rootConn] autorelease];
 	return op;
 }
 

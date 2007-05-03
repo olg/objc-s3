@@ -17,11 +17,11 @@ namespace for bucket names is global, each developer is limited to owning 100 bu
 */
 
 @interface S3Bucket : NSObject {
-	NSDate* _creationDate;
-	NSString* _name;
+	NSDate *_creationDate;
+	NSString *_name;
 }
 
-+(S3Bucket*)bucketWithXMLNode:(NSXMLElement*)element;
++(S3Bucket *)bucketWithXMLNode:(NSXMLElement *)element;
 
 - (NSDate *)creationDate;
 - (void)setCreationDate:(NSDate *)aCreationDate;

@@ -10,23 +10,22 @@
 #import "S3Operation.h"
 #import "S3Connection.h"
 
+@class S3TransferRateCalculator;
+
 @interface S3ObjectStreamedUploadOperation : S3Operation 
 {
-	long long _size;
-	long long _sent;
-	int _percent;
-	
-	NSInputStream* _istream;
-	NSOutputStream* _ostream;
-	NSInputStream* _fstream;
-    NSMutableData* _ibuffer;
-    NSMutableData* _obuffer;
+	NSInputStream *_istream;
+	NSOutputStream *_ostream;
+	NSInputStream *_fstream;
+    NSMutableData *_ibuffer;
+    NSMutableData *_obuffer;
 	CFDataRef _headerData;
 	CFHTTPMessageRef _response;
 	CFHTTPMessageRef _request;
-	NSString* _path;
+	NSString *_path;
+	S3TransferRateCalculator *_rateCalculator;
 }
 
-+ (S3ObjectStreamedUploadOperation*)objectUploadWithConnection:(S3Connection*)c delegate:(id<S3OperationDelegate>)d bucket:(S3Bucket*)b data:(NSDictionary*)data acl:(NSString*)acl;
++ (S3ObjectStreamedUploadOperation *)objectUploadWithConnection:(S3Connection *)c bucket:(S3Bucket *)b data:(NSDictionary *)data acl:(NSString *)acl;
 
 @end

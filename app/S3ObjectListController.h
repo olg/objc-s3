@@ -16,18 +16,20 @@
 
 @interface S3ObjectListController : S3ActiveWindowController  <S3DragAndDropProtocol> {
 	
-	S3Bucket* _bucket;
-	NSMutableArray* _objects;
-	NSMutableDictionary* _objectsInfo;
+	S3Bucket *_bucket;
+	NSMutableArray *_objects;
+	NSMutableDictionary *_objectsInfo;
 	
-	IBOutlet NSWindow* uploadSheet;
-	IBOutlet NSWindow* multipleUploadSheet;
-	IBOutlet S3DragAndDropArrayController* _objectsController;
+	IBOutlet NSWindow *uploadSheet;
+	IBOutlet NSWindow *multipleUploadSheet;
+	IBOutlet S3DragAndDropArrayController *_objectsController;
 
-	NSString* _uploadACL;
-	NSString* _uploadFilename;
-	NSString* _uploadSize;
-	NSMutableArray* _uploadData;
+	NSString *_uploadACL;
+	NSString *_uploadFilename;
+	NSString *_uploadSize;
+	NSMutableArray *_uploadData;
+    
+    BOOL _needsRefresh;
 }	
 
 - (IBAction)refresh:(id)sender;

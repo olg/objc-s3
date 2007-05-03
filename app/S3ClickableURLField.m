@@ -11,7 +11,7 @@
 
 @implementation S3ClickableURLField
 
--(void)mouseDown:(NSEvent*)e
+- (void)mouseDown:(NSEvent *)e
 {
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:[self stringValue]]];
 }

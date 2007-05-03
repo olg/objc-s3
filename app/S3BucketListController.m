@@ -26,12 +26,12 @@
 #pragma mark -
 #pragma mark Toolbar management
 
--(void)awakeFromNib
+- (void)awakeFromNib
 {
     if ([S3ActiveWindowController instancesRespondToSelector:@selector(awakeFromNib)] == YES) {
         [super awakeFromNib];
     }
-	NSToolbar* toolbar = [[[NSToolbar alloc] initWithIdentifier:@"BucketsToolbar"] autorelease];
+	NSToolbar *toolbar = [[[NSToolbar alloc] initWithIdentifier:@"BucketsToolbar"] autorelease];
 	[toolbar setDelegate:self];
 	[toolbar setVisible:YES];
 	[toolbar setAllowsUserCustomization:YES];
@@ -48,7 +48,7 @@
     [[NSApp queue] addQueueListener:self];
 }
 
-- (NSArray*)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar
+- (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar
 {
 	return [NSArray arrayWithObjects: NSToolbarSeparatorItemIdentifier,
 		NSToolbarSpaceItemIdentifier,
@@ -63,12 +63,12 @@
 	return YES;
 }
 
-- (NSArray*)toolbarDefaultItemIdentifiers:(NSToolbar*)toolbar
+- (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar *)toolbar
 {
 	return [NSArray arrayWithObjects: @"Add", @"Remove", NSToolbarFlexibleSpaceItemIdentifier, @"Refresh", nil]; 
 }
 
-- (NSToolbarItem*)toolbar:(NSToolbar*)toolbar itemForItemIdentifier:(NSString*)itemIdentifier willBeInsertedIntoToolbar:(BOOL) flag
+- (NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag
 {
 	NSToolbarItem *item = [[NSToolbarItem alloc] initWithItemIdentifier: itemIdentifier];
 	
@@ -113,7 +113,7 @@
 	[NSApp endSheet:addSheet returnCode:SHEET_OK];
 }
 
--(void)s3OperationDidFinish:(NSNotification *)notification
+- (void)s3OperationDidFinish:(NSNotification *)notification
 {
     S3Operation *o = [[notification userInfo] objectForKey:S3OperationObjectKey];
     unsigned index = [_operations indexOfObjectIdenticalTo:o];
@@ -134,20 +134,37 @@
 #pragma mark -
 #pragma mark Actions
 
--(IBAction)remove:(id)sender
+- (IBAction)remove:(id)sender
 {
-	S3Bucket* b;
-	NSEnumerator* e = [[_bucketsController selectedObjects] objectEnumerator];
+    NSAlert *alert = [[NSAlert alloc] init];
+    if ([[_bucketsController selectedObjects] count] == 1) {
+        [alert setMessageText:NSLocalizedString(@"Remove bucket permanently?",nil)];
+        [alert setInformativeText:NSLocalizedString(@"Warning: Are you sure you want to remove the bucket? This operation cannot be undone.",nil)];        
+    } else {
+        [alert setMessageText:NSLocalizedString(@"Remove all selected buckets permanently?",nil)];
+        [alert setInformativeText:NSLocalizedString(@"Warning: Are you sure you want to remove all the selected buckets? This operation cannot be undone.",nil)];
+    }
+    [alert addButtonWithTitle:NSLocalizedString(@"Cancel",nil)];
+    [alert addButtonWithTitle:NSLocalizedString(@"Remove",nil)];
+    if ([alert runModal] == NSAlertFirstButtonReturn)
+    {   
+        [alert release];
+        return;
+    }
+    [alert release];
+
+	S3Bucket *b;
+	NSEnumerator *e = [[_bucketsController selectedObjects] objectEnumerator];
 	while (b = [e nextObject])
 	{
-		S3BucketDeleteOperation* op = [S3BucketDeleteOperation bucketDeletionWithConnection:_connection delegate:[NSApp queue] bucket:b];
+		S3BucketDeleteOperation *op = [S3BucketDeleteOperation bucketDeletionWithConnection:_connection bucket:b];
 		[self addToCurrentOperations:op];
 	}
 }
 
--(IBAction)refresh:(id)sender
+- (IBAction)refresh:(id)sender
 {
-	S3BucketListOperation* op = [S3BucketListOperation bucketListOperationWithConnection:_connection delegate:[NSApp queue]];
+	S3BucketListOperation *op = [S3BucketListOperation bucketListOperationWithConnection:_connection];
 	[self addToCurrentOperations:op];
 }
 
@@ -157,25 +174,25 @@
     [sheet orderOut:self];
 	if (returnCode==SHEET_OK)
 	{
-		S3BucketAddOperation* op = [S3BucketAddOperation bucketAddWithConnection:_connection delegate:[NSApp queue] name:_name];
+		S3BucketAddOperation *op = [S3BucketAddOperation bucketAddWithConnection:_connection name:_name];
 		[self addToCurrentOperations:op];
 	}
 }
 
--(IBAction)add:(id)sender
+- (IBAction)add:(id)sender
 {
 	[self setName:@"Untitled"];
 	[NSApp beginSheet:addSheet modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:nil];
 }
 
--(IBAction)open:(id)sender
+- (IBAction)open:(id)sender
 {
 	
-	S3Bucket* b;
+	S3Bucket *b;
 	NSEnumerator* e = [[_bucketsController selectedObjects] objectEnumerator];
 	while (b = [e nextObject])
 	{
-		S3ObjectListController* c = [[[S3ObjectListController alloc] initWithWindowNibName:@"Objects"] autorelease];
+		S3ObjectListController *c = [[[S3ObjectListController alloc] initWithWindowNibName:@"Objects"] autorelease];
 		[c setBucket:b];
 		[c setConnection:_connection];
 		[c showWindow:self];
@@ -195,6 +212,7 @@
 {
     return _name; 
 }
+
 - (void)setName:(NSString *)aName
 {
     [_name release];
@@ -209,7 +227,7 @@
     if ([_name length]>255)
         return NO;
     // This is a bit brute force, we should check iteratively and not reinstantiate on every call.
-    NSCharacterSet* s = [[NSCharacterSet characterSetWithCharactersInString:@"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-."] invertedSet];
+    NSCharacterSet *s = [[NSCharacterSet characterSetWithCharactersInString:@"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-."] invertedSet];
     if ([_name rangeOfCharacterFromSet:s].location!=NSNotFound)
         return NO;
     return YES;

@@ -11,22 +11,22 @@
 
 
 @implementation S3OperationSummarizer
-+ (Class) transformedValueClass
++ (Class)transformedValueClass
 {
 	return [NSAttributedString class];
 }
 
-+ (BOOL) allowsReverseTransformation
++ (BOOL)allowsReverseTransformation
 {
 	return NO;
 }
 
-- (id) transformedValue:(id)data
+- (id)transformedValue:(id)data
 {
 	if ([data length]>4096)
 		return [[[NSAttributedString alloc] initWithString:@"..."] autorelease];
 	
-	NSString* s = [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] autorelease];
+	NSString *s = [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] autorelease];
 	if (s==nil)
 		s = @"";
 	return [[[NSAttributedString alloc] initWithString:s] autorelease];		
@@ -36,8 +36,16 @@
 
 @implementation S3FileSizeTransformer
 
-+ (Class)transformedValueClass { return [NSString class]; }
-+ (BOOL)allowsReverseTransformation { return NO; }
++ (Class)transformedValueClass
+{
+    return [NSString class];
+}
+
++ (BOOL)allowsReverseTransformation
+{
+    return NO;
+}
+
 - (id)transformedValue:(id)item {
     return [item readableFileSize];
 }

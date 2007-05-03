@@ -10,11 +10,11 @@
 
 
 @interface S3Owner : NSObject {
-	NSString* _id;
-	NSString* _displayName;
+	NSString *_id;
+	NSString *_displayName;
 }
 
-+ (S3Owner*)ownerWithXMLNode:(NSXMLElement*)element;
++ (S3Owner *)ownerWithXMLNode:(NSXMLElement *)element;
 
 - (NSString *)ID;
 - (void)setID:(NSString *)anId;

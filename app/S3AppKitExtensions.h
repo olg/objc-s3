@@ -10,16 +10,16 @@
 #import "S3Operation.h"
 
 @interface NSArrayController (ToolbarExtensions)
-- (BOOL) validateToolbarItem:(NSToolbarItem*)theItem;
+- (BOOL)validateToolbarItem:(NSToolbarItem *)theItem;
 @end
 
 @interface NSHTTPURLResponse (Logging)
--(NSString*)httpStatus;
--(NSArray*)headersReceived;
+- (NSString *)httpStatus;
+- (NSArray *)headersReceived;
 @end
 
 @interface NSURLRequest (Logging)
--(NSArray*)headersSent;
+- (NSArray *)headersSent;
 @end 
 
 

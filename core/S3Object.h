@@ -24,15 +24,15 @@ Object is stored.
 #define S3_ERROR_MARKER @"x-amz-missing-meta"
 
 @interface S3Object : NSObject {
-	NSData* _data;
-	NSMutableDictionary* _metadata;
-	S3Bucket* _bucket;
+	NSData *_data;
+	NSMutableDictionary *_metadata;
+	S3Bucket *_bucket;
 }
 
-+ (S3Object*)objectWithXMLNode:(NSXMLElement*)element;
-- (id)initWithData:(NSData*)d metaData:(NSDictionary*)d;
++ (S3Object *)objectWithXMLNode:(NSXMLElement *)element;
+- (id)initWithData:(NSData *)d metaData:(NSDictionary *)d;
 
-- (NSString*)key;
+- (NSString *)key;
 - (long long)size;
 
 - (NSData *)data;

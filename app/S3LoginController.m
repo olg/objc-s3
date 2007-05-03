@@ -15,7 +15,7 @@
 
 @implementation S3LoginController
 
--(void)awakeFromNib
+- (void)awakeFromNib
 {
     if ([S3ActiveWindowController instancesRespondToSelector:@selector(awakeFromNib)] == YES) {
         [super awakeFromNib];
@@ -29,9 +29,9 @@
     [[NSApp queue] addQueueListener:self];
 }
 
--(void)windowDidLoad
+- (void)windowDidLoad
 {
-	NSString* defaultKey = [[NSUserDefaults standardUserDefaults] stringForKey:DEFAULT_USER];
+	NSString *defaultKey = [[NSUserDefaults standardUserDefaults] stringForKey:DEFAULT_USER];
 	if (defaultKey!=nil)
 	{
 		[_connection setAccessKeyID:defaultKey];
@@ -55,7 +55,7 @@
 	[self checkPasswordInKeychain];
 }
 
--(void)s3OperationDidFinish:(NSNotification *)notification
+- (void)s3OperationDidFinish:(NSNotification *)notification
 {
     S3Operation *operation = [[notification userInfo] objectForKey:S3OperationObjectKey];
     unsigned index = [_operations indexOfObjectIdenticalTo:operation];
@@ -69,7 +69,7 @@
 	if ([_keychainCheckbox state] == NSOnState)
 		[_connection storeSecretAccessKeyInKeychain];
 
-	S3BucketListController* c = [[[S3BucketListController alloc] initWithWindowNibName:@"Buckets"] autorelease];
+	S3BucketListController *c = [[[S3BucketListController alloc] initWithWindowNibName:@"Buckets"] autorelease];
 	[c setConnection:_connection];
 	[c showWindow:self];
 	[c retain];			
@@ -82,21 +82,21 @@
 #pragma mark -
 #pragma mark Actions
 
--(IBAction)openHelpPage:(id)sender
+- (IBAction)openHelpPage:(id)sender
 {
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://aws.amazon.com/s3"]];
 }
 
--(IBAction)connect:(id)sender
+- (IBAction)connect:(id)sender
 {
-	S3BucketListOperation* op = [S3BucketListOperation bucketListOperationWithConnection:_connection delegate:[NSApp queue]];
+	S3BucketListOperation *op = [S3BucketListOperation bucketListOperationWithConnection:_connection];
 	[self addToCurrentOperations:op];
 }
 
 #pragma mark -
 #pragma mark Keychain integration
 
--(void)checkPasswordInKeychain
+- (void)checkPasswordInKeychain
 {
 	if ([_keychainCheckbox state] == NSOnState)
         [_connection trySetupSecretAccessKeyFromKeychain];

@@ -15,10 +15,9 @@
 #define S3_BROWSER_KEYCHAIN_SERVICE "S3 Browser"
 
 
-
 @implementation S3Connection
 
--(id)init
+- (id)init
 {
 	[super init];
 	_host = DEFAULT_HOST;
@@ -37,7 +36,7 @@
 	[super dealloc];
 }
 
--(BOOL)isReady
+- (BOOL)isReady
 {
     return (_accessKeyID!=nil)&&(_secretAccessKey!=nil);
 }
@@ -67,7 +66,7 @@
 #pragma mark -
 #pragma mark Keychain integration
 
-- (NSString*)getS3KeyFromKeychainForUser:(NSString *)username
+- (NSString *)getS3KeyFromKeychainForUser:(NSString *)username
 {
     if ([username length]==0)
         return @"";
@@ -75,7 +74,7 @@
     void *passwordData = nil; // will be allocated and filled in by SecKeychainFindGenericPassword
 	UInt32 passwordLength = 0;
     
-	NSString* password = @"";
+	NSString *password = @"";
 	const char *user = [username UTF8String]; 
     
 	OSStatus status;
@@ -92,7 +91,7 @@
 }
 
 
-- (BOOL)setS3KeyToKeychainForUser:(NSString *)username password:(NSString*)password
+- (BOOL)setS3KeyToKeychainForUser:(NSString *)username password:(NSString *)password
 {
 	const char *user = [username UTF8String]; 
 	const char *pass = [password UTF8String]; 
@@ -106,40 +105,39 @@
 	return (status==noErr);
 }
 
--(void)trySetupSecretAccessKeyFromKeychain
+- (void)trySetupSecretAccessKeyFromKeychain
 {
-	NSString* password = [self getS3KeyFromKeychainForUser:[self accessKeyID]];
+	NSString *password = [self getS3KeyFromKeychainForUser:[self accessKeyID]];
 	if (password!=nil)
 		[self setSecretAccessKey:password];
 }
 
--(void)storeSecretAccessKeyInKeychain
+- (void)storeSecretAccessKeyInKeychain
 {
     [self setS3KeyToKeychainForUser:[self accessKeyID] password:[self secretAccessKey]];
 }
-
 
 #pragma mark -
 #pragma mark URL Construction
 
 #define AMZ_PREFIX @"x-amz"
 
--(void)addAuthorization:(NSMutableURLRequest*)conn method:(NSString*)method data:(id)data headers:(NSDictionary*)headers
-{															
-	NSString* contentType = @"";
+- (void)addAuthorization:(NSMutableURLRequest *)conn method:(NSString *)method data:(id)data headers:(NSDictionary *)headers
+{
+	NSString *contentType = @"";
 	// for additional security, include a content-md5 tag with any
 	// query that is supplying data to S3
-	NSString* contentMD5 = @"";
+	NSString *contentMD5 = @"";
 	if(data != nil) {
-		NSString* contentMD5 = [[data md5Digest] encodeBase64];
+		NSString *contentMD5 = [[data md5Digest] encodeBase64];
 		[conn addValue:contentMD5 forHTTPHeaderField:@"Content-MD5"];
 	}
-	NSString* ct = [headers objectForKey:@"Content-Type"];
+	NSString *ct = [headers objectForKey:@"Content-Type"];
 	if (ct!=nil)
 		contentType = ct;
 	
-	NSString* k;
-	NSEnumerator* e;
+	NSString *k;
+	NSEnumerator *e;
 	e = [headers keyEnumerator];
 	while (k = [e nextObject])
 	{
@@ -147,14 +145,14 @@
 		[conn addValue:o forHTTPHeaderField:k];
 	}
 	
-	NSCalendarDate * date = [NSCalendarDate calendarDate];
+	NSCalendarDate *date = [NSCalendarDate calendarDate];
 	[date setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
 	NSString* dateString = [date descriptionWithCalendarFormat:@"%a, %d %b %Y %H:%M:%S %z"];
 	[conn addValue:dateString forHTTPHeaderField:@"Date"];
 	
 	// S3 authentication works as a SHA1 hash of the following information
 	// in this precise order
-	NSMutableString* buf = [NSMutableString string];
+	NSMutableString *buf = [NSMutableString string];
 	[buf appendFormat:@"%@\n",method];
 	[buf appendFormat:@"%@\n",contentMD5];
 	[buf appendFormat:@"%@\n",contentType];
@@ -175,25 +173,25 @@
     else
         [buf appendFormat:@"%@",[[[conn URL] path] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
 
-	NSString* auth = [[[buf dataUsingEncoding:NSUTF8StringEncoding] sha1HMacWithKey:_secretAccessKey] encodeBase64];
+	NSString *auth = [[[buf dataUsingEncoding:NSUTF8StringEncoding] sha1HMacWithKey:_secretAccessKey] encodeBase64];
 	[conn addValue:[NSString stringWithFormat:@"AWS %@:%@",_accessKeyID,auth] forHTTPHeaderField:@"Authorization"];
 }
 
--(NSMutableURLRequest*)makeRequestForMethod:(NSString*)method
+- (NSMutableURLRequest *)makeRequestForMethod:(NSString *)method
 {
 	return [self makeRequestForMethod:method withResource:nil headers:nil];
 }
 
--(NSMutableURLRequest*)makeRequestForMethod:(NSString*)method withResource:(NSString*)resource
+- (NSMutableURLRequest *)makeRequestForMethod:(NSString *)method withResource:(NSString *)resource
 {
 	return [self makeRequestForMethod:method withResource:resource headers:nil];
 }
 
--(NSMutableURLRequest*)makeRequestForMethod:(NSString*)method withResource:(NSString*)resource headers:(NSDictionary*)d
+- (NSMutableURLRequest *)makeRequestForMethod:(NSString *)method withResource:(NSString *)resource headers:(NSDictionary *)d
 {
-    NSURL* rootURL = [self urlForResource:resource];
-	
-	NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:rootURL];
+    NSURL *rootURL = [self urlForResource:resource];
+
+	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:rootURL];
 	[request setHTTPMethod:method];
 	[request setTimeoutInterval:READ_TIMEOUT];
 	[self addAuthorization:request method:method data:nil headers:d];	
@@ -202,43 +200,42 @@
 	return request;
 }
 
-
--(void)addAuthorizationToCF:(CFHTTPMessageRef)conn method:(NSString*)method data:(id)data headers:(NSDictionary*)headers url:(NSURL*)url
-{															
-	NSString* contentType = @"";
+- (void)addAuthorizationToCF:(CFHTTPMessageRef)conn method:(NSString *)method data:(id)data headers:(NSDictionary *)headers url:(NSURL*)url
+{
+	NSString *contentType = @"";
 	// for additional security, include a content-md5 tag with any
 	// query that is supplying data to S3
-	NSString* contentMD5 = @"";
+	NSString *contentMD5 = @"";
 	if(data != nil) {
-		NSString* contentMD5 = [[data md5Digest] encodeBase64];
+		NSString *contentMD5 = [[data md5Digest] encodeBase64];
 		CFHTTPMessageSetHeaderFieldValue(conn, CFSTR("Content-MD5"), (CFStringRef)contentMD5);
 	}
-	NSString* ct = [headers objectForKey:@"Content-Type"];
+	NSString *ct = [headers objectForKey:@"Content-Type"];
 	if (ct!=nil)
 		contentType = ct;
 
-	NSString* k;
-	NSEnumerator* e;
+	NSString *k;
+	NSEnumerator *e;
 	e = [headers keyEnumerator];
 	while (k = [e nextObject])
 	{
 		id o = [headers objectForKey:k];
 		CFHTTPMessageSetHeaderFieldValue(conn, (CFStringRef)k, (CFStringRef)o);
 	}
-	
-	NSCalendarDate * date = [NSCalendarDate calendarDate];
+
+	NSCalendarDate *date = [NSCalendarDate calendarDate];
 	[date setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
 	NSString* dateString = [date descriptionWithCalendarFormat:@"%a, %d %b %Y %H:%M:%S %z"];
 	CFHTTPMessageSetHeaderFieldValue(conn, CFSTR("Date"), (CFStringRef)dateString);
 
 	// S3 authentication works as a SHA1 hash of the following information
 	// in this precise order
-	NSMutableString* buf = [NSMutableString string];
+	NSMutableString *buf = [NSMutableString string];
 	[buf appendFormat:@"%@\n",method];
 	[buf appendFormat:@"%@\n",contentMD5];
 	[buf appendFormat:@"%@\n",contentType];
 	[buf appendFormat:@"%@\n",dateString];
-	
+
 	e = [[[headers allKeys] sortedArrayUsingSelector:@selector(compare:)] objectEnumerator];
 	while (k = [e nextObject])
 	{
@@ -248,32 +245,31 @@
 	}
 	[buf appendFormat:@"%@",[[url path] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
 
-	
-	NSString* auth = [[[buf dataUsingEncoding:NSUTF8StringEncoding] sha1HMacWithKey:_secretAccessKey] encodeBase64];
+	NSString *auth = [[[buf dataUsingEncoding:NSUTF8StringEncoding] sha1HMacWithKey:_secretAccessKey] encodeBase64];
 	CFHTTPMessageSetHeaderFieldValue(conn, CFSTR("Authorization"), (CFStringRef)[NSString stringWithFormat:@"AWS %@:%@",_accessKeyID,auth]);
 }
 
--(CFHTTPMessageRef)createCFRequestForMethod:(NSString*)method withResource:(NSString*)resource headers:(NSDictionary*)d
+- (CFHTTPMessageRef)createCFRequestForMethod:(NSString *)method withResource:(NSString *)resource headers:(NSDictionary *)d
 {
-	NSURL* rootURL = [self urlForResource:resource];
-	
+	NSURL *rootURL = [self urlForResource:resource];
+
 	CFHTTPMessageRef request = CFHTTPMessageCreateRequest(kCFAllocatorDefault, (CFStringRef)method, (CFURLRef)rootURL, kCFHTTPVersion1_1);
 	[self addAuthorizationToCF:request method:method data:nil headers:d url:rootURL];	
-	
+
 	return request;
 }
 
--(NSString*)resourceForBucket:(S3Bucket*)bucket key:(NSString*)key
+- (NSString *)resourceForBucket:(S3Bucket *)bucket key:(NSString *)key
 {
     return [self resourceForBucket:bucket key:key parameters:nil];
 }
 
--(NSString*)resourceForBucket:(S3Bucket*)bucket parameters:(NSString*)parameters
+- (NSString *)resourceForBucket:(S3Bucket *)bucket parameters:(NSString *)parameters
 {
     return [self resourceForBucket:bucket key:nil parameters:parameters];
 }
 
--(NSString*)resourceForBucket:(S3Bucket*)bucket key:(NSString*)key parameters:(NSString*)parameters
+- (NSString *)resourceForBucket:(S3Bucket *)bucket key:(NSString *)key parameters:(NSString *)parameters
 {
     if (bucket==nil)
         bucket=@"";
@@ -290,9 +286,9 @@
         return [NSString stringWithFormat:@"%@/%@",[bucket name],[key stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
 }
 
--(NSURL*)urlForResource:(NSString*)resource
+- (NSURL *)urlForResource:(NSString *)resource
 {
-    NSMutableString* url;
+    NSMutableString *url;
     
     if (resource==nil)
         resource=@"";

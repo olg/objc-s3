@@ -11,8 +11,9 @@
 #import "S3Operation.h";
 
 @interface S3OperationQueue : NSObject <S3OperationDelegate> {
-	NSMutableArray* _operations;
-	NSMutableArray* _currentOperations;
+	NSMutableArray *_operations;
+	NSMutableArray *_currentOperations;
+	NSTimer *_timer;
 }
 
 // Convenience methods to register object with NSNotificationCenter
@@ -24,9 +25,8 @@
 - (void)logOperation:(id)op;
 - (void)unlogOperation:(id)op;
 
-- (NSMutableArray *)currentOperations;
-- (void)removeFromCurrentOperations:(S3Operation*)op;
-- (BOOL)addToCurrentOperations:(S3Operation*)op;
+- (BOOL)addToCurrentOperations:(S3Operation *)op;
+- (NSMutableArray *)operations;
 
 @end
 
@@ -43,3 +43,4 @@ extern NSString *S3OperationDidFinishNotification;
 
 /* Notification UserInfo Keys */
 extern NSString *S3OperationObjectKey;
+extern NSString *S3OperationObjectForRetryKey;

@@ -57,6 +57,8 @@
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+		ECB4A4FC0BA8815A0056558D /* S3TransferRateCalculator.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = ECB4A4FA0BA881590056558D /* S3TransferRateCalculator.h */; };
+		ECB4A4FD0BA8815A0056558D /* S3TransferRateCalculator.m in Sources */ = {isa = PBXBuildFile; fileRef = ECB4A4FB0BA881590056558D /* S3TransferRateCalculator.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -67,6 +69,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				30D774AF0B406DC400C01A78 /* Sparkle.framework in CopyFiles */,
+				ECB4A4FC0BA8815A0056558D /* S3TransferRateCalculator.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -153,7 +156,9 @@
 		77BC334D09E852D90055FD75 /* S3ClickableURLField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3ClickableURLField.h; sourceTree = "<group>"; };
 		77BC334E09E852D90055FD75 /* S3ClickableURLField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3ClickableURLField.m; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		8D1107320486CEB800E47090 /* S3 Browser.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "S3 Browser.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107320486CEB800E47090 /* S3 Browser.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "S3 Browser.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		ECB4A4FA0BA881590056558D /* S3TransferRateCalculator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3TransferRateCalculator.h; sourceTree = "<group>"; };
+		ECB4A4FB0BA881590056558D /* S3TransferRateCalculator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3TransferRateCalculator.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -345,6 +350,8 @@
 				7794949A09DD9B2300A5DEB7 /* S3Extensions.m */,
 				77AEA47F0B762CE3000BB6A6 /* S3OperationQueue.h */,
 				77AEA4800B762CE3000BB6A6 /* S3OperationQueue.m */,
+				ECB4A4FA0BA881590056558D /* S3TransferRateCalculator.h */,
+				ECB4A4FB0BA881590056558D /* S3TransferRateCalculator.m */,
 			);
 			name = "base classes";
 			sourceTree = "<group>";
@@ -461,6 +468,7 @@
 				778C8BEB0B659BF3006212F9 /* S3ObjectDeleteOperation.m in Sources */,
 				778C8BF80B659C18006212F9 /* S3ObjectListOperation.m in Sources */,
 				77AEA4820B762CE3000BB6A6 /* S3OperationQueue.m in Sources */,
+				ECB4A4FD0BA8815A0056558D /* S3TransferRateCalculator.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

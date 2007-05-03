@@ -11,7 +11,7 @@
 
 @implementation S3Owner
 
--(id)initWithID:(NSString*)name displayName:(NSString*)date
+- (id)initWithID:(NSString *)name displayName:(NSString *)date
 {
 	[super init];
 	[self setID:name];
@@ -19,7 +19,7 @@
 	return self;
 }
 
--(void)dealloc
+- (void)dealloc
 {
 	[_id release];
 	[_displayName release];
@@ -37,22 +37,22 @@
     _id = [anId retain];
 }
 
-
 - (NSString *)displayName
 {
     return _displayName; 
 }
+
 - (void)setDisplayName:(NSString *)aDisplayName
 {
     [_displayName release];
     _displayName = [aDisplayName retain];
 }
 
-+(S3Owner*)ownerWithXMLNode:(NSXMLElement*)element
++ (S3Owner *)ownerWithXMLNode:(NSXMLElement *)element
 {
-	NSString* name = nil;
-	NSString* ownerID = nil;
-	NSArray* a;
+	NSString *name = nil;
+	NSString *ownerID = nil;
+	NSArray *a;
 	
 	a = [element elementsForName:@"ID"];
 	if ([a count]==1)

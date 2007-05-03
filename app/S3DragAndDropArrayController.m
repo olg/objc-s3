@@ -17,12 +17,12 @@
 	[super awakeFromNib];
 }
 
--(void)setFileOperationsDelegate:(id)d
+- (void)setFileOperationsDelegate:(id)d
 {
 	delegate = d;
 }
 
--(BOOL)validateDraggingInfo:(id <NSDraggingInfo>)info 
+- (BOOL)validateDraggingInfo:(id <NSDraggingInfo>)info 
 {
     if ([[[info draggingPasteboard] types] containsObject:NSFilenamesPboardType]) 
     {
@@ -39,7 +39,7 @@
 	return NO;
 }
 
-- (NSDragOperation)tableView:(NSTableView*)tv validateDrop:(id <NSDraggingInfo>)info proposedRow:(int)row proposedDropOperation:(NSTableViewDropOperation)op
+- (NSDragOperation)tableView:(NSTableView *)tv validateDrop:(id <NSDraggingInfo>)info proposedRow:(int)row proposedDropOperation:(NSTableViewDropOperation)op
 {
 	if ([self validateDraggingInfo:info])
 	{
@@ -50,7 +50,7 @@
 		return NSDragOperationNone;
 }
 
-- (BOOL)tableView:(NSTableView*)tv acceptDrop:(id <NSDraggingInfo>)info row:(int)row dropOperation:(NSTableViewDropOperation)op
+- (BOOL)tableView:(NSTableView *)tv acceptDrop:(id <NSDraggingInfo>)info row:(int)row dropOperation:(NSTableViewDropOperation)op
 {
     if ([[[info draggingPasteboard] types] containsObject:NSFilenamesPboardType]) 
     {
