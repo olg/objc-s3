@@ -282,6 +282,10 @@
 	CFStringRef utiType;
 	OSStatus err;
 	
+	// Fast path for some mime types not correctly handling through UTI
+	if ([[self pathExtension] isEqualToString:@"css"])
+		return @"text/css";
+			
 	err= FSPathMakeRef((const UInt8 *)[self fileSystemRepresentation], &fsRef, NULL);
 	if(err != noErr)
 		return nil;
