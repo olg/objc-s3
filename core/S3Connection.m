@@ -22,7 +22,7 @@
 	[super init];
 	_host = DEFAULT_HOST;
 	_port = DEFAULT_PORT;
-    _secure = NO; 
+	_secure = NO; 
 	_operations = [[NSMutableArray alloc] init];
 	return self;
 }
@@ -167,11 +167,11 @@
 	}
 
     if ([[[conn URL] query] hasPrefix:@"acl"])
-        [buf appendFormat:@"%@?acl",[[[conn URL] path] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+        [buf appendFormat:@"%@?acl",[[[conn URL] path] stringByEscapingHTTPReserved]];
     else if ([[[conn URL] query] hasPrefix:@"torrent"])
-        [buf appendFormat:@"%@?torrent",[[[conn URL] path] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+        [buf appendFormat:@"%@?torrent",[[[conn URL] path] stringByEscapingHTTPReserved]];
     else
-        [buf appendFormat:@"%@",[[[conn URL] path] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+        [buf appendFormat:@"%@",[[[conn URL] path] stringByEscapingHTTPReserved]];
 
 	NSString *auth = [[[buf dataUsingEncoding:NSUTF8StringEncoding] sha1HMacWithKey:_secretAccessKey] encodeBase64];
 	[conn addValue:[NSString stringWithFormat:@"AWS %@:%@",_accessKeyID,auth] forHTTPHeaderField:@"Authorization"];
@@ -243,7 +243,7 @@
 		if ([k hasPrefix:AMZ_PREFIX])
 			[buf appendFormat:@"%@:%@\n",k,o];
 	}
-	[buf appendFormat:@"%@",[[url path] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+	[buf appendFormat:@"%@",[[url path] stringByEscapingHTTPReserved]];
 
 	NSString *auth = [[[buf dataUsingEncoding:NSUTF8StringEncoding] sha1HMacWithKey:_secretAccessKey] encodeBase64];
 	CFHTTPMessageSetHeaderFieldValue(conn, CFSTR("Authorization"), (CFStringRef)[NSString stringWithFormat:@"AWS %@:%@",_accessKeyID,auth]);
@@ -281,9 +281,9 @@
             return [bucket name];
 
     if (parameters!=nil)
-        return [NSString stringWithFormat:@"%@/%@%@",[bucket name],[key stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],parameters];
+        return [NSString stringWithFormat:@"%@/%@%@",[bucket name],[key stringByEscapingHTTPReserved],parameters];
     else
-        return [NSString stringWithFormat:@"%@/%@",[bucket name],[key stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+        return [NSString stringWithFormat:@"%@/%@",[bucket name],[key stringByEscapingHTTPReserved]];
 }
 
 - (NSURL *)urlForResource:(NSString *)resource

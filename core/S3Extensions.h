@@ -78,3 +78,9 @@
 -(NSString*)readableFileSize;
 
 @end
+
+@interface NSString (URL)
+
+- (NSString *)stringByEscapingHTTPReserved;
+
+@end

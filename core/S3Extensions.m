@@ -91,17 +91,17 @@
 
     k = [keys objectAtIndex:0];
     [s appendString:@"?"];
-    [s appendString:[k stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+    [s appendString:[k stringByEscapingHTTPReserved]];
     [s appendString:@"="];
-    [s appendString:[[self objectForKey:k] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+    [s appendString:[[self objectForKey:k] stringByEscapingHTTPReserved]];
     
     for (i=1;i<[keys count];i++)
     {
         k = [keys objectAtIndex:i];
         [s appendString:@"&"];
-        [s appendString:[k stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+        [s appendString:[k stringByEscapingHTTPReserved]];
         [s appendString:@"="];
-        [s appendString:[[self objectForKey:k] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+        [s appendString:[[self objectForKey:k] stringByEscapingHTTPReserved]];
     }
     return s;
 }
@@ -380,6 +380,20 @@
 - (NSString *)readableFileSize
 {
 	return [NSString readableFileSizeFor:[self unsignedLongLongValue]];
+}
+
+@end
+
+@implementation NSString (URL)
+
+- (NSString *)stringByEscapingHTTPReserved
+{
+	// Escape all Reserved characters from rfc 2396 section 2.2
+	// except "/" since that's used explicitly in format strings.
+	CFStringRef escapeChars = (CFStringRef)@";?:@&=+$,";
+	return [(NSString*)CFURLCreateStringByAddingPercentEscapes(NULL,
+			(CFStringRef)self, NULL, escapeChars, kCFStringEncodingUTF8)
+			autorelease];
 }
 
 @end
