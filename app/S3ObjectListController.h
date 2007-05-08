@@ -30,6 +30,7 @@
 	NSMutableArray *_uploadData;
     
     BOOL _needsRefresh;
+    BOOL _validList;
 }	
 
 - (IBAction)refresh:(id)sender;
@@ -39,6 +40,10 @@
 
 - (IBAction)cancelSheet:(id)sender;
 - (IBAction)closeSheet:(id)sender;
+
+- (BOOL)validList;
+- (void)setValidList:(BOOL)yn;
+- (NSString *)validListString;
 
 - (void)addObjects:(NSArray *)aObjects;
 

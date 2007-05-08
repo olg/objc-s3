@@ -31,72 +31,75 @@
     if ([S3ActiveWindowController instancesRespondToSelector:@selector(awakeFromNib)] == YES) {
         [super awakeFromNib];
     }
-	NSToolbar *toolbar = [[[NSToolbar alloc] initWithIdentifier:@"BucketsToolbar"] autorelease];
-	[toolbar setDelegate:self];
-	[toolbar setVisible:YES];
-	[toolbar setAllowsUserCustomization:YES];
-	[toolbar setAutosavesConfiguration:NO];
-	[toolbar setSizeMode:NSToolbarSizeModeDefault];
-	[toolbar setDisplayMode:NSToolbarDisplayModeDefault];
-	[[self window] setToolbar:toolbar];
+    NSToolbar *toolbar = [[[NSToolbar alloc] initWithIdentifier:@"BucketsToolbar"] autorelease];
+    [toolbar setDelegate:self];
+    [toolbar setVisible:YES];
+    [toolbar setAllowsUserCustomization:YES];
+    [toolbar setAutosavesConfiguration:NO];
+    [toolbar setSizeMode:NSToolbarSizeModeDefault];
+    [toolbar setDisplayMode:NSToolbarDisplayModeDefault];
+    [[self window] setToolbar:toolbar];
 
-	NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
-	[dateFormatter setDateStyle:NSDateFormatterShortStyle];
-	[dateFormatter setTimeStyle:NSDateFormatterMediumStyle];
-	[dateFormatter setTimeZone:[NSTimeZone defaultTimeZone]];
-	[[[[[[self window] contentView] viewWithTag:10] tableColumnWithIdentifier:@"creationDate"] dataCell] setFormatter:dateFormatter];
+    NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
+    [dateFormatter setDateStyle:NSDateFormatterShortStyle];
+    [dateFormatter setTimeStyle:NSDateFormatterMediumStyle];
+    [dateFormatter setTimeZone:[NSTimeZone defaultTimeZone]];
+    [[[[[[self window] contentView] viewWithTag:10] tableColumnWithIdentifier:@"creationDate"] dataCell] setFormatter:dateFormatter];
+
+    _bucketListControllerCache = [[NSMutableDictionary alloc] init];
+
     [[NSApp queue] addQueueListener:self];
 }
 
 - (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar
 {
-	return [NSArray arrayWithObjects: NSToolbarSeparatorItemIdentifier,
-		NSToolbarSpaceItemIdentifier,
-		NSToolbarFlexibleSpaceItemIdentifier,
-		@"Refresh", @"Remove", @"Add", nil];
+    return [NSArray arrayWithObjects: NSToolbarSeparatorItemIdentifier,
+        NSToolbarSpaceItemIdentifier,
+        NSToolbarFlexibleSpaceItemIdentifier,
+        @"Refresh", @"Remove", @"Add", nil];
 }
 
 - (BOOL)validateToolbarItem:(NSToolbarItem *)theItem
 {
-	if ([[theItem itemIdentifier] isEqualToString: @"Remove"])
-		return [_bucketsController canRemove];
-	return YES;
+    if ([[theItem itemIdentifier] isEqualToString: @"Remove"])
+        return [_bucketsController canRemove];
+    return YES;
 }
 
 - (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar *)toolbar
 {
-	return [NSArray arrayWithObjects: @"Add", @"Remove", NSToolbarFlexibleSpaceItemIdentifier, @"Refresh", nil]; 
+    return [NSArray arrayWithObjects: @"Add", @"Remove", NSToolbarFlexibleSpaceItemIdentifier, @"Refresh", nil]; 
 }
 
 - (NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag
 {
-	NSToolbarItem *item = [[NSToolbarItem alloc] initWithItemIdentifier: itemIdentifier];
-	
-	if ([itemIdentifier isEqualToString: @"Add"])
-	{
-		[item setLabel: NSLocalizedString(@"Add", nil)];
-		[item setPaletteLabel: [item label]];
-		[item setImage: [NSImage imageNamed: @"add.icns"]];
-		[item setTarget:self];
-		[item setAction:@selector(add:)];
+    NSToolbarItem *item = [[NSToolbarItem alloc] initWithItemIdentifier: itemIdentifier];
+    
+    if ([itemIdentifier isEqualToString: @"Add"])
+    {
+        [item setLabel: NSLocalizedString(@"Add", nil)];
+        [item setPaletteLabel: [item label]];
+        [item setImage: [NSImage imageNamed: @"add.icns"]];
+        [item setTarget:self];
+        [item setAction:@selector(add:)];
     }
-	else if ([itemIdentifier isEqualToString: @"Remove"])
-	{
-		[item setLabel: NSLocalizedString(@"Remove", nil)];
-		[item setPaletteLabel: [item label]];
-		[item setImage: [NSImage imageNamed: @"delete.icns"]];
-		[item setTarget:self];
-		[item setAction:@selector(remove:)];
+    else if ([itemIdentifier isEqualToString: @"Remove"])
+    {
+        [item setLabel: NSLocalizedString(@"Remove", nil)];
+        [item setPaletteLabel: [item label]];
+        [item setImage: [NSImage imageNamed: @"delete.icns"]];
+        [item setTarget:self];
+        [item setAction:@selector(remove:)];
     }
-	else if ([itemIdentifier isEqualToString: @"Refresh"])
-	{
-		[item setLabel: NSLocalizedString(@"Refresh", nil)];
-		[item setPaletteLabel: [item label]];
-		[item setImage: [NSImage imageNamed: @"refresh.icns"]];
-		[item setTarget:self];
-		[item setAction:@selector(refresh:)];
+    else if ([itemIdentifier isEqualToString: @"Refresh"])
+    {
+        [item setLabel: NSLocalizedString(@"Refresh", nil)];
+        [item setPaletteLabel: [item label]];
+        [item setImage: [NSImage imageNamed: @"refresh.icns"]];
+        [item setTarget:self];
+        [item setAction:@selector(refresh:)];
     }
-	
+    
     return [item autorelease];
 }
 
@@ -105,12 +108,12 @@
 
 - (IBAction)cancelSheet:(id)sender
 {
-	[NSApp endSheet:addSheet returnCode:SHEET_CANCEL];
+    [NSApp endSheet:addSheet returnCode:SHEET_CANCEL];
 }
 
 - (IBAction)closeSheet:(id)sender
 {
-	[NSApp endSheet:addSheet returnCode:SHEET_OK];
+    [NSApp endSheet:addSheet returnCode:SHEET_OK];
 }
 
 - (void)s3OperationDidFinish:(NSNotification *)notification
@@ -123,12 +126,12 @@
 
     [super s3OperationDidFinish:notification];
 
-	if ([o isKindOfClass:[S3BucketListOperation class]]) {
-		[self setBuckets:[(S3BucketListOperation*)o bucketList]];
-		[self setBucketsOwner:[(S3BucketListOperation*)o owner]];			
-	}
-	else
-		[self refresh:self];
+    if ([o isKindOfClass:[S3BucketListOperation class]]) {
+        [self setBuckets:[(S3BucketListOperation*)o bucketList]];
+        [self setBucketsOwner:[(S3BucketListOperation*)o owner]];			
+    }
+    else
+        [self refresh:self];
 }
 
 #pragma mark -
@@ -153,51 +156,56 @@
     }
     [alert release];
 
-	S3Bucket *b;
-	NSEnumerator *e = [[_bucketsController selectedObjects] objectEnumerator];
-	while (b = [e nextObject])
-	{
-		S3BucketDeleteOperation *op = [S3BucketDeleteOperation bucketDeletionWithConnection:_connection bucket:b];
-		[self addToCurrentOperations:op];
-	}
+    S3Bucket *b;
+    NSEnumerator *e = [[_bucketsController selectedObjects] objectEnumerator];
+    while (b = [e nextObject])
+    {
+        S3BucketDeleteOperation *op = [S3BucketDeleteOperation bucketDeletionWithConnection:_connection bucket:b];
+        [self addToCurrentOperations:op];
+    }
 }
 
 - (IBAction)refresh:(id)sender
 {
-	S3BucketListOperation *op = [S3BucketListOperation bucketListOperationWithConnection:_connection];
-	[self addToCurrentOperations:op];
+    S3BucketListOperation *op = [S3BucketListOperation bucketListOperationWithConnection:_connection];
+    [self addToCurrentOperations:op];
 }
 
 
 - (void)didEndSheet:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
 {
     [sheet orderOut:self];
-	if (returnCode==SHEET_OK)
-	{
-		S3BucketAddOperation *op = [S3BucketAddOperation bucketAddWithConnection:_connection name:_name];
-		[self addToCurrentOperations:op];
-	}
+    if (returnCode==SHEET_OK)
+    {
+        S3BucketAddOperation *op = [S3BucketAddOperation bucketAddWithConnection:_connection name:_name];
+        [self addToCurrentOperations:op];
+    }
 }
 
 - (IBAction)add:(id)sender
 {
-	[self setName:@"Untitled"];
-	[NSApp beginSheet:addSheet modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:nil];
+    [self setName:@"Untitled"];
+    [NSApp beginSheet:addSheet modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:nil];
 }
 
 - (IBAction)open:(id)sender
 {
-	
-	S3Bucket *b;
-	NSEnumerator* e = [[_bucketsController selectedObjects] objectEnumerator];
-	while (b = [e nextObject])
-	{
-		S3ObjectListController *c = [[[S3ObjectListController alloc] initWithWindowNibName:@"Objects"] autorelease];
-		[c setBucket:b];
-		[c setConnection:_connection];
-		[c showWindow:self];
-		[c retain];
-	}
+    
+    S3Bucket *b;
+    NSEnumerator* e = [[_bucketsController selectedObjects] objectEnumerator];
+    while (b = [e nextObject])
+    {
+        S3ObjectListController *c = nil;
+        if (c = [_bucketListControllerCache objectForKey:b]) {
+            [c showWindow:self];
+        } else {
+            c = [[S3ObjectListController alloc] initWithWindowNibName:@"Objects"];
+            [c setBucket:b];
+            [c setConnection:_connection];
+            [c showWindow:self];            
+            [_bucketListControllerCache setObject:c forKey:b];
+        }
+    }
 }
 
 #pragma mark -
@@ -262,11 +270,13 @@
 {
     [[NSApp queue] removeQueueListener:self];
 
-	[self setName:nil];
-	[self setBucketsOwner:nil];
-	[self setBuckets:nil];
-	
-	[super dealloc];
+    [_bucketListControllerCache release];
+    
+    [self setName:nil];
+    [self setBucketsOwner:nil];
+    [self setBuckets:nil];
+    
+    [super dealloc];
 }
 
 @end
