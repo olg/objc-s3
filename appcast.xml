@@ -6,6 +6,24 @@
         <description>Most recent changes with links to updates.</description> 
         <language>en</language> 
         <item> 
+            <guid>http://people.no-distance.net/ol/software/s3/S3-Browser-1.0.7.zip</guid>
+            <title>Version 1.0.7</title> 
+            <description>
+			    &lt;ul&gt;
+				&lt;li&gt; Improved data display in operation inspector (&lt;a href="http://code.google.com/p/objc-s3/issues/detail?id=32"&gt;#32&lt;/a&gt;)
+				&lt;li&gt; Fixed a potential crasher on time-out errors, and improve error reporting
+				&lt;li&gt; Bucket windows can be closed and reopened and have correct state shown (&lt;a href="http://code.google.com/p/objc-s3/issues/detail?id=36"&gt;#36&lt;/a&gt;), contributed by mledford
+				&lt;li&gt; Number of maximum concurrent operations can be set in preferences (might help on very fast connections), please consider this feature as experimental
+				&lt;li&gt; Mime-type is now correctly set for css files (&lt;a href="http://code.google.com/p/objc-s3/issues/detail?id=34"&gt;#34&lt;/a&gt;)
+				&lt;li&gt; Fixed a crash on an OS not released yet when opening the connection (&lt;a href="http://code.google.com/p/objc-s3/issues/detail?id=33"&gt;#33&lt;/a&gt;)
+				&lt;li&gt; Improved handling of special characters and better date display (&lt;a href="http://code.google.com/p/objc-s3/issues/detail?id=30"&gt;#30&lt;/a&gt;), contributed by Matt Johnston
+    			&lt;/ul&gt;
+			</description> 
+            <pubDate>20 May 2007 20:13:11 +0000</pubDate> 
+            <enclosure sparkle:version="109" sparkle:shortVersionString="1.0.7" url="http://people.no-distance.net/ol/software/s3/S3-Browser-1.0.7.zip" length="432559" 
+		type="application/octet-stream"/> 
+        </item> 
+        <item> 
         	<guid>http://people.no-distance.net/ol/software/s3/S3-Browser-1.0.6.zip</guid>
             <title>Version 1.0.6</title> 
             <description>
