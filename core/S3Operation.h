@@ -64,6 +64,7 @@ typedef enum _S3OperationState {
 - (void)setState:(S3OperationState)aState;
 - (BOOL)allowsRetry;
 - (void)setAllowsRetry:(BOOL)yn;
+- (NSError*)errorFromStatus:(int)status data:(NSData*)data;
 
 @end
 

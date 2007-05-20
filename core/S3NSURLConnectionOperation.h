@@ -18,5 +18,5 @@
 }
 
 - (id)initWithRequest:(NSURLRequest *)request;
-
+- (NSData*)data;
 @end

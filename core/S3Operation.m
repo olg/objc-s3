@@ -98,6 +98,39 @@
     _error = [anError retain];
 }
 
+// Convenience method which setup an NSError from HTTP status and data by checking S3 error XML Documents
+-(NSError*)errorFromStatus:(int)status data:(NSData*)data
+{
+    NSError* error = nil;
+    NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+    [dictionary setObject:[NSNumber numberWithInt:status] forKey:S3_ERROR_HTTP_STATUS_KEY];
+    
+    NSArray *a;
+    NSXMLDocument *d = [[[NSXMLDocument alloc] initWithData:data options:NSXMLDocumentTidyXML error:&error] autorelease];
+    if (error!=NULL)
+        [dictionary setObject:error forKey:NSUnderlyingErrorKey];
+    
+    a = [[d rootElement] nodesForXPath:@"//Code" error:&error];
+    if ([a count]==1) {
+        [dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:NSLocalizedDescriptionKey];
+        [dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:S3_ERROR_CODE_KEY];
+    }
+        
+    a = [[d rootElement] nodesForXPath:@"//Message" error:&error];
+    if (error!=NULL)
+        [dictionary setObject:error forKey:NSUnderlyingErrorKey];
+    if ([a count]==1)
+        [dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:NSLocalizedRecoverySuggestionErrorKey];
+    
+    a = [[d rootElement] nodesForXPath:@"//Resource" error:&error];
+    if (error!=NULL)
+        [dictionary setObject:error forKey:NSUnderlyingErrorKey];
+    if ([a count]==1)
+        [dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:S3_ERROR_RESOURCE_KEY];
+    
+    return [NSError errorWithDomain:S3_ERROR_DOMAIN code:status userInfo:dictionary];
+}
+
 -(BOOL)operationSuccess
 {
 	return FALSE;

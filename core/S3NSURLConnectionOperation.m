@@ -34,6 +34,11 @@
 	[super dealloc];
 }
 
+- (NSData*)data
+{
+	return _data;
+}
+
 - (void)setResponse:(NSHTTPURLResponse *)aResponse
 {
     [_response release];
@@ -47,25 +52,7 @@
 		return TRUE;
 	
 	// Houston, we have a problem 
-	NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-	NSArray *a;
-	NSXMLDocument *d = [[[NSXMLDocument alloc] initWithData:_data options:NSXMLNodeOptionsNone error:&_error] autorelease];
-	
-	a = [[d rootElement] nodesForXPath:@"//Code" error:&_error];
-    if ([a count]==1) {
-        [dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:NSLocalizedDescriptionKey];            
-        [dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:S3_ERROR_CODE_KEY];
-    }
-    a = [[d rootElement] nodesForXPath:@"//Message" error:&_error];
-    if ([a count]==1)
-        [dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:NSLocalizedRecoverySuggestionErrorKey];
-    a = [[d rootElement] nodesForXPath:@"//Resource" error:&_error];
-    if ([a count]==1)
-        [dictionary setObject:[[a objectAtIndex:0] stringValue] forKey:S3_ERROR_RESOURCE_KEY];
-
-    [dictionary setObject:[NSNumber numberWithInt:status] forKey:S3_ERROR_HTTP_STATUS_KEY];
-        
-    [self setError:[NSError errorWithDomain:S3_ERROR_DOMAIN code:[_response statusCode] userInfo:dictionary]];
+    [self setError:[self errorFromStatus:status data:[self data]]];
     [self setState:S3OperationError];
     return FALSE;
 }
