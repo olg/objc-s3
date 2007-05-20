@@ -25,6 +25,8 @@ NSString *S3OperationObjectForRetryKey = @"S3OperationObjectForRetryKey";
 @interface S3OperationQueue (PrivateAPI)
 - (void)removeFromCurrentOperations:(S3Operation *)op;
 - (void)startQualifiedOperations:(NSTimer *)timer;
+- (void)rearmTimer;
+- (void)disarmTimer;
 @end
 
 @implementation S3OperationQueue
@@ -34,7 +36,6 @@ NSString *S3OperationObjectForRetryKey = @"S3OperationObjectForRetryKey";
 	[super init];
 	_operations = [[NSMutableArray alloc] init];
 	_currentOperations = [[NSMutableArray alloc] init];
-	_timer = [NSTimer scheduledTimerWithTimeInterval:0.20 target:self selector:@selector(startQualifiedOperations:) userInfo:nil repeats:YES];
 	return self;
 }
 
@@ -42,8 +43,7 @@ NSString *S3OperationObjectForRetryKey = @"S3OperationObjectForRetryKey";
 {
 	[_operations release];
 	[_currentOperations release];
-	[_timer invalidate];
-	[_timer release];
+	[self disarmTimer];
 	[super dealloc];
 }
 
@@ -140,6 +140,19 @@ NSString *S3OperationObjectForRetryKey = @"S3OperationObjectForRetryKey";
 #pragma mark -
 #pragma mark High-level operations
 
+-(void)rearmTimer
+{
+	if (_timer==NULL)
+		_timer = [[NSTimer scheduledTimerWithTimeInterval:0.20 target:self selector:@selector(startQualifiedOperations:) userInfo:nil repeats:NO] retain];
+}
+
+-(void)disarmTimer
+{
+	[_timer invalidate];
+	[_timer release];
+	_timer = NULL;	
+}
+
 - (void)logOperation:(id)op
 {
     [self willChangeValueForKey:@"operations"];
@@ -160,7 +173,16 @@ NSString *S3OperationObjectForRetryKey = @"S3OperationObjectForRetryKey";
 
 - (int)canAcceptPendingOperations
 {
-	int available = MAX_ACTIVE_OPERATIONS;
+	int available = MAX_ACTIVE_OPERATIONS; // fallback
+	NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
+    NSNumber* maxOps = [standardUserDefaults objectForKey:@"maxoperations"];
+	if (maxOps!=nil)
+	{
+		int value = [maxOps intValue]; 
+		if ((value>0)&&(value<100)) // Let's be reasonable
+			available = value;
+	}
+	
 	NSEnumerator *e = [_currentOperations objectEnumerator];
 	S3Operation *o;
 	while (o = [e nextObject])
@@ -188,6 +210,7 @@ NSString *S3OperationObjectForRetryKey = @"S3OperationObjectForRetryKey";
 	if ([op state]==S3OperationDone) {
 		[self unlogOperation:op];        
     }
+    [self rearmTimer];
 }
 
 - (BOOL)addToCurrentOperations:(S3Operation *)op
@@ -199,12 +222,12 @@ NSString *S3OperationObjectForRetryKey = @"S3OperationObjectForRetryKey";
 
 	// Ensure this operation has the queue as its delegate.
 	[op setDelegate:self];
-    
+    [self rearmTimer];
     return TRUE;
 }
 
 - (void)startQualifiedOperations:(NSTimer *)timer
-{
+{	
 	int slotsAvailable = [self canAcceptPendingOperations];
 	NSEnumerator *e = [_currentOperations objectEnumerator];
 	S3Operation *o;
@@ -228,6 +251,7 @@ NSString *S3OperationObjectForRetryKey = @"S3OperationObjectForRetryKey";
 			slotsAvailable--;
 		}
 	}
+	[self disarmTimer];
 }
 
 @end
