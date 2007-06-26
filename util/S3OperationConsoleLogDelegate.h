@@ -40,6 +40,7 @@
 @interface S3OperationConsoleLogDelegate : NSObject <S3OperationDelegate> {
 	S3OperationQueue* _queue;
 	BOOL operationFailed;
+	NSMutableDictionary* verifyDictionary;
 }
 
 - (void)operationStateDidChange:(S3Operation*)o;
@@ -49,5 +50,6 @@
 - (void)setOperationQueue:(S3OperationQueue*)q;
 - (void)setOperationFailed;
 - (BOOL)operationFailed;
+- (BOOL)readMD5StoreForVerification:(NSString*)persistMD5Store bucket:(NSString*)bucket;
 
 @end

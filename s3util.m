@@ -48,14 +48,16 @@
 S3Bucket* getS3Bucket(NSString*);
 S3Object* getS3Object(NSString*);
 NSString* getFileMD5Sum(NSString*);
+void persistMD5Sum(NSString*, NSString*, NSString*, NSString*);
 
 int main (int argc, const char * argv[]) {
     NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
 	
 	// Values to store operations info
-	enum { INVALID, LIST, CREATE, DELETE, UPLOAD, DOWNLOAD } mode = INVALID;
+	enum { INVALID, LIST, CREATE, DELETE, UPLOAD, DOWNLOAD, VERIFY } mode = INVALID;
 	NSString* accessKeyId = nil;
 	NSString* bucket = nil;
+	NSString* persistMD5Store = nil;
 	int modeParamsCount = 0; // Counts primary modes so we can abort if multiple conflicting modes have been provided.
 	NSMutableArray* fileArgs = [NSMutableArray array];
 
@@ -90,6 +92,13 @@ int main (int argc, const char * argv[]) {
 			mode = DOWNLOAD;
 			NSLog(@"Download has matched.");
 			modeParamsCount++;
+		} else if ([[args objectAtIndex:i] isEqualToString:@"--verify"]) {
+			mode = VERIFY;
+			NSLog(@"Verify has matched.");
+			modeParamsCount++;
+		} else if ([[args objectAtIndex:i] isEqualToString:@"--persistMD5"]) {
+			persistMD5Store = [args objectAtIndex:++i];
+			NSLog(@"PersistMD5 has matched. Param: %@", persistMD5Store);
 		} else if (![[args objectAtIndex:i] hasPrefix:@"--"]) {
 			[fileArgs addObject:[args objectAtIndex:i]];
 			NSLog(@"Added '%@' to fileArgs.", [args objectAtIndex:i]);
@@ -138,6 +147,27 @@ int main (int argc, const char * argv[]) {
 				S3ObjectListOperation* op = [S3ObjectListOperation objectListWithConnection:cnx bucket:s3Bucket];
 				[op setDelegate:opDelegate];
 				[queue addToCurrentOperations:op];
+			}
+		} else if (mode == VERIFY) {
+			// For verification we need a bucket name and a sum-store
+			if (bucket == nil) {
+				NSLog(@"Bucket can't be verified without a name.");
+				return 245;
+			} else if (persistMD5Store == nil) {
+				NSLog(@"Verification can't begin without providing a persistMD5Store.");
+				return 244;
+			} else {
+				// Have the opDelegate read the sum-store and make sure it was successful
+				if ([opDelegate readMD5StoreForVerification:persistMD5Store bucket:bucket]) {
+					// Send a list keys request for specified bucket
+					S3Bucket* s3Bucket = getS3Bucket(bucket);
+					S3ObjectListOperation* op = [S3ObjectListOperation objectListWithConnection:cnx bucket:s3Bucket];
+					[op setDelegate:opDelegate];
+					[queue addToCurrentOperations:op];
+				} else {
+					NSLog(@"Sum store could not be read.");
+					return 243;
+				}
 			}
 		} else if (mode == CREATE) {
 			if (bucket == nil) {
@@ -198,7 +228,13 @@ int main (int argc, const char * argv[]) {
 					[info setObject:[filePath fileSizeForPath] forKey:FILEDATA_SIZE];
 					[info safeSetObject:[filePath mimeTypeForPath] forKey:FILEDATA_TYPE withValueForNil:@"application/octet-stream"];
 					[info setObject:fileName forKey:FILEDATA_KEY];
-					[info setObject:getFileMD5Sum(fileName) forKey:FILEDATA_SUM];
+
+					// Persist the MD5Sum when requested and pass it to UploadOperation
+					NSString* md5sum = getFileMD5Sum(fileName);
+					if (persistMD5Store != nil)
+						persistMD5Sum(persistMD5Store, bucket, fileName, md5sum);
+					
+					[info setObject:md5sum forKey:FILEDATA_SUM];
 					
 					S3ObjectStreamedUploadOperation* op = [S3ObjectStreamedUploadOperation objectUploadWithConnection:cnx bucket:s3Bucket data:info acl:@"private"];
 					[op setDelegate:opDelegate];
@@ -299,4 +335,42 @@ NSString* getFileMD5Sum(NSString* fileName) {
 	NSString *md_sum = [[NSString alloc] initWithCString:md_char encoding:NSUTF8StringEncoding];
 	
 	return md_sum;
+}
+
+// Data written to the persistent file will be written in the format bucket:key:sum
+// Using the 1024-byte limitation of key names as a delimiter didn't make sense and colons
+// are not allowed in bucket names due to DNS restrictions and will never occur in MD5 hashes.
+// When parsing this file you have to be careful to only use the first colon from the front and
+// the last column from the back as delimiters as there might be colons in the key name.
+
+void persistMD5Sum(NSString* persistMD5Store, NSString* bucket, NSString* fileName, NSString* md5sum) {
+	NSLog(@"Persisting MD5 sum of %@ in bucket %@ to %@", fileName, bucket, persistMD5Store);
+	
+	// Prepare data that should be written to file
+	char persist_char[2048]; // 256-byte bucket name, 1024-byte key name, 32-byte sum, 4 delimiters
+	int persist_len = snprintf(persist_char, sizeof(persist_char), "%s:%s:%s\n", 
+		[bucket UTF8String], [fileName UTF8String], [md5sum UTF8String]);
+	
+	NSData* persist_data = [NSData dataWithBytes:persist_char length:persist_len];
+	
+	NSFileHandle* store = [NSFileHandle fileHandleForWritingAtPath:persistMD5Store];
+	if (store != nil) {
+		[store seekToEndOfFile];
+		[store writeData:persist_data];
+		[store closeFile];
+	} else {
+		NSFileManager* fm = [NSFileManager defaultManager];
+		// There is some weird behavior when the file exists, but you don't have permission, but the
+		// OS let's the NSFileManager write there anyway when creating a new file and this was the simplest
+		// logic I could come up with.
+		if (![fm fileExistsAtPath:persistMD5Store]) {
+			if (![fm createFileAtPath:persistMD5Store contents:persist_data attributes:nil]) {
+				NSLog(@"Error2 while writing to file: %@", persistMD5Store);
+				NSLog(@"Sum data could not be persisted.");
+			}
+		} else {
+			NSLog(@"Error while writing to file: %@", persistMD5Store);
+			NSLog(@"Sum data could not be persisted.");
+		}
+	}
 }

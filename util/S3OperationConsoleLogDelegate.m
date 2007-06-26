@@ -67,19 +67,50 @@
 			NSLog(@"  %@", [[buckets objectAtIndex:i] name]);
 		NSLog(@"%d bucket%s found.", [buckets count], [buckets count] == 1 ? "" : "s");
 	} else if ([o isKindOfClass:[S3ObjectListOperation class]]) {
-		// List objects
 		NSMutableArray* objects = [(S3ObjectListOperation*)o objects];
-		for (int i = 0; i < [objects count]; i++) {
-			NSLog(@"   Key: %@", [[objects objectAtIndex:i] key]);
-			NSLog(@"   Size: %lld bytes", [(S3Object*)[objects objectAtIndex:i] size]);
-			NSDictionary* dict = [[objects objectAtIndex: i] metadata];
-			NSLog([dict descriptionWithLocale:nil indent:0]);
+		
+		if (verifyDictionary == nil) {
+			// List objects
+			for (int i = 0; i < [objects count]; i++) {
+				NSLog(@"   Key: %@", [[objects objectAtIndex:i] key]);
+				NSLog(@"   Size: %lld bytes", [(S3Object*)[objects objectAtIndex:i] size]);
+				NSDictionary* dict = [[objects objectAtIndex: i] metadata];
+				NSLog([dict descriptionWithLocale:nil indent:0]);
+			}
+			NSLog(@"Objects array has %d entries", [objects count]);
+		} else {
+			// Verify objects
+			for (int i = 0; i < [objects count]; i++) {
+				NSString* key = [[objects objectAtIndex:i] key];
+				NSString* sum = [verifyDictionary valueForKey:key];
+				if (sum != nil) {
+					if ([[[[objects objectAtIndex:i] metadata] valueForKey:@"etag"] isEqualToString:sum]) {
+						NSLog(@"o %@", key);
+					} else {
+						NSLog(@"! %@", key);
+					}
+				} else {
+					NSLog(@"+ %@", key);
+				}
+				[verifyDictionary removeObjectForKey:key];
+			}
 		}
-		NSLog(@"Objects array has %d entries", [objects count]);
 		
 		S3ObjectListOperation* next = [(S3ObjectListOperation*)o operationForNextChunk];
 		if (next != nil)
 			[_queue addToCurrentOperations:next];
+		
+		// If there are no more entries and we are verifying objects, then list all objects that
+		// have not been checked yet and are missing on S3, but are in the local sums file.
+		if (next == nil && verifyDictionary != nil) {
+			NSArray* missingKeys = [verifyDictionary allKeys];
+			NSEnumerator* enumerator = [missingKeys objectEnumerator];
+			
+			NSString* key;
+			while(key = [enumerator nextObject]) {
+				NSLog(@"- %@", key);
+			}
+		}
 	} else if ([o isKindOfClass:[S3ObjectStreamedUploadOperation class]]) {
 		NSString* S3ETag = [(S3ObjectStreamedUploadOperation*)o getETagFromResponse];
 		NSString* LocalSum = [(S3ObjectStreamedUploadOperation*)o getLocalSum];
@@ -118,6 +149,99 @@
 - (BOOL)operationFailed
 {
 	return operationFailed;
+}
+
+// Read values from sum store and write them to dictionary
+// Returns true on success or false on failure
+
+- (BOOL)readMD5StoreForVerification:(NSString*)persistMD5Store bucket:(NSString*)bucket
+{
+	verifyDictionary = [[NSMutableDictionary alloc] init];
+	NSMutableDictionary* sumsDictionary = [[NSMutableDictionary alloc] init];
+	
+	NSString* store = [NSString stringWithContentsOfFile:persistMD5Store];
+	if (store != nil) {
+		NSArray* storeLines = [store componentsSeparatedByString:@"\n"];
+		NSEnumerator* enumerator = [storeLines objectEnumerator];
+		
+		NSString *line;
+		while(line = [enumerator nextObject]) {
+			NSLog(@"String: %@", line);
+			if ([line length] > 1) {
+				// Find the first and last colon position
+				int ifirst, ilast;
+				char c = 'a';
+				for (ifirst=0; c != ':'; ifirst++)
+					c = (char)[line characterAtIndex:ifirst];
+				NSLog(@"first colon position: %d", ifirst);
+				c = 'a';
+				for (ilast=[line length]-1; c != ':'; ilast--)
+					c = (char)[line characterAtIndex:ilast];
+				NSLog(@"last colon position: %d", ilast);
+				
+				// Extract the three substrings we need
+				NSRange range = { 0, ifirst-1 };
+				NSString* bucketName = [line substringWithRange:range];
+				NSLog(@"BucketName: %@", bucketName);
+				
+				range.location = ifirst;
+				range.length = ilast - ifirst + 1;
+				NSString* keyName = [line substringWithRange:range];
+				NSLog(@"KeyName: %@", keyName);
+				
+				range.location = ilast + 2;
+				range.length = [line length] - ilast - 2;
+				NSMutableString* cksum = [[NSMutableString alloc] init]; 
+				[cksum appendString:@"\""];
+				NSString* unquotedcksum = [line substringWithRange:range];
+				[cksum appendString:unquotedcksum];
+				[cksum appendString:@"\""];
+				NSLog(@"CkSum: %@", cksum);
+				
+				// Write the values to sumsDictionary
+				NSMutableString* sumKey = [[NSMutableString alloc] init];
+				[sumKey appendString:bucketName];
+				[sumKey appendString:@":"];
+				[sumKey appendString:keyName];
+				[sumsDictionary setValue:unquotedcksum forKey:sumKey];
+				
+				// Write the values to verifyDictionary if they match the currently verified bucket
+				if ([bucketName isEqualToString:bucket])
+					[verifyDictionary setValue:cksum forKey:keyName];
+			}
+		}
+		NSLog(@"verifyDictionary: %@", [verifyDictionary description]);
+		
+		// Truncate sumfile and re-persist sumsDictionary to file
+		NSFileHandle* store = [NSFileHandle fileHandleForWritingAtPath:persistMD5Store];
+		if (store != nil) {
+			[store truncateFileAtOffset:0];
+			
+			// Iterate through sumsDictionary and write data to file
+			NSArray* sumKeys = [sumsDictionary allKeys];
+			NSEnumerator* enumerator = [sumKeys objectEnumerator];
+			
+			NSString* key;
+			while(key = [enumerator nextObject]) {
+				// Prepare data that should be written to file
+				char persist_char[2048]; // 256-byte bucket name, 1024-byte key name, 32-byte sum, 4 delimiters
+				int persist_len = snprintf(persist_char, sizeof(persist_char), "%s:%s\n", 
+					[key UTF8String], [[sumsDictionary valueForKey:key] UTF8String]);
+				
+				NSData* persist_data = [NSData dataWithBytes:persist_char length:persist_len];
+				
+				// Write data to file
+				[store writeData:persist_data];
+			}
+			[store closeFile];
+		} else {
+			NSLog(@"Error while writing to file: %@", persistMD5Store);
+			NSLog(@"Sum data could not be re-persisted.");
+		}
+		return true;
+	}
+	
+	return false;
 }
 
 @end
