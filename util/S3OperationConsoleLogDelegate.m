@@ -31,6 +31,7 @@
 //
 
 #import "S3OperationConsoleLogDelegate.h"
+#import "S3OperationQueue.h"
 #import "S3BucketListOperation.h"
 #import "S3BucketDeleteOperation.h"
 #import "S3BucketAddOperation.h"
@@ -38,28 +39,50 @@
 #import "S3ObjectDeleteOperation.h"
 #import "S3ObjectStreamedUploadOperation.h"
 #import "S3ObjectDownloadOperation.h"
+#import "S3Operation.h"
 
 @implementation S3OperationConsoleLogDelegate
 
-- (void)operationStateDidChange:(S3Operation*)o
+- (void)dealloc
 {
-	[_queue operationStateDidChange:o];
+    [_queue removeQueueListener:self];
+    [_queue release];
+    [verifyDictionary release];
+    [super dealloc];
+}
+
+- (void)setOperationQueue:(S3OperationQueue *)queue
+{
+    [_queue removeQueueListener:self];
+    [_queue release];
+    _queue = [queue retain];
+    [_queue addQueueListener:self];
+}
+
+- (S3OperationQueue *)operationQueue
+{
+    return _queue;
+}
+
+- (void)s3OperationStateDidChange:(NSNotification *)notification
+{
+    S3Operation *o = [[notification userInfo] valueForKey:S3OperationObjectKey];
     NSLog(@"operationStateChange was called.");
 	NSLog(@"Status: %@", [o status]);
 }
 
-- (void)operationDidFail:(S3Operation*)o
+- (void)s3OperationDidFail:(NSNotification *)notification
 {
-	[_queue operationDidFail:o];
+    S3Operation *o = [[notification userInfo] valueForKey:S3OperationObjectKey];
 	NSLog(@"operationDidFail was called.");
 	NSLog(@"Status: %@", [o status]);
 	NSLog(@"localizedDescription: %@", [[o error] localizedDescription]);
-	[self setOperationFailed];
+	[self setOperationFailed:YES];
 }
 
-- (void)operationDidFinish:(S3Operation*)o
+- (void)s3OperationDidFinish:(NSNotification *)notification
 {
-	[_queue operationDidFinish:o];
+    S3Operation *o = [[notification userInfo] valueForKey:S3OperationObjectKey];
 	NSLog(@"operationDidFinish was called.");
 	if ([o isKindOfClass:[S3BucketListOperation class]]) {
 		NSMutableArray* buckets = [(S3BucketListOperation*)o bucketList];
@@ -98,7 +121,7 @@
 		
 		S3ObjectListOperation* next = [(S3ObjectListOperation*)o operationForNextChunk];
 		if (next != nil)
-			[_queue addToCurrentOperations:next];
+			[[notification object] addToCurrentOperations:next];
 		
 		// If there are no more entries and we are verifying objects, then list all objects that
 		// have not been checked yet and are missing on S3, but are in the local sums file.
@@ -112,17 +135,17 @@
 			}
 		}
 	} else if ([o isKindOfClass:[S3ObjectStreamedUploadOperation class]]) {
-		NSString* S3ETag = [(S3ObjectStreamedUploadOperation*)o getETagFromResponse];
-		NSString* LocalSum = [(S3ObjectStreamedUploadOperation*)o getLocalSum];
-		NSLog(@"Status: %@", [o status]);
-		NSLog(@"S3-Calculated ETag: %@", S3ETag);
-		NSLog(@"Local-Calc MD5-SUM: %@", LocalSum);
-		if ([S3ETag isEqualToString:LocalSum]) {
-			NSLog(@"Both sums are identical, check OK!");
-		} else {
-			NSLog(@"ERROR: Checksums don't match!");
-			[self setOperationFailed];
-		}
+//		NSString* S3ETag = [(S3ObjectStreamedUploadOperation*)o getETagFromResponse];
+//		NSString* LocalSum = [(S3ObjectStreamedUploadOperation*)o getLocalSum];
+//		NSLog(@"Status: %@", [o status]);
+//		NSLog(@"S3-Calculated ETag: %@", S3ETag);
+//		NSLog(@"Local-Calc MD5-SUM: %@", LocalSum);
+//		if ([S3ETag isEqualToString:LocalSum]) {
+//			NSLog(@"Both sums are identical, check OK!");
+//		} else {
+//			NSLog(@"ERROR: Checksums don't match!");
+//			[self setOperationFailed];
+//		}
 	} else if ([o isKindOfClass:[S3BucketDeleteOperation class]] ||
 		[o isKindOfClass:[S3BucketAddOperation class]] ||
 		[o isKindOfClass:[S3ObjectDeleteOperation class]] ||
@@ -136,14 +159,9 @@
 		NSLog(@"incompatible class was returned.");
 }
 
-- (void)setOperationQueue:(S3OperationQueue*)q
+- (void)setOperationFailed:(BOOL)yn;
 {
-	_queue = q;
-}
-
-- (void)setOperationFailed
-{
-	operationFailed = YES;
+	operationFailed = yn;
 }
 
 - (BOOL)operationFailed

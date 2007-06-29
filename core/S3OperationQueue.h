@@ -27,6 +27,7 @@
 
 - (BOOL)addToCurrentOperations:(S3Operation *)op;
 - (NSMutableArray *)operations;
+- (NSArray *)currentOperations;
 
 @end
 

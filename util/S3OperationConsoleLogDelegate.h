@@ -31,24 +31,19 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "S3OperationQueue.h"
 
-@protocol S3OperationDelegate;
+@class S3OperationQueue;
 
-@class S3Operation;
-
-@interface S3OperationConsoleLogDelegate : NSObject <S3OperationDelegate> {
+@interface S3OperationConsoleLogDelegate : NSObject {
 	S3OperationQueue* _queue;
 	BOOL operationFailed;
-	NSMutableDictionary* verifyDictionary;
+	NSMutableDictionary *verifyDictionary;
 }
 
-- (void)operationStateDidChange:(S3Operation*)o;
-- (void)operationDidFail:(S3Operation*)o;
-- (void)operationDidFinish:(S3Operation*)o;
 
-- (void)setOperationQueue:(S3OperationQueue*)q;
-- (void)setOperationFailed;
+- (void)setOperationQueue:(S3OperationQueue *)queue;
+- (S3OperationQueue *)operationQueue;
+- (void)setOperationFailed:(BOOL)yn;
 - (BOOL)operationFailed;
 - (BOOL)readMD5StoreForVerification:(NSString*)persistMD5Store bucket:(NSString*)bucket;
 

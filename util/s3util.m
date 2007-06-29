@@ -32,7 +32,7 @@
 
 #import <Foundation/Foundation.h>
 #import "S3Connection.h"
-#import "S3OperationRunQueue.h"
+#import "S3OperationQueue.h"
 #import "S3OperationConsoleLogDelegate.h"
 #import "S3BucketListOperation.h"
 #import "S3BucketAddOperation.h"
@@ -45,16 +45,26 @@
 #import "unistd.h"
 #import <openssl/evp.h>
 
-S3Bucket* getS3Bucket(NSString*);
-S3Object* getS3Object(NSString*);
-NSString* getFileMD5Sum(NSString*);
-void persistMD5Sum(NSString*, NSString*, NSString*, NSString*);
+S3Bucket *getS3Bucket(NSString *);
+S3Object *getS3Object(NSString *);
+NSString *getFileMD5Sum(NSString *);
+void persistMD5Sum(NSString *, NSString *, NSString *, NSString *);
+
+typedef enum { 
+    INVALID_CMD_MODE,
+    LIST_CMD_MODE,
+    CREATE_CMD_MODE,
+    DELETE_CMD_MODE,
+    UPLOAD_CMD_MODE,
+    DOWNLOAD_CMD_MODE,
+    VERIFY_CMD_MODE
+} S3CmdMode;
 
 int main (int argc, const char * argv[]) {
-    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	
 	// Values to store operations info
-	enum { INVALID, LIST, CREATE, DELETE, UPLOAD, DOWNLOAD, VERIFY } mode = INVALID;
+	S3CmdMode mode = INVALID_CMD_MODE;
 	NSString* accessKeyId = nil;
 	NSString* bucket = nil;
 	NSString* persistMD5Store = nil;
@@ -73,27 +83,27 @@ int main (int argc, const char * argv[]) {
 			accessKeyId = [args objectAtIndex:++i];
 			NSLog(@"AccessKeyID has matched. Param: %@", accessKeyId);
 		} else if ([[args objectAtIndex:i] isEqualToString:@"--list"]) {
-			mode = LIST;
+			mode = LIST_CMD_MODE;
 			NSLog(@"List has matched.");
 			modeParamsCount++;
 		} else if ([[args objectAtIndex:i] isEqualToString:@"--create"]) {
-			mode = CREATE;
+			mode = CREATE_CMD_MODE;
 			NSLog(@"Create has matched.");
 			modeParamsCount++;
 		} else if ([[args objectAtIndex:i] isEqualToString:@"--delete"]) {
-			mode = DELETE;
+			mode = DELETE_CMD_MODE;
 			NSLog(@"Delete has matched.");
 			modeParamsCount++;
 		} else if ([[args objectAtIndex:i] isEqualToString:@"--upload"]) {
-			mode = UPLOAD;
+			mode = UPLOAD_CMD_MODE;
 			NSLog(@"Upload has matched.");
 			modeParamsCount++;
 		} else if ([[args objectAtIndex:i] isEqualToString:@"--download"]) {
-			mode = DOWNLOAD;
+			mode = DOWNLOAD_CMD_MODE;
 			NSLog(@"Download has matched.");
 			modeParamsCount++;
 		} else if ([[args objectAtIndex:i] isEqualToString:@"--verify"]) {
-			mode = VERIFY;
+			mode = VERIFY_CMD_MODE;
 			NSLog(@"Verify has matched.");
 			modeParamsCount++;
 		} else if ([[args objectAtIndex:i] isEqualToString:@"--persistMD5"]) {
@@ -109,7 +119,7 @@ int main (int argc, const char * argv[]) {
 	
 	int retval; // Return code
 	
-	if (mode == 0) {
+	if (mode == INVALID_CMD_MODE) {
 		// If no valid primary parameter has been provided, exit with appropriate error
 		NSLog(@"No valid primary mode has been provided. - aborting operation");
 		retval=255;
@@ -125,17 +135,17 @@ int main (int argc, const char * argv[]) {
 		// Connect to S3
 		NSLog(@"Building connection class");
 		
-		S3Connection* cnx = [[S3Connection alloc] init];
+		S3Connection *cnx = [[S3Connection alloc] init];
 		[cnx setAccessKeyID:accessKeyId];
 		
 		NSLog(@"Try to get access key from Keychain");
 		[cnx trySetupSecretAccessKeyFromKeychain];
 		
-		S3OperationRunQueue* queue = [[S3OperationRunQueue alloc] init];
-		S3OperationConsoleLogDelegate* opDelegate = [[S3OperationConsoleLogDelegate alloc] init];
-		[opDelegate setOperationQueue:queue];
-		
-		if (mode == LIST) {
+		S3OperationQueue *queue = [[S3OperationQueue alloc] init];
+		S3OperationConsoleLogDelegate *opDelegate = [[S3OperationConsoleLogDelegate alloc] init];
+        [opDelegate setOperationQueue:queue]; 
+
+		if (mode == LIST_CMD_MODE) {
 			if (bucket == nil) {
 				// List available buckets
 				S3BucketListOperation* op = [S3BucketListOperation bucketListOperationWithConnection:cnx];
@@ -148,7 +158,7 @@ int main (int argc, const char * argv[]) {
 				[op setDelegate:opDelegate];
 				[queue addToCurrentOperations:op];
 			}
-		} else if (mode == VERIFY) {
+		} else if (mode == VERIFY_CMD_MODE) {
 			// For verification we need a bucket name and a sum-store
 			if (bucket == nil) {
 				NSLog(@"Bucket can't be verified without a name.");
@@ -169,7 +179,7 @@ int main (int argc, const char * argv[]) {
 					return 243;
 				}
 			}
-		} else if (mode == CREATE) {
+		} else if (mode == CREATE_CMD_MODE) {
 			if (bucket == nil) {
 				// Bucket can't be created without a name
 				NSLog(@"Bucket can't be created without a name.");
@@ -179,7 +189,7 @@ int main (int argc, const char * argv[]) {
 				[op setDelegate:opDelegate];
 				[queue addToCurrentOperations:op];
 			}
-		} else if (mode == DELETE) {
+		} else if (mode == DELETE_CMD_MODE) {
 			if (bucket == nil) {
 				// Bucket can't be deleted without a name
 				NSLog(@"Bucket can't be deleted without a name.");
@@ -207,7 +217,7 @@ int main (int argc, const char * argv[]) {
 				[op setDelegate:opDelegate];
 				[queue addToCurrentOperations:op];
 			}
-		} else if (mode == UPLOAD) {
+		} else if (mode == UPLOAD_CMD_MODE) {
 			if (bucket == nil) {
 				// Can't upload without knowing destination bucket
 				NSLog(@"Bucket name is required for upload.");
@@ -234,14 +244,14 @@ int main (int argc, const char * argv[]) {
 					if (persistMD5Store != nil)
 						persistMD5Sum(persistMD5Store, bucket, fileName, md5sum);
 					
-					[info setObject:md5sum forKey:FILEDATA_SUM];
+//					[info setObject:md5sum forKey:FILEDATA_SUM];
 					
 					S3ObjectStreamedUploadOperation* op = [S3ObjectStreamedUploadOperation objectUploadWithConnection:cnx bucket:s3Bucket data:info acl:@"private"];
 					[op setDelegate:opDelegate];
 					[queue addToCurrentOperations:op];
 				}
 			}
-		} else if (mode == DOWNLOAD) {
+		} else if (mode == DOWNLOAD_CMD_MODE) {
 			if (bucket == nil) {
 				// Can't download without knowing source bucket
 				NSLog(@"Bucket name required for download.");
@@ -272,7 +282,44 @@ int main (int argc, const char * argv[]) {
 		}
 		
 		// Run whatever is in the queue
-		[queue run];
+        NSLog(@"Running the runloop");
+        NSRunLoop *theRL = [NSRunLoop currentRunLoop];
+        NSDate *timeout = [NSDate dateWithTimeIntervalSinceNow:30];
+        NSMutableDictionary *stati = [NSMutableDictionary dictionaryWithCapacity:[[queue currentOperations] count]];
+        while ([[queue currentOperations] count] > 0 && [(NSDate*)[NSDate date] compare:timeout] == NSOrderedAscending) {
+            NSEnumerator *enumerator = [[queue currentOperations] objectEnumerator];
+            S3Operation *op;
+            while (op = [enumerator nextObject]) {
+                NSString *opStatus = [op status];
+                NSString *opKey;
+//                if ([op respondsToSelector:@selector(getKey)]) {
+//                    opKey = [op getKey];
+//                } else {
+//                    // Set a generic status key
+                    opKey = @"Status";
+//                }
+                // Only display an updated status if it has changed.
+                if (![[stati valueForKey:opKey] isEqualToString:opStatus]) {
+					NSLog(@"%@: %@", opKey, opStatus);
+					[stati setValue:opStatus forKey:opKey];
+                }
+            }
+            timeout = [NSDate dateWithTimeIntervalSinceNow:30];
+            [theRL runMode:NSDefaultRunLoopMode beforeDate:timeout];
+        }
+        
+        if ([[queue currentOperations] count] > 0) {
+            NSEnumerator *enumerator = [[queue currentOperations] objectEnumerator];
+            S3Operation *op;
+            while (op = [enumerator nextObject]) {
+                if ([op state] == S3OperationError) {
+                    [opDelegate setOperationFailed:YES];
+                }
+            }
+        } else {
+            NSLog(@"Operations queue empty");
+        }
+        
 		
 		// Verify if operation completed successfully
 		if ([opDelegate operationFailed]) {
@@ -294,9 +341,8 @@ int main (int argc, const char * argv[]) {
     return retval;
 }
 
-S3Bucket* getS3Bucket(NSString* name) {
-	S3Bucket* s3Bucket = [[S3Bucket alloc] init];
-	[s3Bucket setName:name];
+S3Bucket* getS3Bucket(NSString *name) {
+	S3Bucket *s3Bucket = [[S3Bucket alloc] initWithName:name creationDate:nil];
 	return s3Bucket;
 }
 

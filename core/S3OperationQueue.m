@@ -127,9 +127,9 @@ NSString *S3OperationObjectForRetryKey = @"S3OperationObjectForRetryKey";
     return NO;
 }
 
-- (NSMutableArray *)currentOperations
+- (NSArray *)currentOperations
 {
-    return _currentOperations; 
+    return [NSArray arrayWithArray:_currentOperations];
 }
 
 - (NSMutableArray *)operations
