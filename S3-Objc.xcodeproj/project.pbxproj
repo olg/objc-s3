@@ -122,7 +122,6 @@
 		65C3B10A0C1983E4008EB674 /* S3OperationConsoleLogDelegate.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = S3OperationConsoleLogDelegate.h; path = util/S3OperationConsoleLogDelegate.h; sourceTree = "<group>"; };
 		65C3B10B0C1983E4008EB674 /* S3OperationConsoleLogDelegate.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = S3OperationConsoleLogDelegate.m; path = util/S3OperationConsoleLogDelegate.m; sourceTree = "<group>"; };
 		65CDE8CA0C10462C007CB0EF /* s3util */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = s3util; sourceTree = BUILT_PRODUCTS_DIR; };
-		65CDE8E40C1048A2007CB0EF /* s3util.1 */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.man; path = s3util.1; sourceTree = "<group>"; };
 		65CDE8E50C1048A2007CB0EF /* s3util.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = s3util.m; path = util/s3util.m; sourceTree = "<group>"; };
 		7737F80A09EDA1EB0015B80B /* upload.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = upload.icns; path = Resources/upload.icns; sourceTree = "<group>"; };
 		7737F80B09EDA1EB0015B80B /* download.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = download.icns; path = Resources/download.icns; sourceTree = "<group>"; };
@@ -279,7 +278,6 @@
 		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				65CDE8E40C1048A2007CB0EF /* s3util.1 */,
 				32CA4F630368D1EE00C91783 /* S3-Objc_Prefix.pch */,
 				29B97316FDCFA39411CA2CEA /* main.m */,
 			);
