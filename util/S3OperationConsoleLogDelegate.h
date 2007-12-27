@@ -38,6 +38,7 @@
 	S3OperationQueue* _queue;
 	BOOL operationFailed;
 	NSMutableDictionary *verifyDictionary;
+	NSMutableArray *sumArray;
 }
 
 
@@ -46,5 +47,7 @@
 - (void)setOperationFailed:(BOOL)yn;
 - (BOOL)operationFailed;
 - (BOOL)readMD5StoreForVerification:(NSString*)persistMD5Store bucket:(NSString*)bucket;
+- (void)storeSumForVerification:(NSString*)sum filePath:(NSString*)filePath;
+- (BOOL)isSumCorrect:(NSString*)sum filePath:(NSString*)filePath;
 
 @end

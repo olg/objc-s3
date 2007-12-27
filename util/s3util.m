@@ -244,7 +244,7 @@ int main (int argc, const char * argv[]) {
 					if (persistMD5Store != nil)
 						persistMD5Sum(persistMD5Store, bucket, fileName, md5sum);
 					
-//					[info setObject:md5sum forKey:FILEDATA_SUM];
+					[opDelegate storeSumForVerification:md5sum filePath:filePath];
 					
 					S3ObjectStreamedUploadOperation* op = [S3ObjectStreamedUploadOperation objectUploadWithConnection:cnx bucket:s3Bucket data:info acl:@"private"];
 					[op setDelegate:opDelegate];

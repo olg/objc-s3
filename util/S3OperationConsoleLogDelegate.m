@@ -43,11 +43,19 @@
 
 @implementation S3OperationConsoleLogDelegate
 
+- init
+{
+	[super init];
+	sumArray = [[NSMutableArray alloc] init];
+	return self;
+}
+
 - (void)dealloc
 {
     [_queue removeQueueListener:self];
     [_queue release];
     [verifyDictionary release];
+	[sumArray release];
     [super dealloc];
 }
 
@@ -135,17 +143,15 @@
 			}
 		}
 	} else if ([o isKindOfClass:[S3ObjectStreamedUploadOperation class]]) {
-//		NSString* S3ETag = [(S3ObjectStreamedUploadOperation*)o getETagFromResponse];
-//		NSString* LocalSum = [(S3ObjectStreamedUploadOperation*)o getLocalSum];
-//		NSLog(@"Status: %@", [o status]);
-//		NSLog(@"S3-Calculated ETag: %@", S3ETag);
-//		NSLog(@"Local-Calc MD5-SUM: %@", LocalSum);
-//		if ([S3ETag isEqualToString:LocalSum]) {
-//			NSLog(@"Both sums are identical, check OK!");
-//		} else {
-//			NSLog(@"ERROR: Checksums don't match!");
-//			[self setOperationFailed];
-//		}
+		NSString* S3ETag = [(S3ObjectStreamedUploadOperation*)o getETagFromResponse];
+		NSLog(@"Status: %@", [o status]);
+		NSLog(@"S3 ETag: %@", S3ETag);
+		if ([self isSumCorrect:S3ETag filePath:[(S3ObjectStreamedUploadOperation*)o getPath]]) {
+			NSLog(@"Both sums are identical, check OK!");
+		} else {
+			NSLog(@"ERROR: Checksums don't match!");
+			[self setOperationFailed:YES];
+		}
 	} else if ([o isKindOfClass:[S3BucketDeleteOperation class]] ||
 		[o isKindOfClass:[S3BucketAddOperation class]] ||
 		[o isKindOfClass:[S3ObjectDeleteOperation class]] ||
@@ -260,6 +266,24 @@
 	}
 	
 	return false;
+}
+
+- (NSString*)buildSumString:(NSString*)sum filePath:(NSString*)filePath
+{
+	NSMutableString* sumAndPath = [NSMutableString stringWithString:sum];
+	[sumAndPath appendString:@"-"];
+	[sumAndPath appendString:filePath];
+	return [NSString stringWithString:sumAndPath];	
+}
+
+- (void)storeSumForVerification:(NSString*)sum filePath:(NSString*)filePath
+{
+	[sumArray addObject:[self buildSumString:sum filePath:filePath]];
+}
+
+- (BOOL)isSumCorrect:(NSString*)sum filePath:(NSString*)filePath
+{
+	return [sumArray containsObject:[self buildSumString:sum filePath:filePath]];
 }
 
 @end
