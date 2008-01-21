@@ -17,6 +17,7 @@
 		30F424250B45FBD700A8483B /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 30F424240B45FBD700A8483B /* Credits.rtf */; };
 		65C3B16B0C199136008EB674 /* S3OperationConsoleLogDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 65C3B10B0C1983E4008EB674 /* S3OperationConsoleLogDelegate.m */; };
 		65C3B19C0C1999B1008EB674 /* S3TransferRateCalculator.m in Sources */ = {isa = PBXBuildFile; fileRef = ECB4A4FB0BA881590056558D /* S3TransferRateCalculator.m */; };
+		65CD13FD0D4509D1000385D3 /* S3ObjectStreamedUploadOperation+Attributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 65CD13FC0D4509D1000385D3 /* S3ObjectStreamedUploadOperation+Attributes.m */; };
 		65CDE8E60C1048A2007CB0EF /* s3util.m in Sources */ = {isa = PBXBuildFile; fileRef = 65CDE8E50C1048A2007CB0EF /* s3util.m */; };
 		65CDE92B0C1050BE007CB0EF /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		65CDE9860C1050EC007CB0EF /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 29B97325FDCFA39411CA2CEA /* Foundation.framework */; };
@@ -121,7 +122,9 @@
 		32CA4F630368D1EE00C91783 /* S3-Objc_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "S3-Objc_Prefix.pch"; sourceTree = "<group>"; };
 		65C3B10A0C1983E4008EB674 /* S3OperationConsoleLogDelegate.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = S3OperationConsoleLogDelegate.h; path = util/S3OperationConsoleLogDelegate.h; sourceTree = "<group>"; };
 		65C3B10B0C1983E4008EB674 /* S3OperationConsoleLogDelegate.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = S3OperationConsoleLogDelegate.m; path = util/S3OperationConsoleLogDelegate.m; sourceTree = "<group>"; };
-		65CDE8CA0C10462C007CB0EF /* s3util */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = s3util; sourceTree = BUILT_PRODUCTS_DIR; };
+		65CD13FB0D4509D1000385D3 /* S3ObjectStreamedUploadOperation+Attributes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "S3ObjectStreamedUploadOperation+Attributes.h"; path = "util/S3ObjectStreamedUploadOperation+Attributes.h"; sourceTree = "<group>"; };
+		65CD13FC0D4509D1000385D3 /* S3ObjectStreamedUploadOperation+Attributes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "S3ObjectStreamedUploadOperation+Attributes.m"; path = "util/S3ObjectStreamedUploadOperation+Attributes.m"; sourceTree = "<group>"; };
+		65CDE8CA0C10462C007CB0EF /* s3util */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = s3util; sourceTree = BUILT_PRODUCTS_DIR; };
 		65CDE8E50C1048A2007CB0EF /* s3util.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = s3util.m; path = util/s3util.m; sourceTree = "<group>"; };
 		7737F80A09EDA1EB0015B80B /* upload.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = upload.icns; path = Resources/upload.icns; sourceTree = "<group>"; };
 		7737F80B09EDA1EB0015B80B /* download.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = download.icns; path = Resources/download.icns; sourceTree = "<group>"; };
@@ -322,6 +325,8 @@
 				65CDE8E50C1048A2007CB0EF /* s3util.m */,
 				65C3B10A0C1983E4008EB674 /* S3OperationConsoleLogDelegate.h */,
 				65C3B10B0C1983E4008EB674 /* S3OperationConsoleLogDelegate.m */,
+				65CD13FB0D4509D1000385D3 /* S3ObjectStreamedUploadOperation+Attributes.h */,
+				65CD13FC0D4509D1000385D3 /* S3ObjectStreamedUploadOperation+Attributes.m */,
 			);
 			name = util;
 			sourceTree = "<group>";
@@ -530,6 +535,7 @@
 				65CDE9C10C105444007CB0EF /* S3Owner.m in Sources */,
 				65C3B16B0C199136008EB674 /* S3OperationConsoleLogDelegate.m in Sources */,
 				65C3B19C0C1999B1008EB674 /* S3TransferRateCalculator.m in Sources */,
+				65CD13FD0D4509D1000385D3 /* S3ObjectStreamedUploadOperation+Attributes.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

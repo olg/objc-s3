@@ -360,5 +360,27 @@
 	}
 }
 
+- (NSString *)headerFieldValue:(NSString *)headerField
+{
+	CFStringRef headerFieldValue = CFHTTPMessageCopyHeaderFieldValue(_response, (CFStringRef)headerField);
+	return (NSString*)headerFieldValue;
+}
+
+- (NSDictionary *)headerFieldsAndValues
+{
+	CFDictionaryRef headerFieldsAndValues = CFHTTPMessageCopyAllHeaderFields(_response);
+	return (NSDictionary*)headerFieldsAndValues;
+}
+
+- (NSArray *)headerFields
+{
+	return [[self headerFieldsAndValues] allKeys];
+}
+
+- (NSString*)path
+{
+        return _path;
+}
+
 
 @end

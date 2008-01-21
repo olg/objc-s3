@@ -3,7 +3,7 @@
 //  s3util
 //
 //  Created by Gerhard Poul on 3/3/07.
-//  Copyright (c) 2007 Gerhard Poul. All rights reserved.
+//  Copyright (c) 2007, 2008 Gerhard Poul. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -38,6 +38,7 @@
 #import "S3ObjectListOperation.h"
 #import "S3ObjectDeleteOperation.h"
 #import "S3ObjectStreamedUploadOperation.h"
+#import "S3ObjectStreamedUploadOperation+Attributes.h"
 #import "S3ObjectDownloadOperation.h"
 #import "S3Operation.h"
 
@@ -146,7 +147,7 @@
 		NSString* S3ETag = [(S3ObjectStreamedUploadOperation*)o getETagFromResponse];
 		NSLog(@"Status: %@", [o status]);
 		NSLog(@"S3 ETag: %@", S3ETag);
-		if ([self isSumCorrect:S3ETag filePath:[(S3ObjectStreamedUploadOperation*)o getPath]]) {
+		if ([self isSumCorrect:S3ETag filePath:[(S3ObjectStreamedUploadOperation*)o path]]) {
 			NSLog(@"Both sums are identical, check OK!");
 		} else {
 			NSLog(@"ERROR: Checksums don't match!");

@@ -27,5 +27,9 @@
 }
 
 + (S3ObjectStreamedUploadOperation *)objectUploadWithConnection:(S3Connection *)c bucket:(S3Bucket *)b data:(NSDictionary *)data acl:(NSString *)acl;
+- (NSString *)headerFieldValue:(NSString *)headerField;
+- (NSDictionary *)headerFieldsAndValues;
+- (NSArray *)headerFields;
+- (NSString *)path;
 
 @end
