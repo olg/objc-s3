@@ -23,6 +23,7 @@
 #define SHEET_CANCEL 0
 #define SHEET_OK 1
 
+#define DEFAULT_PRIVACY @"default-upload-privacy"
 #define ACL_PRIVATE @"private"
 
 @implementation S3ObjectListController
@@ -384,7 +385,11 @@
     }
     
     [self setUploadData:filesInfo];
-    [self setUploadACL:ACL_PRIVATE];
+
+    NSString* defaultPrivacy = [[NSUserDefaults standardUserDefaults] stringForKey:DEFAULT_PRIVACY];
+    if (defaultPrivacy==nil)
+        defaultPrivacy = ACL_PRIVATE;
+    [self setUploadACL:defaultPrivacy];
     [self setUploadSize:[NSString readableSizeForPaths:paths]];
 
     if (!dialog)
@@ -470,6 +475,7 @@
 {
     [_uploadACL release];
     _uploadACL = [anUploadACL retain];
+    [[NSUserDefaults standardUserDefaults] setObject:anUploadACL forKey:DEFAULT_PRIVACY];
 }
 
 - (NSString *)uploadFilename
