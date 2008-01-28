@@ -195,7 +195,18 @@
         int writ = [_ostream write:[_obuffer bytes] maxLength:olen];
 		[_rateCalculator addBytesTransfered:writ];
 
-		[self setStatus:[NSString stringWithFormat:@"Sending data %@%% (%@ %@/%@) %@",[_rateCalculator stringForObjectivePercentageCompleted], [_rateCalculator stringForCalculatedTransferRate], [_rateCalculator stringForShortDisplayUnit], [_rateCalculator stringForShortRateUnit], [_rateCalculator stringForEstimatedTimeRemaining]]];
+        NSString* s;
+        NSMutableString* status = [NSMutableString stringWithString:@"Sending data "];
+        s = [_rateCalculator stringForObjectivePercentageCompleted];
+        if (s!=nil)
+            [status appendFormat:@"%@%% ",s];
+        s = [_rateCalculator stringForCalculatedTransferRate];
+        if (s!=nil)
+            [status appendFormat:@"(%@ %@/%@) ", s, [_rateCalculator stringForShortDisplayUnit], [_rateCalculator stringForShortRateUnit]];
+        s = [_rateCalculator stringForEstimatedTimeRemaining];
+        if (s!=nil)
+            [status appendString:s];
+		[self setStatus:status];
         
         // buffer any unwritten bytes for later writing
 		if (olen > writ) {

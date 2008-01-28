@@ -70,6 +70,9 @@
 {
 	[self setResponse:(NSHTTPURLResponse *)response];
     [self setStatus:@"Connected to server"];
+    int length = [[[(NSHTTPURLResponse*)response allHeaderFields] objectForKey:@"Content-Length"] intValue];
+    if (length>0)
+        [_rateCalculator setObjective:length];
     [_rateCalculator startTransferRateCalculator];
 	if ([_delegate respondsToSelector:@selector(operationStateDidChange:)])
 		[_delegate operationStateDidChange:self];
@@ -78,7 +81,19 @@
 - (void)download:(NSURLDownload *)download didReceiveDataOfLength:(unsigned)length 
 {
     [_rateCalculator addBytesTransfered:length];
-    [self setStatus:[NSString stringWithFormat:@"Receiving data %@%% (%@ %@/%@) %@",[_rateCalculator stringForObjectivePercentageCompleted], [_rateCalculator stringForCalculatedTransferRate], [_rateCalculator stringForShortDisplayUnit], [_rateCalculator stringForShortRateUnit], [_rateCalculator stringForEstimatedTimeRemaining]]];
+    
+    NSString* s;
+    NSMutableString* status = [NSMutableString stringWithString:@"Receiving data "];
+    s = [_rateCalculator stringForObjectivePercentageCompleted];
+    if (s!=nil)
+        [status appendFormat:@"%@%% ",s];
+    s = [_rateCalculator stringForCalculatedTransferRate];
+    if (s!=nil)
+        [status appendFormat:@"(%@ %@/%@) ", s, [_rateCalculator stringForShortDisplayUnit], [_rateCalculator stringForShortRateUnit]];
+    s = [_rateCalculator stringForEstimatedTimeRemaining];
+    if (s!=nil)
+        [status appendString:s];
+    [self setStatus:status];  
 }
 
 - (BOOL)download:(NSURLDownload *)download shouldDecodeSourceDataOfMIMEType:(NSString *)encodingType

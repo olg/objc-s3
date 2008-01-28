@@ -71,8 +71,8 @@
 	_externalUnit = S3KibibyteUnit;
 	_externalRate = S3PerSecondRate;
 	_calculationRate = 1.0;
-	_calculatedTransferRate = @"n/a";
-	_timeRemaining = @"n/a";
+	_calculatedTransferRate = nil;
+	_timeRemaining = nil;
 	return self;
 }
 
@@ -323,7 +323,7 @@
         }
 		_timeRemaining = [[NSString alloc] initWithString:timeRemaining];
 	} else {
-		_timeRemaining = [[NSString alloc] initWithString:@"n/a"];
+		_timeRemaining = nil;
 	}	
 	
 	_totalTransfered += _pendingIncrease;
@@ -537,7 +537,7 @@
 - (NSString *)stringForObjectivePercentageCompleted
 {
     if (_objective == 0) {
-        return @"n/a";
+        return nil;
     }
 	return [NSString stringWithFormat:@"%.2f", ([self floatForObjectivePercentageCompleted]*100)];
 }
