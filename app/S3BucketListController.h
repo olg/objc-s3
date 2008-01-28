@@ -22,6 +22,7 @@
 
     IBOutlet NSWindow *addSheet;
     NSString *_name;
+    bool _europe;
     
     NSMutableDictionary *_bucketListControllerCache;
 }

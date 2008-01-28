@@ -13,7 +13,7 @@
 
 @interface S3BucketAddOperation : S3NSURLConnectionOperation
 
-+ (S3BucketAddOperation *)bucketAddWithConnection:(S3Connection *)c name:(NSString *)name;
++ (S3BucketAddOperation *)bucketAddWithConnection:(S3Connection *)c name:(NSString *)name europeConstraint:(bool)b;
 
 @end
 

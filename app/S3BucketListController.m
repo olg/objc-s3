@@ -177,7 +177,7 @@
     [sheet orderOut:self];
     if (returnCode==SHEET_OK)
     {
-        S3BucketAddOperation *op = [S3BucketAddOperation bucketAddWithConnection:_connection name:_name];
+        S3BucketAddOperation *op = [S3BucketAddOperation bucketAddWithConnection:_connection name:_name europeConstraint:_europe];
         [self addToCurrentOperations:op];
     }
 }
@@ -214,6 +214,16 @@
 + (void)initialize {
     [self setKeys:[NSArray arrayWithObjects:@"name",nil]
     triggerChangeNotificationsForDependentKey:@"isValidName"];
+}
+
+- (bool)europeConstraint
+{
+    return _europe; 
+}
+
+- (void)setEuropeConstraint:(bool)b
+{
+    _europe = b;
 }
 
 - (NSString *)name

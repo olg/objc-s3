@@ -185,7 +185,7 @@ int main (int argc, const char * argv[]) {
 				NSLog(@"Bucket can't be created without a name.");
 				return 252;
 			} else {
-				S3BucketAddOperation* op = [S3BucketAddOperation bucketAddWithConnection:cnx name:bucket];
+				S3BucketAddOperation* op = [S3BucketAddOperation bucketAddWithConnection:cnx name:bucket europeConstraint:false];
 				[op setDelegate:opDelegate];
 				[queue addToCurrentOperations:op];
 			}
