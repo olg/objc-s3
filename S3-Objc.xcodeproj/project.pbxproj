@@ -188,7 +188,7 @@
 		77BC334D09E852D90055FD75 /* S3ClickableURLField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3ClickableURLField.h; sourceTree = "<group>"; };
 		77BC334E09E852D90055FD75 /* S3ClickableURLField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3ClickableURLField.m; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		8D1107320486CEB800E47090 /* S3 Browser.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "S3 Browser.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107320486CEB800E47090 /* S3 Browser.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "S3 Browser.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ECB4A4FA0BA881590056558D /* S3TransferRateCalculator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3TransferRateCalculator.h; sourceTree = "<group>"; };
 		ECB4A4FB0BA881590056558D /* S3TransferRateCalculator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3TransferRateCalculator.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
