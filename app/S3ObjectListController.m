@@ -258,6 +258,24 @@
 - (IBAction)remove:(id)sender
 {
     S3Object *b;
+    int count = [[_objectsController selectedObjects] count];
+
+    if (count>=10)
+    {
+        NSAlert *alert = [[NSAlert alloc] init];
+        [alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"Remove %d objects permanently?",nil), count]];
+        [alert setInformativeText:NSLocalizedString(@"Warning: Are you sure you want to remove these objects from this bucket? This operation cannot be undone.",nil)];
+        [alert addButtonWithTitle:NSLocalizedString(@"Cancel",nil)];
+        [alert addButtonWithTitle:NSLocalizedString(@"Remove",nil)];
+        if ([alert runModal] == NSAlertFirstButtonReturn)
+        {
+            [alert release];
+            return;
+        }
+        [alert release];        
+    }
+    
+    
     NSEnumerator *e = [[_objectsController selectedObjects] objectEnumerator];
     while (b = [e nextObject])
     {
