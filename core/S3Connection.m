@@ -129,7 +129,7 @@
 	// query that is supplying data to S3
 	NSString *contentMD5 = @"";
 	if(data != nil) {
-		NSString *contentMD5 = [[data md5Digest] encodeBase64];
+		contentMD5 = [[data md5Digest] encodeBase64];
 		[conn addValue:contentMD5 forHTTPHeaderField:@"Content-MD5"];
 	}
 	NSString *ct = [headers objectForKey:@"Content-Type"];
@@ -158,12 +158,13 @@
 	[buf appendFormat:@"%@\n",contentType];
 	[buf appendFormat:@"%@\n",dateString];
 	
-	e = [[[headers allKeys] sortedArrayUsingSelector:@selector(compare:)] objectEnumerator];
+	e = [[[headers allKeys] sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)] objectEnumerator];
 	while (k = [e nextObject])
 	{
 		id o = [headers objectForKey:k];
-		if ([k hasPrefix:AMZ_PREFIX])
-			[buf appendFormat:@"%@:%@\n",k,o];
+        NSString *k_lower = [k lowercaseString];
+        if ([k_lower hasPrefix:AMZ_PREFIX])
+			[buf appendFormat:@"%@:%@\n", k_lower, o];
 	}
 
     if ([[[conn URL] query] hasPrefix:@"acl"])
@@ -179,22 +180,29 @@
 
 - (NSMutableURLRequest *)makeRequestForMethod:(NSString *)method
 {
-	return [self makeRequestForMethod:method withResource:nil headers:nil];
+	return [self makeRequestForMethod:method withResource:nil headers:nil data:nil];
 }
 
 - (NSMutableURLRequest *)makeRequestForMethod:(NSString *)method withResource:(NSString *)resource
 {
-	return [self makeRequestForMethod:method withResource:resource headers:nil];
+	return [self makeRequestForMethod:method withResource:resource headers:nil data:nil];
 }
 
 - (NSMutableURLRequest *)makeRequestForMethod:(NSString *)method withResource:(NSString *)resource headers:(NSDictionary *)d
+{
+	return [self makeRequestForMethod:method withResource:resource headers:d data:nil];    
+}
+
+- (NSMutableURLRequest *)makeRequestForMethod:(NSString *)method withResource:(NSString *)resource headers:(NSDictionary *)d data:(NSData*)data
 {
     NSURL *rootURL = [self urlForResource:resource];
 
 	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:rootURL];
 	[request setHTTPMethod:method];
+    if (data!=nil)
+        [request setHTTPBody:data];
 	[request setTimeoutInterval:READ_TIMEOUT];
-	[self addAuthorization:request method:method data:nil headers:d];	
+	[self addAuthorization:request method:method data:data headers:d];	
 	[request setHTTPMethod:method];
 
 	return request;
@@ -207,7 +215,7 @@
 	// query that is supplying data to S3
 	NSString *contentMD5 = @"";
 	if(data != nil) {
-		NSString *contentMD5 = [[data md5Digest] encodeBase64];
+		contentMD5 = [[data md5Digest] encodeBase64];
 		CFHTTPMessageSetHeaderFieldValue(conn, CFSTR("Content-MD5"), (CFStringRef)contentMD5);
 	}
 	NSString *ct = [headers objectForKey:@"Content-Type"];
@@ -220,7 +228,8 @@
 	while (k = [e nextObject])
 	{
 		id o = [headers objectForKey:k];
-		CFHTTPMessageSetHeaderFieldValue(conn, (CFStringRef)k, (CFStringRef)o);
+        NSString *k_lower = [k lowercaseString];
+		CFHTTPMessageSetHeaderFieldValue(conn, (CFStringRef)k_lower, (CFStringRef)o);
 	}
 
 	NSCalendarDate *date = [NSCalendarDate calendarDate];

@@ -40,6 +40,7 @@
 - (NSMutableURLRequest *)makeRequestForMethod:(NSString *)method;
 - (NSMutableURLRequest *)makeRequestForMethod:(NSString *)method withResource:(NSString *)resource;
 - (NSMutableURLRequest *)makeRequestForMethod:(NSString *)method withResource:(NSString *)resource headers:(NSDictionary *)d;
+- (NSMutableURLRequest *)makeRequestForMethod:(NSString *)method withResource:(NSString *)resource headers:(NSDictionary *)d data:(NSData*)data;
 
 - (NSURL *)urlForResource:(NSString *)resource;
 - (NSString *)resourceForBucket:(S3Bucket *)bucket key:(NSString *)key;
