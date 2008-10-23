@@ -241,7 +241,7 @@
 
 - (NSData *)decodeBase64WithNewlines:(BOOL)encodedWithNewlines;
 {
-    BIO *mem = BIO_new_mem_buf((void *) [self cString], [self cStringLength]);
+    BIO *mem = BIO_new_mem_buf((void *) [self UTF8String], strlen([self UTF8String]));
     
     BIO *b64 = BIO_new(BIO_f_base64());
     if (!encodedWithNewlines)
@@ -285,6 +285,8 @@
 	// Fast path for some mime types not correctly handling through UTI
 	if ([[self pathExtension] isEqualToString:@"css"])
 		return @"text/css";
+	if ([[self pathExtension] isEqualToString:@"dmg"])
+		return @"application/x-apple-diskimage";
 			
 	err= FSPathMakeRef((const UInt8 *)[self fileSystemRepresentation], &fsRef, NULL);
 	if(err != noErr)
