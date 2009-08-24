@@ -25,7 +25,7 @@
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
-	<string>S3Application</string>
+	<string>NSApplication</string>
 	<key>SUFeedURL</key>
 	<string>http://people.no-distance.net/ol/software/s3/appcast.xml</string>
 </dict>
