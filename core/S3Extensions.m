@@ -10,21 +10,6 @@
 #import <openssl/ssl.h>
 #import <openssl/hmac.h>
 
-@implementation NSString (Comfort)
-
-- (long long)longLongValue {
-	long long v;
-	
-	NSScanner* scanner = [[NSScanner alloc] initWithString:self];
-	if(![scanner scanLongLong:&v])
-		v = 0;
-	
-	[scanner release];	
-	return v;
-}
-
-@end
-
 @implementation NSArray (Comfort)
 
 - (NSArray *)expandPaths
@@ -300,11 +285,10 @@
 
 + (NSString *)readableSizeForPaths:(NSArray *)files
 {
-	NSEnumerator *e = [files objectEnumerator];
 	NSString *path;
 	unsigned long long total = 0;
 	
-	while (path = [e nextObject])
+	for (path in files)
 	{
 		NSDictionary *fileAttributes = [[NSFileManager defaultManager] fileAttributesAtPath:path traverseLink:YES];
 		if (fileAttributes!=nil)

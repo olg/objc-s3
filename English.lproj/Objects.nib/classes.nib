@@ -1,32 +1,88 @@
-{
-    IBClasses = (
-        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
-        {CLASS = NSDatePicker; LANGUAGE = ObjC; SUPERCLASS = NSControl; }, 
-        {CLASS = S3ClickableURLField; LANGUAGE = ObjC; SUPERCLASS = NSTextField; }, 
-        {
-            CLASS = S3DragAndDropArrayController; 
-            LANGUAGE = ObjC; 
-            OUTLETS = {delegate = id; tableView = NSTableView; }; 
-            SUPERCLASS = NSArrayController; 
-        }, 
-        {
-            ACTIONS = {
-                cancelSheet = id; 
-                closeSheet = id; 
-                download = id; 
-                refresh = id; 
-                remove = id; 
-                upload = id; 
-            }; 
-            CLASS = S3ObjectListController; 
-            LANGUAGE = ObjC; 
-            OUTLETS = {
-                "_objectsController" = S3DragAndDropArrayController; 
-                multipleUploadSheet = NSWindow; 
-                uploadSheet = NSWindow; 
-            }; 
-            SUPERCLASS = NSWindowController; 
-        }
-    ); 
-    IBVersion = 1; 
-}
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IBClasses</key>
+	<array>
+		<dict>
+			<key>ACTIONS</key>
+			<dict>
+				<key>cancelSheet</key>
+				<string>id</string>
+				<key>closeSheet</key>
+				<string>id</string>
+				<key>download</key>
+				<string>id</string>
+				<key>refresh</key>
+				<string>id</string>
+				<key>remove</key>
+				<string>id</string>
+				<key>upload</key>
+				<string>id</string>
+			</dict>
+			<key>CLASS</key>
+			<string>S3ObjectListController</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+			<key>OUTLETS</key>
+			<dict>
+				<key>_objectsController</key>
+				<string>S3DragAndDropArrayController</string>
+				<key>multipleUploadSheet</key>
+				<string>NSWindow</string>
+				<key>uploadSheet</key>
+				<string>NSWindow</string>
+			</dict>
+			<key>SUPERCLASS</key>
+			<string>S3ActiveWindowController</string>
+		</dict>
+		<dict>
+			<key>CLASS</key>
+			<string>NSArrayController</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+			<key>SUPERCLASS</key>
+			<string>NSObjectController</string>
+		</dict>
+		<dict>
+			<key>CLASS</key>
+			<string>S3DragAndDropArrayController</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+			<key>OUTLETS</key>
+			<dict>
+				<key>delegate</key>
+				<string>id</string>
+				<key>tableView</key>
+				<string>NSTableView</string>
+			</dict>
+			<key>SUPERCLASS</key>
+			<string>NSArrayController</string>
+		</dict>
+		<dict>
+			<key>CLASS</key>
+			<string>FirstResponder</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+			<key>SUPERCLASS</key>
+			<string>NSObject</string>
+		</dict>
+		<dict>
+			<key>CLASS</key>
+			<string>NSObject</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+		</dict>
+		<dict>
+			<key>CLASS</key>
+			<string>S3ActiveWindowController</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+			<key>SUPERCLASS</key>
+			<string>NSWindowController</string>
+		</dict>
+	</array>
+	<key>IBVersion</key>
+	<string>1</string>
+</dict>
+</plist>

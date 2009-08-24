@@ -10,19 +10,20 @@
 
 #import "S3ActiveWindowController.h"
 
-#define DEFAULT_USER @"default-accesskey"
+#define DEFAULT_USER @"defaultAccessKey"
 
-@class S3Connection;
+@class S3ConnectionInfo;
 
 @interface S3LoginController : S3ActiveWindowController {
 	IBOutlet NSButton *_defaultButton;
 	IBOutlet NSButton *_keychainCheckbox;
+    
+    NSString *accessKeyID;
+    NSString *secretAccessKeyID;
 }
 
 - (IBAction)connect:(id)sender;
 - (IBAction)openHelpPage:(id)sender;
 - (IBAction)flippedKeychainSupport:(id)sender;
-
-- (void)checkPasswordInKeychain;
 
 @end

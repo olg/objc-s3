@@ -9,9 +9,9 @@
 #import <Cocoa/Cocoa.h>
 #import "S3OperationQueue.h"
 
+@class S3ConnectionInfo;
+
 @interface S3Application : NSApplication {
-    NSMutableDictionary *_controlers;
-    S3OperationQueue *_queue;
 }
 
 - (IBAction)openConnection:(id)sender;

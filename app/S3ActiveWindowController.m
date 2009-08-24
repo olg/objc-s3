@@ -3,15 +3,16 @@
 //  S3-Objc
 //
 //  Created by Development Account on 9/3/06.
-//  Copyright 2006 __MyCompanyName__. All rights reserved.
+//  Copyright 2006 Olivier Gutknecht. All rights reserved.
 //
 
 #import "S3ActiveWindowController.h"
 
-#import "S3Connection.h"
-#import "S3Application.h"
-#import "S3ListOperation.h"
+#import "S3ConnectionInfo.h"
+#import "S3ApplicationDelegate.h"
+#import "S3Operation.h"
 #import "S3OperationQueue.h"
+#import "S3OperationLog.h"
 
 @implementation S3ActiveWindowController
 
@@ -20,32 +21,10 @@
     _operations = [[NSMutableArray alloc] init];
 }
 
-- (void)didPresentErrorWithRecovery:(BOOL)didRecover contextInfo:(void *)contextInfo
-{
-}
-
 #pragma mark -
 #pragma mark S3OperationQueue Notifications
 
-- (void)s3OperationStateDidChange:(NSNotification *)notification
-{
-}
-
-- (void)s3OperationDidFail:(NSNotification *)notification
-{
-    S3Operation *o = [[notification userInfo] objectForKey:S3OperationObjectKey];
-    unsigned index = [_operations indexOfObjectIdenticalTo:o];
-    if (index == NSNotFound) {
-        return;
-    }
-
-	[self willChangeValueForKey:@"hasActiveOperations"];
-	[[self window] presentError:[o error] modalForWindow:[self window] delegate:self didPresentSelector:@selector(didPresentErrorWithRecovery:contextInfo:) contextInfo:nil];
-	[_operations removeObjectAtIndex:index];
-	[self didChangeValueForKey:@"hasActiveOperations"];
-}
-
-- (void)s3OperationDidFinish:(NSNotification *)notification
+- (void)operationQueueOperationStateDidChange:(NSNotification *)notification
 {
     S3Operation *operation = [[notification userInfo] objectForKey:S3OperationObjectKey];
     unsigned index = [_operations indexOfObjectIdenticalTo:operation];
@@ -53,19 +32,19 @@
         return;
     }
     
-	[self willChangeValueForKey:@"hasActiveOperations"];
-	[_operations removeObjectAtIndex:index];
-	[self didChangeValueForKey:@"hasActiveOperations"];
+    if ([operation state] == S3OperationCanceled || [operation state] == S3OperationDone || [operation state] == S3OperationCanceled) {
+        [_operations removeObjectAtIndex:index];
+        [[[NSApp delegate] operationLog] unlogOperation:operation];
+    }
 }
 
 #pragma mark -
 
 - (void)addToCurrentOperations:(S3Operation *)op
 {
-	if ([[NSApp queue] addToCurrentOperations:op]) {
-        [self willChangeValueForKey:@"hasActiveOperations"];
+	if ([[[NSApp delegate] queue] addToCurrentOperations:op]) {
 		[_operations addObject:op];
-        [self didChangeValueForKey:@"hasActiveOperations"];
+        [[[NSApp delegate] operationLog] logOperation:op];
     }
 }
 
@@ -74,15 +53,16 @@
 	return ([_operations count] > 0);
 }
 
-- (S3Connection *)connection
+- (S3ConnectionInfo *)connectionInfo
 {
-    return _connection; 
+    return _connectionInfo; 
 }
 
-- (void)setConnection:(S3Connection *)aConnection
+- (void)setConnectionInfo:(S3ConnectionInfo *)aConnectionInfo
 {
-    [_connection release];
-    _connection = [aConnection retain];
+    [aConnectionInfo retain];
+    [_connectionInfo release];
+    _connectionInfo = aConnectionInfo;
 }
 
 #pragma mark -
@@ -90,7 +70,7 @@
 
 - (void)dealloc
 {
-	[self setConnection:nil];
+	[self setConnectionInfo:nil];
     [_operations release];
 	[super dealloc];
 }

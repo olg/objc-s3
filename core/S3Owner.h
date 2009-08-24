@@ -8,18 +8,14 @@
 
 #import <Cocoa/Cocoa.h>
 
-
 @interface S3Owner : NSObject {
 	NSString *_id;
 	NSString *_displayName;
 }
 
-+ (S3Owner *)ownerWithXMLNode:(NSXMLElement *)element;
+- (id)initWithID:(NSString *)name displayName:(NSString *)date;
 
-- (NSString *)ID;
-- (void)setID:(NSString *)anId;
-- (NSString *)displayName;
-- (void)setDisplayName:(NSString *)aDisplayName;
-
+@property(readonly, copy) NSString *ID;
+@property(readonly, copy) NSString *displayName;
 
 @end

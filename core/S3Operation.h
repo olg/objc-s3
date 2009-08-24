@@ -7,64 +7,133 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import <CoreFoundation/CoreFoundation.h>
+#import <CoreServices/CoreServices.h>
 
 #define S3_ERROR_RESOURCE_KEY @"ResourceKey"
 #define S3_ERROR_HTTP_STATUS_KEY @"HTTPStatusKey"
 #define S3_ERROR_DOMAIN @"S3"
 #define S3_ERROR_CODE_KEY @"S3ErrorCode"
 
-// These keys are also used in nib file, for bindings
-
-#define FILEDATA_PATH @"path"
-#define FILEDATA_KEY  @"key"
-#define FILEDATA_TYPE @"mime"
-#define FILEDATA_SIZE @"size"
-
 typedef enum _S3OperationState {
-	S3OperationDone = 1,
-	S3OperationError = 2,
-    S3OperationCanceled = 3,
-	S3OperationActive = 4,
-	S3OperationPending = 5,
-    S3OperationPendingRetry = 6
+    S3OperationPending = 0,
+    S3OperationPendingRetry = 2,
+    S3OperationActive = 3,
+    S3OperationCanceled = 4,
+    S3OperationRequiresRedirect = 5,
+    S3OperationDone = 6,
+    S3OperationError = 7
 } S3OperationState;
 
+@class S3ConnectionInfo;
+@class S3Bucket;
+@class S3Object;
 @class S3Operation;
-@class S3Connection;
+@class S3TransferRateCalculator;
 
 @protocol S3OperationDelegate
+- (void)operationInformationalStatusDidChange:(S3Operation *)o;
+- (void)operationInformationalSubStatusDidChange:(S3Operation *)o;
 - (void)operationStateDidChange:(S3Operation *)o;
-- (void)operationDidFinish:(S3Operation *)o;
-- (void)operationDidFail:(S3Operation *)o;
 @end
 
+@interface NSObject (S3OperationDelegate)
+- (NSUInteger)operationQueuePosition:(S3Operation *)o;
+@end
 
 @interface S3Operation : NSObject {
-    S3Connection *_connection;
-	NSString *_status;
-	NSError *_error;
-	NSObject<S3OperationDelegate> *_delegate;	
-	S3OperationState _state;
-    BOOL _allowsRetry;
+    NSObject <S3OperationDelegate> *delegate;
+    
+    S3ConnectionInfo *connectionInfo;
+    
+    NSCalendarDate *_date;
+    
+    
+    CFReadStreamRef httpOperationReadStream;
+    
+    NSDictionary *requestHeaders;
+    NSDictionary *responseHeaders;
+    NSData *responseData;
+    NSFileHandle *responseFileHandle;
+    
+    S3OperationState state;
+    NSString *informationalStatus;
+    NSString *informationalSubStatus;
+    
+    BOOL allowsRetry;
+    
+    S3TransferRateCalculator *rateCalculator;
+    
+    NSInteger queuePosition;
+    
+    NSError *error;
 }
 
-- (id)init;
+- (id)initWithConnectionInfo:(S3ConnectionInfo *)aConnectionInfo;
 
-- (id)delegate;
-- (void)setDelegate:(id)delegate;
-- (BOOL)active;
-- (BOOL)operationSuccess;
-- (NSError *)error;
-- (void)setError:(NSError *)anError;
-- (NSString *)status;
-- (void)setStatus:(NSString *)aStatus;
-- (void)stop:(id)sender;
+@property(nonatomic, assign) id delegate;
+@property(nonatomic, assign) BOOL allowsRetry;
+
+@property(nonatomic, assign, readwrite) S3OperationState state;
+@property(nonatomic, retain, readwrite) S3ConnectionInfo *connectionInfo;
+@property(nonatomic, retain, readwrite) NSString *informationalStatus;
+@property(nonatomic, retain, readwrite) NSString *informationalSubStatus;
+
+@property(nonatomic, retain, readwrite) NSDictionary *requestHeaders;
+
+@property(nonatomic, copy, readwrite) NSCalendarDate *date;
+@property(nonatomic, copy, readwrite) NSDictionary *responseHeaders;
+@property(nonatomic, copy, readwrite) NSData *responseData;
+@property(nonatomic, retain, readwrite) NSFileHandle *responseFileHandle;
+@property(nonatomic, copy, readwrite) NSError *error;
+@property(nonatomic, assign, readwrite) NSInteger queuePosition;
+
+- (BOOL)isRequestOnService;
+
 - (void)start:(id)sender;
-- (S3OperationState)state;
-- (void)setState:(S3OperationState)aState;
-- (BOOL)allowsRetry;
-- (void)setAllowsRetry:(BOOL)yn;
-- (NSError*)errorFromStatus:(int)status data:(NSData*)data;
+- (void)stop:(id)sender;
+
+- (BOOL)active;
+- (BOOL)success;
+
+- (NSURL *)url;
+
+- (NSError*)errorFromHTTPRequestStatus:(int)status data:(NSData*)data;
+
+// This method must be implemented by subclasses.
+- (NSString *)requestHTTPVerb; // May NOT return nil. Must comply with HTTP 1.1 available verbs in rfc 2616 Sec 5.1.1
+
+// All the following methods are optionally implemented by subclasses
+
+- (NSString *)bucketName; // May return nil.
+- (NSString *)key; // May return nil.
+- (NSDictionary *)requestQueryItems; // May return nil.
+
+// -additionalHTTPRequestHeaders: is for subclassers to add additional
+// HTTP headers to the request than is normally generated.
+- (NSDictionary *)additionalHTTPRequestHeaders; // May return nil. Allows subclassers to return custom headers.
+
+// -requestBodyContentMimeType and -requestBodyContentLength provide
+// optional information for the request body content. These items can
+// be placed in the -additionalHTTPRequestHeaders:. If they are not in
+// the -additionalHTTPRequestHeaders: the request will try to retrieve
+// the values from these methods as appropriate.
+- (NSString *)requestBodyContentMD5;
+- (NSString *)requestBodyContentType;
+- (NSUInteger)requestBodyContentLength;
+
+// -requestBodyContentData and -requestBodyContentFilePath provide 
+// the request body data for the operation if needed. If used only
+// one method should return non-nil superclass will only use the
+// first non-nil return it sees.
+- (NSData *)requestBodyContentData;
+- (NSString *)requestBodyContentFilePath;
+
+// -responseBodyContentFilePath should be a writeable file path that
+// the operation can use to write the response body content instead
+// of storing the response data in the operation.
+- (NSString *)responseBodyContentFilePath;
+- (long long)responseBodyContentExepctedLength;
 
 @end
 

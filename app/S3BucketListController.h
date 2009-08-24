@@ -15,14 +15,14 @@
 
 @interface S3BucketListController : S3ActiveWindowController {
     
-    NSMutableArray *_buckets;
+    NSArray *_buckets;
     S3Owner *_bucketsOwner;
         
     IBOutlet NSArrayController *_bucketsController;
 
     IBOutlet NSWindow *addSheet;
     NSString *_name;
-    bool _europe;
+    BOOL _europe;
     
     NSMutableDictionary *_bucketListControllerCache;
 }
@@ -43,7 +43,7 @@
 - (S3Owner *)bucketsOwner;
 - (void)setBucketsOwner:(S3Owner *)anBucketsOwner;
 
-- (NSMutableArray *)buckets;
-- (void)setBuckets:(NSMutableArray *)aBuckets;
+- (NSArray *)buckets;
+- (void)setBuckets:(NSArray *)aBuckets;
 
 @end

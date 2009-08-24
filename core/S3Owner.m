@@ -8,14 +8,28 @@
 
 #import "S3Owner.h"
 
+@interface S3Owner ()
+
+@property(readwrite, copy) NSString *ID;
+@property(readwrite, copy) NSString *displayName;
+
+@end
 
 @implementation S3Owner
 
+@dynamic ID;
+@synthesize displayName = _displayName;
+
+
 - (id)initWithID:(NSString *)name displayName:(NSString *)date
 {
-	[super init];
-	[self setID:name];
-	[self setDisplayName:date];
+	self = [super init];
+    
+    if (self != nil) {
+        [self setID:name];
+        [self setDisplayName:date];        
+    }
+    
 	return self;
 }
 
@@ -28,43 +42,14 @@
 
 - (NSString *)ID
 {
-    return _id; 
+    return _id;
 }
 
 - (void)setID:(NSString *)anId
 {
+    NSString *newId = [anId copy];
     [_id release];
-    _id = [anId retain];
-}
-
-- (NSString *)displayName
-{
-    return _displayName; 
-}
-
-- (void)setDisplayName:(NSString *)aDisplayName
-{
-    [_displayName release];
-    _displayName = [aDisplayName retain];
-}
-
-+ (S3Owner *)ownerWithXMLNode:(NSXMLElement *)element
-{
-	NSString *name = nil;
-	NSString *ownerID = nil;
-	NSArray *a;
-	
-	a = [element elementsForName:@"ID"];
-	if ([a count]==1)
-		ownerID = [[a objectAtIndex:0] stringValue];
-	a = [element elementsForName:@"DisplayName"];
-	if ([a count]==1)
-		name = [[a objectAtIndex:0] stringValue];
-	
-	if (name!=nil)
-		return [[[S3Owner alloc] initWithID:ownerID displayName:name] autorelease];
-	else
-		return nil;
+    _id = newId;
 }
 
 @end

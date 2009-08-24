@@ -13,8 +13,8 @@
 
 - (void)awakeFromNib
 {
-    [tableView registerForDraggedTypes:[NSArray arrayWithObjects:NSFilenamesPboardType, nil]];
 	[super awakeFromNib];
+    [tableView registerForDraggedTypes:[NSArray arrayWithObjects:NSFilenamesPboardType, nil]];
 }
 
 - (void)setFileOperationsDelegate:(id)d
@@ -27,11 +27,9 @@
     if ([[[info draggingPasteboard] types] containsObject:NSFilenamesPboardType]) 
     {
         NSArray *files = [[info draggingPasteboard] propertyListForType:NSFilenamesPboardType];
-        int numberOfFiles = [files count];
-        int i;
-        for (i=0;i<numberOfFiles;i++)
+        for (id loopItem in files)
         {
-            if ([delegate acceptFileForImport:[files objectAtIndex:i]])
+            if ([delegate acceptFileForImport:loopItem])
                 return YES;
         }
     }

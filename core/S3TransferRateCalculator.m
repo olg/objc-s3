@@ -3,7 +3,7 @@
 //  S3-Objc
 //
 //  Created by Michael Ledford on 3/14/07.
-//  Copyright 2007 __MyCompanyName__. All rights reserved.
+//  Copyright 2007 Michael Ledford. All rights reserved.
 //
 
 #import "S3TransferRateCalculator.h"
@@ -82,6 +82,16 @@
 	[_startTime release];
 	[_lastUpdateTime release];
 	[super dealloc];
+}
+
+- (id)delegate
+{
+    return _delegate;
+}
+
+- (void)setDelegate:(id)object
+{
+    _delegate = object;
 }
 
 - (S3UnitType)displayUnit
@@ -271,6 +281,9 @@
 
 - (void)updateRateVariables:(NSTimer *)timer
 {
+    if ([self delegate] != nil && [[self delegate] respondsToSelector:@selector(pingFromTransferRateCalculator:)]) {
+        [[self delegate] pingFromTransferRateCalculator:self];
+    }
 	[_calculatedTransferRate release];
 	_calculatedTransferRate = nil;
 	if (_displayAverageRate == NO && _pendingIncrease > 0) {

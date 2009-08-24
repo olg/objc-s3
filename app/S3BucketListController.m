@@ -8,18 +8,17 @@
 
 #import "S3BucketListController.h"
 #import "S3Owner.h"
-#import "S3Connection.h"
+#import "S3Bucket.h"
 #import "S3Extensions.h"
 #import "S3ObjectListController.h"
-#import "S3Application.h"
-#import "S3BucketListOperation.h"
-#import "S3BucketAddOperation.h"
-#import "S3BucketDeleteOperation.h"
+#import "S3ApplicationDelegate.h"
+#import "S3ListBucketOperation.h"
+#import "S3AddBucketOperation.h"
+#import "S3DeleteBucketOperation.h"
+#import "S3OperationQueue.h"
 
 #define SHEET_CANCEL 0
 #define SHEET_OK 1
-
-
 
 @implementation S3BucketListController
 
@@ -48,7 +47,7 @@
 
     _bucketListControllerCache = [[NSMutableDictionary alloc] init];
 
-    [[NSApp queue] addQueueListener:self];
+    [[[NSApp delegate] queue] addQueueListener:self];
 }
 
 - (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar
@@ -116,22 +115,24 @@
     [NSApp endSheet:addSheet returnCode:SHEET_OK];
 }
 
-- (void)s3OperationDidFinish:(NSNotification *)notification
+- (void)operationQueueOperationStateDidChange:(NSNotification *)notification
 {
-    S3Operation *o = [[notification userInfo] objectForKey:S3OperationObjectKey];
-    unsigned index = [_operations indexOfObjectIdenticalTo:o];
+    S3Operation *operation = [[notification userInfo] objectForKey:S3OperationObjectKey];
+    unsigned index = [_operations indexOfObjectIdenticalTo:operation];
     if (index == NSNotFound) {
         return;
     }
+    
+    [super operationQueueOperationStateDidChange:notification];
 
-    [super s3OperationDidFinish:notification];
-
-    if ([o isKindOfClass:[S3BucketListOperation class]]) {
-        [self setBuckets:[(S3BucketListOperation*)o bucketList]];
-        [self setBucketsOwner:[(S3BucketListOperation*)o owner]];			
+    if ([operation state] == S3OperationDone) {
+        if ([operation isKindOfClass:[S3ListBucketOperation class]]) {
+            [self setBuckets:[(S3ListBucketOperation *)operation bucketList]];
+            [self setBucketsOwner:[(S3ListBucketOperation *)operation owner]];			
+        } else {
+            [self refresh:self];            
+        }
     }
-    else
-        [self refresh:self];
 }
 
 #pragma mark -
@@ -158,16 +159,15 @@
 
     S3Bucket *b;
     NSEnumerator *e = [[_bucketsController selectedObjects] objectEnumerator];
-    while (b = [e nextObject])
-    {
-        S3BucketDeleteOperation *op = [S3BucketDeleteOperation bucketDeletionWithConnection:_connection bucket:b];
+    while (b = [e nextObject]) {
+        S3DeleteBucketOperation *op = [[S3DeleteBucketOperation alloc] initWithConnectionInfo:[self connectionInfo] bucket:b];
         [self addToCurrentOperations:op];
     }
 }
 
 - (IBAction)refresh:(id)sender
 {
-    S3BucketListOperation *op = [S3BucketListOperation bucketListOperationWithConnection:_connection];
+	S3ListBucketOperation *op = [[S3ListBucketOperation alloc] initWithConnectionInfo:[self connectionInfo]];
     [self addToCurrentOperations:op];
 }
 
@@ -175,9 +175,16 @@
 - (void)didEndSheet:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
 {
     [sheet orderOut:self];
-    if (returnCode==SHEET_OK)
-    {
-        S3BucketAddOperation *op = [S3BucketAddOperation bucketAddWithConnection:_connection name:_name europeConstraint:_europe];
+    if (returnCode==SHEET_OK) {
+        S3Bucket *newBucket = [[[S3Bucket alloc] initWithName:_name] autorelease];
+        if (newBucket == nil) {
+            return;
+        }
+        NSString *bucketLocation = nil;
+        if (_europe == YES) {
+            bucketLocation = @"EU";
+        }
+        S3AddBucketOperation *op = [[S3AddBucketOperation alloc] initWithConnectionInfo:[self connectionInfo] bucket:newBucket location:bucketLocation];
         [self addToCurrentOperations:op];
     }
 }
@@ -201,7 +208,7 @@
         } else {
             c = [[S3ObjectListController alloc] initWithWindowNibName:@"Objects"];
             [c setBucket:b];
-            [c setConnection:_connection];
+            [c setConnectionInfo:[self connectionInfo]];
             [c showWindow:self];            
             [_bucketListControllerCache setObject:c forKey:b];
         }
@@ -212,8 +219,7 @@
 #pragma mark Key-value coding
 
 + (void)initialize {
-    [self setKeys:[NSArray arrayWithObjects:@"name",nil]
-    triggerChangeNotificationsForDependentKey:@"isValidName"];
+    [self setKeys:[NSArray arrayWithObjects:@"name",nil] triggerChangeNotificationsForDependentKey:@"isValidName"];
 }
 
 - (bool)europeConstraint
@@ -262,15 +268,16 @@
     _bucketsOwner = [anBucketsOwner retain];
 }
 
-- (NSMutableArray *)buckets
+- (NSArray *)buckets
 {
     return _buckets; 
 }
 
-- (void)setBuckets:(NSMutableArray *)aBuckets
+- (void)setBuckets:(NSArray *)aBuckets
 {
+    [aBuckets retain];
     [_buckets release];
-    _buckets = [aBuckets retain];
+    _buckets = aBuckets;
 }
 
 #pragma mark -
@@ -278,7 +285,7 @@
 
 -(void)dealloc
 {
-    [[NSApp queue] removeQueueListener:self];
+    [[[NSApp delegate] queue] removeQueueListener:self];
 
     [_bucketListControllerCache release];
     

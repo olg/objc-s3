@@ -3,7 +3,7 @@
 //  S3-Objc
 //
 //  Created by Michael Ledford on 3/14/07.
-//  Copyright 2007 __MyCompanyName__. All rights reserved.
+//  Copyright 2007 Michael Ledford. All rights reserved.
 //
 
 #import <Cocoa/Cocoa.h>
@@ -47,6 +47,8 @@ typedef enum _S3RateType {
 } S3RateType;
 
 @interface S3TransferRateCalculator : NSObject {
+    id _delegate;
+    
     S3UnitType _externalUnit;
     S3RateType _externalRate;
 
@@ -68,6 +70,9 @@ typedef enum _S3RateType {
 }
 
 - (id)init;
+
+- (id)delegate;
+- (void)setDelegate:(id)object;
 
 - (S3UnitType)displayUnit;
 - (void)setDisplayUnit:(S3UnitType)displayUnit;
@@ -97,4 +102,8 @@ typedef enum _S3RateType {
 - (NSString *)stringForObjectivePercentageCompleted;
 - (float)floatForObjectivePercentageCompleted; // 0.0 - 1.0
 
+@end
+
+@interface NSObject (S3TransferRateCalculatorDelegate)
+- (void)pingFromTransferRateCalculator:(S3TransferRateCalculator *)obj;
 @end

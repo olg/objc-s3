@@ -7,12 +7,11 @@
 //
 
 #import "S3OperationController.h"
-#import "S3Application.h"
+#import "S3ApplicationDelegate.h"
 #import "S3ValueTransformers.h"
 
 #pragma mark -
 #pragma mark The operation console/inspector itself
-
 
 @implementation S3OperationController
 
@@ -49,25 +48,26 @@
 - (BOOL)validateToolbarItem:(NSToolbarItem *)theItem
 {
 	if ([[theItem itemIdentifier] isEqualToString:@"Remove"]) {	
-		if (![_operationsArrayController canRemove])
+		if (![_operationsArrayController canRemove]) {
 			return NO;
+        }
 		
 		NSEnumerator *e = [[_operationsArrayController selectedObjects] objectEnumerator];
 		S3Operation *op;
-		while (op = [e nextObject]) 
-		{
-			if (([op state]==S3OperationActive)||([op state]==S3OperationPending))
+		while (op = [e nextObject]) {
+			if (([op state]==S3OperationActive)||([op state]==S3OperationPending)) {
 				return NO;
+            }
 		}
 		return YES;
 	}
 	if ([[theItem itemIdentifier] isEqualToString:@"Stop"]) {	
 		NSEnumerator *e = [[_operationsArrayController selectedObjects] objectEnumerator];
 		S3Operation *op;
-		while (op = [e nextObject]) 
-		{
-			if (([op state]==S3OperationActive)||([op state]==S3OperationPending))
+		while (op = [e nextObject]) {
+			if (([op state]==S3OperationActive)||([op state]==S3OperationPending)) {
 				return YES;
+            }
 		}
 		return NO;
 	}
@@ -91,8 +91,9 @@
 	S3Operation *op;
 	while (op = [e nextObject]) 
 	{
-		if (([op state]==S3OperationActive)||([op state]==S3OperationPending))
-			[op stop:self];
+		if (([op state]==S3OperationActive)||([op state]==S3OperationPending)) {
+			[op stop:self];            
+        }
 	}	
 }
 

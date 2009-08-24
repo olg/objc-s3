@@ -1,14 +1,57 @@
-{
-    IBClasses = (
-        {CLASS = AGKeychain; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
-        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
-        {
-            ACTIONS = {connect = id; flippedKeychainSupport = id; openHelpPage = id; }; 
-            CLASS = S3LoginController; 
-            LANGUAGE = ObjC; 
-            OUTLETS = {"_defaultButton" = NSButton; "_keychainCheckbox" = NSButton; }; 
-            SUPERCLASS = NSWindowController; 
-        }
-    ); 
-    IBVersion = 1; 
-}
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IBClasses</key>
+	<array>
+		<dict>
+			<key>CLASS</key>
+			<string>FirstResponder</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+			<key>SUPERCLASS</key>
+			<string>NSObject</string>
+		</dict>
+		<dict>
+			<key>CLASS</key>
+			<string>NSObject</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+		</dict>
+		<dict>
+			<key>ACTIONS</key>
+			<dict>
+				<key>connect</key>
+				<string>id</string>
+				<key>flippedKeychainSupport</key>
+				<string>id</string>
+				<key>openHelpPage</key>
+				<string>id</string>
+			</dict>
+			<key>CLASS</key>
+			<string>S3LoginController</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+			<key>OUTLETS</key>
+			<dict>
+				<key>_defaultButton</key>
+				<string>NSButton</string>
+				<key>_keychainCheckbox</key>
+				<string>NSButton</string>
+			</dict>
+			<key>SUPERCLASS</key>
+			<string>S3ActiveWindowController</string>
+		</dict>
+		<dict>
+			<key>CLASS</key>
+			<string>S3ActiveWindowController</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+			<key>SUPERCLASS</key>
+			<string>NSWindowController</string>
+		</dict>
+	</array>
+	<key>IBVersion</key>
+	<string>1</string>
+</dict>
+</plist>

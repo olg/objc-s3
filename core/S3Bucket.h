@@ -16,14 +16,16 @@ written to the bucket. There is no limit to the number of objects that one bucke
 namespace for bucket names is global, each developer is limited to owning 100 buckets at a time. 
 */
 
+@class S3ListBucketOperation;
+
 @interface S3Bucket : NSObject <NSCopying, NSMutableCopying> {
-	NSDate *_creationDate;
 	NSString *_name;
+	NSDate *_creationDate;
 }
 
-+(S3Bucket *)bucketWithXMLNode:(NSXMLElement *)element;
-
 - (id)initWithName:(NSString *)name creationDate:(NSDate *)date;
+- (id)initWithName:(NSString *)name;
+
 - (NSDate *)creationDate;
 - (NSString *)name;
 

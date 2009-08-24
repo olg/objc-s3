@@ -6,13 +6,22 @@
 //  Copyright 2006 Olivier Gutknecht. All rights reserved.
 //
 
-#import "S3Application.h"
-#import "S3Connection.h"
+#import <Security/Security.h>
+
+#import "S3ConnectionInfo.h"
 #import "S3LoginController.h"
 #import "S3OperationController.h"
 #import "S3ValueTransformers.h"
 #import "S3AppKitExtensions.h"
 #import "S3BucketListController.h"
+
+// C-string, as it is only used in Keychain Services
+#define S3_BROWSER_KEYCHAIN_SERVICE "S3 Browser"
+
+@interface S3Application (S3ApplicationPrivateAPI)
+- (NSString *)accessKeyForConnectionInfo:(S3ConnectionInfo *)connectionInfo;
+- (NSString *)secretAccessKeyForConnectionInfo:(S3ConnectionInfo *)connectionInfo;
+@end
 
 @implementation S3Application
 
@@ -32,10 +41,9 @@
 }
 
 - (IBAction)openConnection:(id)sender
-{
-	S3Connection *cnx = [[[S3Connection alloc] init] autorelease];
+{    
 	S3LoginController *c = [[[S3LoginController alloc] initWithWindowNibName:@"Authentication"] autorelease];
-	[c setConnection:cnx];
+//	[c setConnectionInfo:_connectionInfo];
 	[c showWindow:self];
 	[c retain];
 }
@@ -48,26 +56,25 @@
 
 - (void)tryAutoLogin
 {
-    NSString* defaultKey = [[NSUserDefaults standardUserDefaults] stringForKey:DEFAULT_USER];
-    if (defaultKey!=nil)
-    {   
-        S3Connection *cnx = [[[S3Connection alloc] init] autorelease];
-        [cnx setAccessKeyID:defaultKey];
-        [cnx trySetupSecretAccessKeyFromKeychain];
-        if ([cnx isReady])
-        {
-            S3BucketListController *c = [[[S3BucketListController alloc] initWithWindowNibName:@"Buckets"] autorelease];
-            [c setConnection:cnx];
-            [c showWindow:self];
-            [c refresh:self];
-            [c retain];			
-        }
+    NSString *defaultKey = [self accessKeyForConnectionInfo:_connectionInfo];
+    NSString *accessKey = [self secretAccessKeyForConnectionInfo:_connectionInfo];
+    if (defaultKey != nil && accessKey != nil)
+    {
+        S3BucketListController *c = [[[S3BucketListController alloc] initWithWindowNibName:@"Buckets"] autorelease];
+        [c setConnectionInfo:_connectionInfo];
+        [c showWindow:self];
+        [c refresh:self];
+        [c retain];			
     }    
 }
 
-- (void)finishLaunching
+- (void)¿
 {
 	[super finishLaunching];
+    
+    _connectionInfo = [[[S3ConnectionInfo alloc] init] autorelease];
+    [_connectionInfo setDelegate:[NSApp delegate]];
+    
 	S3OperationController *c = [[[S3OperationController alloc] initWithWindowNibName:@"Operations"] autorelease];
 	[_controlers setObject:c forKey:@"Console"];
     
@@ -81,8 +88,9 @@
         [[_controlers objectForKey:@"Console"] window];
     }
     
-    if ([[standardUserDefaults objectForKey:@"autologin"] boolValue] == TRUE)
+    if ([[standardUserDefaults objectForKey:@"autologin"] boolValue] == TRUE) {
         [self tryAutoLogin];
+    }
 }
 
 - (IBAction)showHelp:(id)sender
@@ -93,6 +101,45 @@
 - (S3OperationQueue *)queue
 {
     return _queue;
+}
+
+#pragma mark S3ConnectionInfoDelegate Methods
+
+- (NSString *)accessKeyForConnectionInfo:(S3ConnectionInfo *)connectionInfo
+{
+    NSString *defaultKey = nil;
+    if (connectionInfo == _connectionInfo) {
+        defaultKey = [[NSUserDefaults standardUserDefaults] stringForKey:DEFAULT_USER];        
+    }
+    return defaultKey;
+}
+
+- (NSString *)secretAccessKeyForConnectionInfo:(S3ConnectionInfo *)connectionInfo
+{
+    NSString *accessKey = [self accessKeyForConnectionInfo:connectionInfo];
+
+    if (accessKey == nil) {
+        return nil;
+    }
+
+    void *passwordData = nil; // will be allocated and filled in by SecKeychainFindGenericPassword
+	UInt32 passwordLength = 0;
+    
+	NSString *secretAccessKey = nil;
+	const char *user = [accessKey UTF8String]; 
+    
+	OSStatus status;
+	status = SecKeychainFindGenericPassword (NULL, // default keychain
+                                             strlen(S3_BROWSER_KEYCHAIN_SERVICE), S3_BROWSER_KEYCHAIN_SERVICE,
+                                             strlen(user), user,
+                                             &passwordLength, &passwordData,
+                                             nil);
+	if (status == noErr) {
+		secretAccessKey = [[[NSString alloc] initWithBytes:passwordData length:passwordLength encoding:NSUTF8StringEncoding] autorelease];        
+    }
+	SecKeychainItemFreeContent(NULL, passwordData);	
+	
+	return secretAccessKey;
 }
 
 @end

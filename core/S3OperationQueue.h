@@ -11,8 +11,8 @@
 #import "S3Operation.h";
 
 @interface S3OperationQueue : NSObject <S3OperationDelegate> {
-	NSMutableArray *_operations;
 	NSMutableArray *_currentOperations;
+    NSMutableArray *_activeOperations;
 	NSTimer *_timer;
 }
 
@@ -22,25 +22,21 @@
 - (void)addQueueListener:(id)obj;
 - (void)removeQueueListener:(id)obj;
 
-- (void)logOperation:(id)op;
-- (void)unlogOperation:(id)op;
-
 - (BOOL)addToCurrentOperations:(S3Operation *)op;
-- (NSMutableArray *)operations;
 - (NSArray *)currentOperations;
 
 @end
 
 @interface NSObject (S3OperationQueueNotifications)
-- (void)s3OperationStateDidChange:(NSNotification *)notification;
-- (void)s3OperationDidFail:(NSNotification *)notification;
-- (void)s3OperationDidFinish:(NSNotification *)notification;
+- (void)operationQueueOperationStateDidChange:(NSNotification *)notification;
+- (void)operationQueueOperationInformationalStatusDidChangeNotification:(NSNotification *)notification;
+- (void)operationQueueOperationInformationalSubStatusDidChangeNotification:(NSNotification *)notification;
 @end
 
 /* Notifications */
-extern NSString *S3OperationStateDidChangeNotification;
-extern NSString *S3OperationDidFailNotification;
-extern NSString *S3OperationDidFinishNotification;
+extern NSString *S3OperationQueueOperationStateDidChangeNotification;
+extern NSString *S3OperationQueueOperationInformationalStatusDidChangeNotification;
+extern NSString *S3OperationQueueOperationInformationalSubStatusDidChangeNotification;
 
 /* Notification UserInfo Keys */
 extern NSString *S3OperationObjectKey;

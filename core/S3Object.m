@@ -7,104 +7,181 @@
 //
 
 #import "S3Object.h"
-#import "S3Connection.h"
 #import "S3Bucket.h"
 #import "S3Owner.h"
 #import "S3Extensions.h"
+#import "S3ListObjectOperation.h"
+
+NSString *S3ObjectFilePathDataSourceKey = @"S3ObjectFilePathDataSourceKey";
+NSString *S3ObjectNSDataSourceKey = @"S3ObjectNSDataSourceKey";
+
+NSString *S3UserDefinedObjectMetadataPrefixKey = @"x-amz-meta-";
+NSString *S3UserDefinedObjectMetadataMissingKey = @"x-amz-missing-meta";
+NSString *S3ObjectMetadataACLKey = @"x-amz-acl";
+NSString *S3ObjectMetadataContentMD5Key = @"content-md5";
+NSString *S3ObjectMetadataContentTypeKey = @"content-type";
+NSString *S3ObjectMetadataContentLengthKey = @"content-length";
+NSString *S3ObjectMetadataETagKey = @"etag";
+NSString *S3ObjectMetadataLastModifiedKey = @"last-modified";
+NSString *S3ObjectMetadataOwnerKey = @"owner";
+NSString *S3ObjectMetadataStorageClassKey = @"storageclass";
+
+@interface S3Object ()
+
+@property(readwrite, retain) S3Bucket *bucket;
+@property(readwrite, copy) NSString *key;
+@property(readwrite, copy) NSDictionary *userDefinedMetadata;
+@property(readwrite, copy) NSDictionary *metadata;
+@property(readwrite, copy) NSDictionary *dataSourceInfo;
+
+@end
 
 
 @implementation S3Object
 
-- (id)initWithData:(NSData *)data metaData:(NSDictionary *)dict;
+@synthesize bucket = _bucket;
+@synthesize key = _key;
+@synthesize metadata = _metadata;
+@synthesize dataSourceInfo = _dataSourceInfo;
+
+- (id)initWithBucket:(S3Bucket *)bucket key:(NSString *)key userDefinedMetadata:(NSDictionary *)udmd metadata:(NSDictionary *)md dataSourceInfo:(NSDictionary *)info
 {
-	[super init];
-	[data retain];
-	_data = data;
-	_metadata = [[NSMutableDictionary dictionaryWithDictionary:dict] retain];
-	return self;
+    self = [super init];
+    
+    if (self != nil) {
+        [self setKey:key];
+        [self setBucket:bucket];
+        [self setUserDefinedMetadata:udmd];
+        NSMutableDictionary *processedMetadata = [NSMutableDictionary dictionaryWithCapacity:[md count]];
+        NSEnumerator *metadataKeyEnumerator = [md keyEnumerator];
+        NSString *key = nil;
+        while (key = [metadataKeyEnumerator nextObject]) {
+            NSString *cleanedKey = [key lowercaseString];
+            id object = [md objectForKey:key];
+            [processedMetadata setObject:object forKey:cleanedKey];
+        }
+        [self setMetadata:[NSDictionary dictionaryWithDictionary:processedMetadata]];
+        [self setDataSourceInfo:info];
+    }
+    
+    return self;
+}
+
+- (id)initWithBucket:(S3Bucket *)bucket key:(NSString *)key userDefinedMetadata:(NSDictionary *)udmd metadata:(NSDictionary *)md
+{
+    return [self initWithBucket:bucket key:key userDefinedMetadata:udmd metadata:md dataSourceInfo:nil];
+}
+
+- (id)initWithBucket:(S3Bucket *)bucket key:(NSString *)key userDefinedMetadata:(NSDictionary *)udmd
+{
+    return [self initWithBucket:bucket key:key userDefinedMetadata:udmd metadata:nil];
+}
+
+- (id)initWithBucket:(S3Bucket *)bucket key:(NSString *)key
+{
+    return [self initWithBucket:bucket key:key userDefinedMetadata:nil];
 }
 
 - (void)dealloc
 {
-	[_data release];
-	[_metadata release];
 	[_bucket release];
+    [_key release];
+	[_dataSourceInfo release];
+	[_metadata release];
 	[super dealloc];
 }
 
-+ (S3Object *)objectWithXMLNode:(NSXMLElement *)element
+- (NSDictionary *)userDefinedMetadata
 {
-	NSMutableDictionary *d = [NSMutableDictionary dictionary];
-	
-	[d safeSetObject:[[element elementForName:@"Key"] stringValue] forKey:@"key"];
-	[d safeSetObject:[[element elementForName:@"LastModified"] dateValue] forKey:@"lastModified"];
-	[d safeSetObject:[[element elementForName:@"ETag"] stringValue] forKey:@"etag"];
-	[d safeSetObject:[[element elementForName:@"Size"] longLongNumber] forKey:@"size"];
-	[d safeSetObject:[[element elementForName:@"StorageClass"] stringValue] forKey:@"storageClass"];
-	[d safeSetObject:[S3Owner ownerWithXMLNode:[element elementForName:@"Owner"]] forKey:@"owner"];
-
-	return [[[S3Object alloc] initWithData:nil metaData:d] autorelease];
+    NSMutableDictionary *mutableDictionary = [[[NSMutableDictionary alloc] init] autorelease];
+    NSString *metadataKey = nil;
+    NSEnumerator *metadataKeyEnumerator = [[self metadata] keyEnumerator];
+    NSRange notFoundRange = NSMakeRange(NSNotFound, 0);
+    while (metadataKey = [metadataKeyEnumerator nextObject]) {
+        NSRange foundRange = [metadataKey rangeOfString:S3UserDefinedObjectMetadataPrefixKey options:NSAnchoredSearch];
+        if ([metadataKey isKindOfClass:[NSString class]] == YES && NSEqualRanges(foundRange, notFoundRange) == NO) {
+            id object = [[self metadata] objectForKey:metadataKey];
+            NSString *userDefinatedMetadataKey = [metadataKey stringByReplacingCharactersInRange:foundRange withString:@""];
+            [mutableDictionary setObject:object forKey:userDefinatedMetadataKey];
+        }
+    }
+    return [[mutableDictionary copy] autorelease];
 }
 
-- (long long)size
+- (void)setUserDefinedMetadata:(NSDictionary *)md
 {
-	NSNumber *n = [_metadata objectForKey:@"size"];
-	if (n==nil)
-		return -1;
-	else
-		return [n longLongValue];
-}
-
-- (NSString *)key
-{
-	return [_metadata objectForKey:@"key"];
+    NSMutableDictionary *mutableMetadata = [[self metadata] mutableCopy];
+    NSString *metadataKey = nil;
+    NSEnumerator *metadataKeyEnumerator = [md keyEnumerator];
+    while (metadataKey = [metadataKeyEnumerator nextObject]) {
+        if ([metadataKey isKindOfClass:[NSString class]] == YES) {
+            id object = [md objectForKey:metadataKey];
+            NSString *modifiedMetadataKey = [NSString stringWithFormat:@"%@%@", S3UserDefinedObjectMetadataPrefixKey, metadataKey];
+            [mutableMetadata setObject:object forKey:modifiedMetadataKey];
+        }
+    }
+    [self setMetadata:mutableMetadata];
 }
 
 - (id)valueForUndefinedKey:(NSString *)key
 {
-	id o = [_metadata objectForKey:key];
-	if (o!=nil)
-		return o;
-	else
-		return [super valueForUndefinedKey:key];
+    id o = [[self metadata] objectForKey:key];
+	if (o != nil) {
+		return o;        
+    }
+
+    return [super valueForUndefinedKey:key];
 }
 
-- (void)setValue:(id)value forUndefinedKey:(NSString *)key
+- (NSString *)acl
 {
-	[_metadata safeSetObject:value forKey:key];
+    return [[self metadata] objectForKey:S3ObjectMetadataACLKey];
 }
 
-- (NSData *)data
+- (NSString *)contentMD5
 {
-    return _data; 
+    return [[self metadata] objectForKey:S3ObjectMetadataContentMD5Key];
 }
 
-- (void)setData:(NSData *)aData
+- (NSString *)contentType
 {
-    [_data release];
-    _data = [aData retain];
+    return [[self metadata] objectForKey:S3ObjectMetadataContentTypeKey];
 }
 
-- (NSDictionary *)metadata
+- (NSString *)contentLength
 {
-    return _metadata; 
+    return [[self metadata] objectForKey:S3ObjectMetadataContentLengthKey];
 }
 
-- (void)setMetadata:(NSDictionary *)aMetadata
+- (NSString *)etag
 {
-    [_metadata release];
-    _metadata = [aMetadata retain];
+    return [[self metadata] objectForKey:S3ObjectMetadataETagKey];
 }
 
-- (S3Bucket *)bucket
+- (NSString *)lastModified
 {
-    return _bucket; 
+    return [[self metadata] objectForKey:S3ObjectMetadataLastModifiedKey];
 }
 
-- (void)setBucket:(S3Bucket *)aBucket
+- (S3Owner *)owner
 {
-    [_bucket release];
-    _bucket = [aBucket retain];
+    return [[self metadata] objectForKey:S3ObjectMetadataOwnerKey];
+}
+
+- (NSString *)storageClass
+{
+    return [[self metadata] objectForKey:S3ObjectMetadataStorageClassKey];
+}
+
+- (BOOL)missingMetadata;
+{
+    id object = [[self metadata] objectForKey:S3UserDefinedObjectMetadataMissingKey];
+    return (object == nil ? NO : YES);
+}
+
+- (id)copyWithZone:(NSZone *)zone
+{
+    return [self retain];
 }
 
 @end

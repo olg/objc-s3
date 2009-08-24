@@ -1,24 +1,73 @@
-{
-    IBClasses = (
-        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
-        {
-            ACTIONS = {
-                add = id; 
-                cancelSheet = id; 
-                closeSheet = id; 
-                open = id; 
-                refresh = id; 
-                remove = id; 
-            }; 
-            CLASS = S3BucketListController; 
-            LANGUAGE = ObjC; 
-            OUTLETS = {
-                "_bucketsController" = NSArrayController; 
-                addSheet = NSWindow; 
-                nameField = NSTextField; 
-            }; 
-            SUPERCLASS = NSWindowController; 
-        }
-    ); 
-    IBVersion = 1; 
-}
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IBClasses</key>
+	<array>
+		<dict>
+			<key>CLASS</key>
+			<string>NSArrayController</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+			<key>SUPERCLASS</key>
+			<string>NSObjectController</string>
+		</dict>
+		<dict>
+			<key>CLASS</key>
+			<string>FirstResponder</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+			<key>SUPERCLASS</key>
+			<string>NSObject</string>
+		</dict>
+		<dict>
+			<key>CLASS</key>
+			<string>NSObject</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+		</dict>
+		<dict>
+			<key>ACTIONS</key>
+			<dict>
+				<key>add</key>
+				<string>id</string>
+				<key>cancelSheet</key>
+				<string>id</string>
+				<key>closeSheet</key>
+				<string>id</string>
+				<key>open</key>
+				<string>id</string>
+				<key>refresh</key>
+				<string>id</string>
+				<key>remove</key>
+				<string>id</string>
+			</dict>
+			<key>CLASS</key>
+			<string>S3BucketListController</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+			<key>OUTLETS</key>
+			<dict>
+				<key>_bucketsController</key>
+				<string>NSArrayController</string>
+				<key>addSheet</key>
+				<string>NSWindow</string>
+				<key>nameField</key>
+				<string>NSTextField</string>
+			</dict>
+			<key>SUPERCLASS</key>
+			<string>S3ActiveWindowController</string>
+		</dict>
+		<dict>
+			<key>CLASS</key>
+			<string>S3ActiveWindowController</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+			<key>SUPERCLASS</key>
+			<string>NSWindowController</string>
+		</dict>
+	</array>
+	<key>IBVersion</key>
+	<string>1</string>
+</dict>
+</plist>
