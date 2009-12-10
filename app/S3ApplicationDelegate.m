@@ -62,7 +62,7 @@
     
     if (self != nil) {
         _controllers = [[NSMutableDictionary alloc] init];
-        _queue = [[S3OperationQueue alloc] init];
+        _queue = [[S3OperationQueue alloc] initWithDelegate:self];
         _operationLog = [[S3OperationLog alloc] init];
         _authenticationCredentials = [[NSMutableDictionary alloc] init];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(finishedLaunching) name:NSApplicationDidFinishLaunchingNotification object:NSApp];
@@ -195,6 +195,15 @@
     
     // TODO: constant defined keys
     return [authenticationCredentials objectForKey:@"secretAccessKey"];
+}
+
+#pragma mark S3OperationQueueDelegate Methods
+
+- (int)maximumNumberOfSimultaneousOperationsForOperationQueue:(S3OperationQueue *)operationQueue
+{
+    NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
+    NSNumber *maxOps = [standardUserDefaults objectForKey:@"maxoperations"];
+    return [maxOps intValue];
 }
 
 @end

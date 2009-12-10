@@ -103,6 +103,7 @@ typedef enum _S3OperationState {
 // This method must be implemented by subclasses.
 - (NSString *)requestHTTPVerb; // May NOT return nil. Must comply with HTTP 1.1 available verbs in rfc 2616 Sec 5.1.1
 
+
 // All the following methods are optionally implemented by subclasses
 
 - (NSString *)bucketName; // May return nil.
@@ -123,8 +124,8 @@ typedef enum _S3OperationState {
 - (NSUInteger)requestBodyContentLength;
 
 // -requestBodyContentData and -requestBodyContentFilePath provide 
-// the request body data for the operation if needed. If used only
-// one method should return non-nil superclass will only use the
+// the request body data for the operation if needed. If used, only
+// one method should return non-nil. The Superclass will only use the
 // first non-nil return it sees.
 - (NSData *)requestBodyContentData;
 - (NSString *)requestBodyContentFilePath;

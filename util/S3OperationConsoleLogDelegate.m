@@ -73,7 +73,7 @@
     return _queue;
 }
 
-- (void)s3OperationStateDidChange:(NSNotification *)notification
+- (void)operationQueueOperationStateDidChange:(NSNotification *)notification
 {
     S3Operation *o = [[notification userInfo] valueForKey:S3OperationObjectKey];
     NSLog(@"operationStateChange was called.");
@@ -104,7 +104,7 @@
 		if (verifyDictionary == nil) {
 			// List objects
 			for (int i = 0; i < [objects count]; i++) {
-				NSLog(@"   Key: %@", [[objects objectAtIndex:i] key]);
+				NSLog(@"   Key: %@", [[objects objectAtIndex:i] operationKey]);
 				NSLog(@"   Size: %lld bytes", [(S3Object*)[objects objectAtIndex:i] size]);
 				NSDictionary* dict = [[objects objectAtIndex: i] metadata];
 				NSLog([dict descriptionWithLocale:nil indent:0]);
@@ -113,7 +113,7 @@
 		} else {
 			// Verify objects
 			for (int i = 0; i < [objects count]; i++) {
-				NSString* key = [[objects objectAtIndex:i] key];
+				NSString* key = [[objects objectAtIndex:i] operationKey];
 				NSString* sum = [verifyDictionary valueForKey:key];
 				if (sum != nil) {
 					if ([[[[objects objectAtIndex:i] metadata] valueForKey:@"etag"] isEqualToString:sum]) {
@@ -136,10 +136,9 @@
 		// have not been checked yet and are missing on S3, but are in the local sums file.
 		if (next == nil && verifyDictionary != nil) {
 			NSArray* missingKeys = [verifyDictionary allKeys];
-			NSEnumerator* enumerator = [missingKeys objectEnumerator];
 			
 			NSString* key;
-			while(key = [enumerator nextObject]) {
+			for(key in missingKeys) {
 				NSLog(@"- %@", key);
 			}
 		}
@@ -187,10 +186,9 @@
 	NSString* store = [NSString stringWithContentsOfFile:persistMD5Store];
 	if (store != nil) {
 		NSArray* storeLines = [store componentsSeparatedByString:@"\n"];
-		NSEnumerator* enumerator = [storeLines objectEnumerator];
 		
 		NSString *line;
-		while(line = [enumerator nextObject]) {
+		for(line in storeLines) {
 			NSLog(@"String: %@", line);
 			if ([line length] > 1) {
 				// Find the first and last colon position
@@ -244,10 +242,9 @@
 			
 			// Iterate through sumsDictionary and write data to file
 			NSArray* sumKeys = [sumsDictionary allKeys];
-			NSEnumerator* enumerator = [sumKeys objectEnumerator];
 			
 			NSString* key;
-			while(key = [enumerator nextObject]) {
+			for(key in sumKeys) {
 				// Prepare data that should be written to file
 				char persist_char[2048]; // 256-byte bucket name, 1024-byte key name, 32-byte sum, 4 delimiters
 				int persist_len = snprintf(persist_char, sizeof(persist_char), "%s:%s\n", 

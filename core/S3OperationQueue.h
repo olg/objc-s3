@@ -11,10 +11,13 @@
 #import "S3Operation.h";
 
 @interface S3OperationQueue : NSObject <S3OperationDelegate> {
+    id _delegate;
 	NSMutableArray *_currentOperations;
     NSMutableArray *_activeOperations;
 	NSTimer *_timer;
 }
+
+- (id)initWithDelegate:(id)delegate;
 
 // Convenience methods to register object with NSNotificationCenter
 // if the object supports the S3OperationQueueNotifications.
@@ -25,6 +28,10 @@
 - (BOOL)addToCurrentOperations:(S3Operation *)op;
 - (NSArray *)currentOperations;
 
+@end
+
+@interface NSObject (S3OperationQueueDelegate)
+- (int)maximumNumberOfSimultaneousOperationsForOperationQueue:(S3OperationQueue *)operationQueue;
 @end
 
 @interface NSObject (S3OperationQueueNotifications)

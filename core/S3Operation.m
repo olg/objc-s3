@@ -404,31 +404,6 @@ static void myReleaseCallback(void *info) {
     NSCalendarDate *operationDate = [NSCalendarDate calendarDate];
     [operationDate setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
     [self setDate:operationDate];
-
-//    if ([self operationInfo] != nil) {
-//        NSNumber *bodyContentsLength = [[self operationInfo] objectForKey:S3OperationRequestBodyContentLength];
-//        // If there is not a body length provided calculate it...
-//        if (bodyContentsLength == nil) {
-//            NSData *bodyContentsData = [[self operationInfo] objectForKey:S3OperationRequestBodyContentData];
-//            NSString *bodyContentsFilePath = [[self operationInfo] objectForKey:S3OperationRequestBodyContentFilePath];
-//            if (bodyContentsData != nil) {
-//                NSUInteger contentLength = [bodyContentsData length];
-//                bodyContentsLength = [NSNumber numberWithUnsignedInteger:contentLength];
-//            } else if (bodyContentsFilePath != nil) {
-//                // TODO: Implement file based content length
-//            } else {
-//                bodyContentsLength = [NSNumber numberWithUnsignedInteger:0];
-//            }
-//        }
-//        [rateCalculator setObjective:[bodyContentsLength longLongValue]];
-//        NSMutableDictionary *addObjectHeaders = [[self requestHeaders] mutableCopy];
-//        if (addObjectHeaders == nil) {
-//            addObjectHeaders = [[NSMutableDictionary alloc] init];
-//        }
-//        [addObjectHeaders setObject:bodyContentsLength forKey:@"Content-Length"];
-//        [self setRequestHeaders:addObjectHeaders];
-//        [addObjectHeaders release];        
-//    }
     
     // Any headers or information to be included with this HTTP message should have happened before this point!
     

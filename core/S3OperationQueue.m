@@ -29,12 +29,22 @@ NSString *S3OperationObjectForRetryKey = @"S3OperationObjectForRetryKey";
 
 @implementation S3OperationQueue
 
+- (id)initWithDelegate:(id)delegate
+{
+    self = [super init];
+    
+    if (self != nil) {
+        _delegate = delegate;
+        _currentOperations = [[NSMutableArray alloc] init];
+        _activeOperations = [[NSMutableArray alloc] init];        
+    }
+    
+    return self;
+}
+
 - (id)init
 {
-	[super init];
-	_currentOperations = [[NSMutableArray alloc] init];
-    _activeOperations = [[NSMutableArray alloc] init];
-	return self;
+    return [self initWithDelegate:nil];
 }
 
 - (void)dealloc
@@ -158,15 +168,12 @@ NSString *S3OperationObjectForRetryKey = @"S3OperationObjectForRetryKey";
 - (int)canAcceptPendingOperations
 {
 	int available = MAX_ACTIVE_OPERATIONS; // fallback
-    // TODO: Move user defaults out of S3OperationQueue into a delegate method
-	NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
-    NSNumber* maxOps = [standardUserDefaults objectForKey:@"maxoperations"];
-	if (maxOps!=nil)
-	{
-		int value = [maxOps intValue]; 
-		if ((value>0)&&(value<100)) // Let's be reasonable
-			available = value;
-	}
+    if (_delegate && [_delegate respondsToSelector:@selector(maximumNumberOfSimultaneousOperationsForOperationQueue:)]) {
+        int maxNumber = [_delegate maximumNumberOfSimultaneousOperationsForOperationQueue:self];
+        if ((maxNumber > 0) && (maxNumber < 100)) { // Let's be reasonable
+            available = maxNumber;
+        }
+    }
 	
 	S3Operation *o;
 	for (o in _currentOperations)
@@ -213,7 +220,6 @@ NSString *S3OperationObjectForRetryKey = @"S3OperationObjectForRetryKey";
 
 - (void)startQualifiedOperations:(NSTimer *)timer
 {
-    NSLog(@"startQualifiedOperations:");
 	int slotsAvailable = [self canAcceptPendingOperations];
 	S3Operation *o;
 

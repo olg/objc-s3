@@ -203,7 +203,7 @@ int main (int argc, const char * argv[]) {
 				NSEnumerator *enumerator = [fileArgs objectEnumerator];
 				NSString* fileName;
 
-				while (fileName = [enumerator nextObject]) {
+				for (fileName in fileArgs) {
 					S3Object* s3Object = getS3Object(fileName);
 					S3ObjectDeleteOperation* op = [S3ObjectDeleteOperation objectDeletionWithConnection:cnx bucket:s3Bucket object:s3Object];
 					[op setDelegate:opDelegate];
@@ -231,7 +231,7 @@ int main (int argc, const char * argv[]) {
 				
 				NSEnumerator *enumerator = [fileArgs objectEnumerator];
 				NSString* fileName;
-				while (fileName = [enumerator nextObject]) {
+				for (fileName in fileArgs) {
 					NSMutableDictionary* info = [NSMutableDictionary dictionary];
 					NSString* filePath = fileName;
 					[info setObject:filePath forKey:FILEDATA_PATH];
@@ -268,7 +268,7 @@ int main (int argc, const char * argv[]) {
 				
 				NSEnumerator *enumerator = [fileArgs objectEnumerator];
 				NSString* fileName;
-				while (fileName = [enumerator nextObject]) {
+				for (fileName in fileArgs) {
 					S3Object* s3Object = getS3Object(fileName);
 					NSString* downloadPath = [[currentDir stringByAppendingString:@"/"] stringByAppendingString:fileName];
 					S3ObjectDownloadOperation* op = [S3ObjectDownloadOperation objectDownloadWithConnection:cnx bucket:s3Bucket object:s3Object toPath:downloadPath];

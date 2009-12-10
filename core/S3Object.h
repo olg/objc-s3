@@ -46,19 +46,19 @@ extern NSString *S3ObjectMetadataStorageClassKey;
 
 // Initializes an S3Object with the bucket it is contained in, the key that identifies it in that bucket, user 
 // defined metadata and metadata that is stored along with the object and a data source that provides the data
-// for the object. User defined metadata is transformed internally to specially formed metadata and stored in
-// the metadata accepted by Amazon's S3 service.
+// for the object. User defined metadata is transformed internally to a specially formed metadata-key and stored
+// with the metadata-key accepted by Amazon's S3 service.
 - (id)initWithBucket:(S3Bucket *)bucket key:(NSString *)key userDefinedMetadata:(NSDictionary *)udmd metadata:(NSDictionary *)md dataSourceInfo:(NSDictionary *)info;
 
 // Initializes an S3Object with the bucket it is contained in, the key that identifies it in that bucket,
-// user defined metadata and metadata that is stored along with the object. User defined metadata is
-// transformed internally to specially formed metadata and stored in the metadata accepted by Amazon's S3 service.
-// If the specially formed metadata also exists in metadata then metadata will win.
+// user defined metadata and metadata that is stored along with the object. User defined metadata is 
+// transformed internally to a specially formed metadata-key and stored with the metadata-key accepted by
+// Amazon's S3 service. If the specially formed metadata also exists in metadata then metadata will win.
 - (id)initWithBucket:(S3Bucket *)bucket key:(NSString *)key userDefinedMetadata:(NSDictionary *)udmd metadata:(NSDictionary *)md;
 
 // Initializes an S3Object with the bucket it is contained in, the key that identifies it in that bucket and
 // user defined metadata that is stored along with the object. User defined metadata is transformed internally
-// to specially formed metadata and stored in the metadata accepted by Amazon's S3 service.
+// to a specially formed metadata-key and stored with the metadata-key accepted by Amazon's S3 service.
 - (id)initWithBucket:(S3Bucket *)bucket key:(NSString *)key userDefinedMetadata:(NSDictionary *)udmd;
 
 // Initializes an S3Object with the bucket it is contained in and the key that identifies it in that bucket.

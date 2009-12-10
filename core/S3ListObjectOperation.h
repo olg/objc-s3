@@ -3,7 +3,7 @@
 //  S3-Objc
 //
 //  Created by Michael Ledford on 11/19/08.
-//  Copyright 2008 __MyCompanyName__. All rights reserved.
+//  Copyright 2008 Michael Ledford. All rights reserved.
 //
 
 #import <Cocoa/Cocoa.h>
