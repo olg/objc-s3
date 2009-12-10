@@ -20,6 +20,12 @@
 #define SHEET_CANCEL 0
 #define SHEET_OK 1
 
+enum {
+    USStandardLocation = 0,
+    USWestLocation = 1,
+    EUIrelandLocation = 2
+};
+
 @implementation S3BucketListController
 
 #pragma mark -
@@ -181,8 +187,10 @@
             return;
         }
         NSString *bucketLocation = nil;
-        if (_europe == YES) {
-            bucketLocation = @"EU";
+        if (_location == USWestLocation) {
+            bucketLocation = S3BucketUSWestLocationKey;
+        } else if (_location == EUIrelandLocation) {
+            bucketLocation = S3BucketEUIrelandLocationKey;
         }
         S3AddBucketOperation *op = [[S3AddBucketOperation alloc] initWithConnectionInfo:[self connectionInfo] bucket:newBucket location:bucketLocation];
         [self addToCurrentOperations:op];
@@ -220,16 +228,6 @@
 
 + (void)initialize {
     [self setKeys:[NSArray arrayWithObjects:@"name",nil] triggerChangeNotificationsForDependentKey:@"isValidName"];
-}
-
-- (bool)europeConstraint
-{
-    return _europe; 
-}
-
-- (void)setEuropeConstraint:(bool)b
-{
-    _europe = b;
 }
 
 - (NSString *)name
