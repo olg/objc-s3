@@ -25,7 +25,7 @@
 @synthesize sourceObject = _sourceObject;
 @synthesize destinationObject = _destinationObject;
 
-- (id)initWithConnectionInfo:(S3ConnectionInfo *)c sourceObject:(S3Object *)source destinationObject:(S3Object *)destination
+- (id)initWithConnectionInfo:(S3ConnectionInfo *)c from:(S3Object *)source to:(S3Object *)destination
 {
     self = [super initWithConnectionInfo:c];
     
@@ -49,10 +49,10 @@
 
 - (NSDictionary *)additionalHTTPRequestHeaders
 {
-    NSDictionary *destinationMetadata = [[self destinationObject] userDefinedMetadata];
+    NSDictionary *destinationUserMetadata = [[self destinationObject] userDefinedMetadata];
     NSMutableDictionary *additionalMetadata = [NSMutableDictionary dictionary];
     
-    if ([destinationMetadata count]) {
+    if ([destinationUserMetadata count]) {
         [additionalMetadata setObject:@"REPLACE" forKey:@"x-amz-metadata-directive"];
         [additionalMetadata addEntriesFromDictionary:[[self destinationObject] metadata]];
     }

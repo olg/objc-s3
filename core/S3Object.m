@@ -51,7 +51,6 @@ NSString *S3ObjectMetadataStorageClassKey = @"storageclass";
     if (self != nil) {
         [self setKey:key];
         [self setBucket:bucket];
-        [self setUserDefinedMetadata:udmd];
         NSMutableDictionary *processedMetadata = [NSMutableDictionary dictionaryWithCapacity:[md count]];
         NSEnumerator *metadataKeyEnumerator = [md keyEnumerator];
         NSString *key = nil;
@@ -61,6 +60,7 @@ NSString *S3ObjectMetadataStorageClassKey = @"storageclass";
             [processedMetadata setObject:object forKey:cleanedKey];
         }
         [self setMetadata:[NSDictionary dictionaryWithDictionary:processedMetadata]];
+        [self setUserDefinedMetadata:udmd];
         [self setDataSourceInfo:info];
     }
     
