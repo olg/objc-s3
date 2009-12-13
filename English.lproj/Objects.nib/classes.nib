@@ -30,6 +30,8 @@
 				<string>S3DragAndDropArrayController</string>
 				<key>multipleUploadSheet</key>
 				<string>NSWindow</string>
+				<key>renameSheet</key>
+				<string>NSWindow</string>
 				<key>uploadSheet</key>
 				<string>NSWindow</string>
 			</dict>

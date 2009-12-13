@@ -64,6 +64,7 @@
 		EC3D0F440E4016D600EE82C9 /* S3PersistentCFReadStreamPool.m in Sources */ = {isa = PBXBuildFile; fileRef = EC3D0F430E4016D600EE82C9 /* S3PersistentCFReadStreamPool.m */; };
 		EC4418450EDD1AAB00DB6030 /* S3DeleteObjectOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = EC4418440EDD1AAB00DB6030 /* S3DeleteObjectOperation.m */; };
 		EC4418F10EDDAF4100DB6030 /* S3AddObjectOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = EC4418F00EDDAF4100DB6030 /* S3AddObjectOperation.m */; };
+		EC5DB4C010D35A5500E728BA /* S3CopyObjectOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = EC5DB4BF10D35A5500E728BA /* S3CopyObjectOperation.m */; };
 		EC5F10870ED5D5390096145C /* S3DeleteBucketOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = EC5F10860ED5D5390096145C /* S3DeleteBucketOperation.m */; };
 		EC5F108A0ED5D7690096145C /* S3AddBucketOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = EC5F10890ED5D7690096145C /* S3AddBucketOperation.m */; };
 		EC7DA3060E4F640900178FE4 /* S3HTTPURLBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = EC7DA3050E4F640900178FE4 /* S3HTTPURLBuilder.m */; };
@@ -166,6 +167,8 @@
 		EC4418440EDD1AAB00DB6030 /* S3DeleteObjectOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3DeleteObjectOperation.m; sourceTree = "<group>"; };
 		EC4418EF0EDDAF4100DB6030 /* S3AddObjectOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3AddObjectOperation.h; sourceTree = "<group>"; };
 		EC4418F00EDDAF4100DB6030 /* S3AddObjectOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3AddObjectOperation.m; sourceTree = "<group>"; };
+		EC5DB4BE10D35A5500E728BA /* S3CopyObjectOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3CopyObjectOperation.h; sourceTree = "<group>"; };
+		EC5DB4BF10D35A5500E728BA /* S3CopyObjectOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3CopyObjectOperation.m; sourceTree = "<group>"; };
 		EC5F10850ED5D5390096145C /* S3DeleteBucketOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3DeleteBucketOperation.h; sourceTree = "<group>"; };
 		EC5F10860ED5D5390096145C /* S3DeleteBucketOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3DeleteBucketOperation.m; sourceTree = "<group>"; };
 		EC5F10880ED5D7690096145C /* S3AddBucketOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3AddBucketOperation.h; sourceTree = "<group>"; };
@@ -387,6 +390,8 @@
 				EC4418F00EDDAF4100DB6030 /* S3AddObjectOperation.m */,
 				EC8A58D80EE312A900C701C3 /* S3DownloadObjectOperation.h */,
 				EC8A58D90EE312A900C701C3 /* S3DownloadObjectOperation.m */,
+				EC5DB4BE10D35A5500E728BA /* S3CopyObjectOperation.h */,
+				EC5DB4BF10D35A5500E728BA /* S3CopyObjectOperation.m */,
 			);
 			name = "objects operations";
 			sourceTree = "<group>";
@@ -572,6 +577,7 @@
 				EC4418F10EDDAF4100DB6030 /* S3AddObjectOperation.m in Sources */,
 				EC8A58DA0EE312A900C701C3 /* S3DownloadObjectOperation.m in Sources */,
 				ECCA622C0EE4F12A009266B4 /* S3OperationLog.m in Sources */,
+				EC5DB4C010D35A5500E728BA /* S3CopyObjectOperation.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

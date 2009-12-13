@@ -18,6 +18,7 @@
 #import "S3AddObjectOperation.h"
 #import "S3ListObjectOperation.h"
 #import "S3DeleteObjectOperation.h"
+#import "S3CopyObjectOperation.h"
 #import "S3OperationQueue.h"
 #import "S3Extensions.h"
 
@@ -62,6 +63,8 @@
     [dateFormatter setTimeZone:[NSTimeZone defaultTimeZone]];
     [[[[[[self window] contentView] viewWithTag:10] tableColumnWithIdentifier:@"lastModified"] dataCell] setFormatter:dateFormatter];
 
+    _renameOperations = [[NSMutableArray alloc] init];
+    
     [_objectsController setFileOperationsDelegate:self];
     
     [[[NSApp delegate] queue] addQueueListener:self];
@@ -72,23 +75,26 @@
     return [NSArray arrayWithObjects: NSToolbarSeparatorItemIdentifier,
         NSToolbarSpaceItemIdentifier,
         NSToolbarFlexibleSpaceItemIdentifier,
-        @"Refresh", @"Upload", @"Download", @"Remove", @"Remove All",nil];
+        @"Refresh", @"Upload", @"Download", @"Remove", @"Remove All", @"Rename", nil];
 }
 
 - (BOOL)validateToolbarItem:(NSToolbarItem *)theItem
 {
-    if ([[theItem itemIdentifier] isEqualToString: @"Remove All"])
+    if ([[theItem itemIdentifier] isEqualToString: @"Remove All"]) {
         return [[_objectsController arrangedObjects] count] > 0;
-    if ([[theItem itemIdentifier] isEqualToString: @"Remove"])
-        return [_objectsController canRemove];
-    if ([[theItem itemIdentifier] isEqualToString: @"Download"])
-        return [_objectsController canRemove];
+    } else if ([[theItem itemIdentifier] isEqualToString: @"Remove"]) {
+        return [_objectsController canRemove];        
+    } else if ([[theItem itemIdentifier] isEqualToString: @"Download"]) {
+        return [_objectsController canRemove];        
+    } else if ([[theItem itemIdentifier] isEqualToString: @"Rename"]) {
+        return ([[_objectsController selectedObjects] count] == 1 );
+    }
     return YES;
 }
 
 - (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar *)toolbar
 {
-    return [NSArray arrayWithObjects: @"Upload", @"Download", @"Remove", NSToolbarSeparatorItemIdentifier,  @"Remove All", NSToolbarFlexibleSpaceItemIdentifier, @"Refresh", nil]; 
+    return [NSArray arrayWithObjects: @"Upload", @"Download", @"Rename", @"Remove", NSToolbarSeparatorItemIdentifier,  @"Remove All", NSToolbarFlexibleSpaceItemIdentifier, @"Refresh", nil]; 
 }
 
 - (NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL) flag
@@ -134,6 +140,12 @@
         [item setImage: [NSImage imageNamed: @"refresh.icns"]];
         [item setTarget:self];
         [item setAction:@selector(refresh:)];
+    } else if ([itemIdentifier isEqualToString:@"Rename"]) {
+        [item setLabel:NSLocalizedString(@"Rename", nil)];
+        [item setPaletteLabel: [item label]];
+//        [item setImage: [NSImage imageNamed: @"refresh.icns"]]
+        [item setTarget:self];
+        [item setAction:@selector(rename:)];
     }
     
     return [item autorelease];
@@ -168,7 +180,7 @@
     }
     
     [super operationQueueOperationStateDidChange:notification];
-    
+        
     if ([op isKindOfClass:[S3ListObjectOperation class]] && [op state] == S3OperationDone) {
         [self addObjects:[(S3ListObjectOperation *)op objects]];
         [self setObjectsInfo:[(S3ListObjectOperation*)op metadata]];
@@ -179,6 +191,13 @@
         } else {
             [self setValidList:YES];
         }
+    }
+    
+    if ([op isKindOfClass:[S3CopyObjectOperation class]] && [_renameOperations containsObject:op] && [op state] == S3OperationDone) {
+        [self setValidList:NO];
+        S3DeleteObjectOperation *deleteOp = [[S3DeleteObjectOperation alloc] initWithConnectionInfo:[self connectionInfo] object:[(S3CopyObjectOperation *)op sourceObject]];
+        [_renameOperations removeObject:op];
+        [self addToCurrentOperations:deleteOp];
     }
     
     if (([op isKindOfClass:[S3AddObjectOperation class]] || [op isKindOfClass:[S3DeleteObjectOperation class]]) && [op state] == S3OperationDone) {
@@ -437,6 +456,42 @@
     [self importFiles:files withDialog:TRUE];
 }
 
+- (void)didEndRenameSheet:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
+{
+    S3Object *source = (S3Object *)contextInfo;
+    [source autorelease];
+
+    [sheet orderOut:self];
+
+    if (returnCode!=SHEET_OK) {
+        return;
+    }
+    
+    if ([[source key] isEqualToString:[self renameName]]) {
+        return;
+    }
+    
+    S3Object *newObject = [[S3Object alloc] initWithBucket:[self bucket] key:[self renameName]];
+    
+    S3CopyObjectOperation *copyOp = [[S3CopyObjectOperation alloc] initWithConnectionInfo:[self connectionInfo] from:source to:newObject];
+    [newObject release];
+    
+    [_renameOperations addObject:copyOp];
+    
+    [self addToCurrentOperations:copyOp];
+}
+
+- (IBAction)rename:(id)sender
+{
+    NSArray *objects = [_objectsController selectedObjects];
+    if ([objects count] == 0 || [objects count] > 1) {
+        return;
+    }
+    S3Object *selectedObject = [[_objectsController selectedObjects] objectAtIndex:0];
+    [self setRenameName:[selectedObject key]];
+    [NSApp beginSheet:renameSheet modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(didEndRenameSheet:returnCode:contextInfo:) contextInfo:[selectedObject retain]];
+}
+
 #pragma mark -
 #pragma mark Key-value coding
 
@@ -478,6 +533,17 @@
 {
     [_bucket release];
     _bucket = [aBucket retain];
+}
+
+- (NSString *)renameName
+{
+    return _renameName;
+}
+
+- (void)setRenameName:(NSString *)name
+{
+    [_renameName release];
+    _renameName = [name retain];
 }
 
 - (NSString *)uploadACL
@@ -550,6 +616,8 @@
 -(void)dealloc
 {
     [[[NSApp delegate] queue] removeQueueListener:self];
+    
+    [_renameOperations release];
     
     [self setObjects:nil];
     [self setObjectsInfo:nil];

@@ -24,6 +24,10 @@
 	IBOutlet NSWindow *multipleUploadSheet;
 	IBOutlet S3DragAndDropArrayController *_objectsController;
 
+    IBOutlet NSWindow *renameSheet;
+    NSString *_renameName;
+    NSMutableArray *_renameOperations;
+    
 	NSString *_uploadACL;
 	NSString *_uploadFilename;
 	NSString *_uploadSize;
@@ -55,6 +59,9 @@
 
 - (S3Bucket *)bucket;
 - (void)setBucket:(S3Bucket *)aBucket;
+
+- (NSString *)renameName;
+- (void)setRenameName:(NSString *)name;
 
 - (NSString *)uploadACL;
 - (void)setUploadACL:(NSString *)anUploadACL;
