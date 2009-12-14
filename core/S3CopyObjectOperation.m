@@ -58,7 +58,8 @@
     }
     
     NSString *copySource = [NSString stringWithFormat:@"/%@/%@", [[[self sourceObject] bucket] name], [[self sourceObject] key]];
-    [additionalMetadata setObject:copySource forKey:@"x-amz-copy-source"];
+    NSString *copySourceURLEncoded = [(NSString *)CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef)copySource, NULL, (CFStringRef)@"[]#%?,$+=&@:;()'*!", kCFStringEncodingUTF8) autorelease];
+    [additionalMetadata setObject:copySourceURLEncoded forKey:@"x-amz-copy-source"];
     
     return additionalMetadata;
 }
