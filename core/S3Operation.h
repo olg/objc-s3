@@ -53,6 +53,7 @@ typedef enum _S3OperationState {
     
     NSDictionary *requestHeaders;
     NSDictionary *responseHeaders;
+    NSNumber *responseStatusCode;
     NSData *responseData;
     NSFileHandle *responseFileHandle;
     
@@ -83,6 +84,7 @@ typedef enum _S3OperationState {
 
 @property(nonatomic, copy, readwrite) NSCalendarDate *date;
 @property(nonatomic, copy, readwrite) NSDictionary *responseHeaders;
+@property(nonatomic, copy, readwrite) NSNumber *responseStatusCode;
 @property(nonatomic, copy, readwrite) NSData *responseData;
 @property(nonatomic, retain, readwrite) NSFileHandle *responseFileHandle;
 @property(nonatomic, copy, readwrite) NSError *error;

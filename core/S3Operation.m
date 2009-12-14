@@ -71,6 +71,7 @@ static void myReleaseCallback(void *info) {
 
 @synthesize date = _date;
 @synthesize responseHeaders;
+@synthesize responseStatusCode;
 @synthesize responseData;
 @synthesize responseFileHandle;
 @synthesize error;
@@ -538,9 +539,15 @@ static void myReleaseCallback(void *info) {
     CFReadStreamSetClient(httpOperationReadStream, 0, NULL, NULL);
     CFReadStreamUnscheduleFromRunLoop(httpOperationReadStream, CFRunLoopGetMain(), kCFRunLoopCommonModes);
     
+    CFIndex statusCode = 0;
+    
     // Copy out any headers
     CFHTTPMessageRef headerMessage = (CFHTTPMessageRef)CFReadStreamCopyProperty(httpOperationReadStream, kCFStreamPropertyHTTPResponseHeader);
     if (headerMessage != NULL) {
+        // Get the HTTP status code
+        statusCode = CFHTTPMessageGetResponseStatusCode(headerMessage);
+        [self setResponseStatusCode:[NSNumber numberWithLong:statusCode]];
+        
         NSDictionary *headerDict = (NSDictionary *)CFHTTPMessageCopyAllHeaderFields(headerMessage);
         if (headerDict != nil) {
             [self setResponseHeaders:headerDict];
@@ -555,7 +562,12 @@ static void myReleaseCallback(void *info) {
     [[self responseFileHandle] closeFile];
     
     // TODO: correctly set state of the operation from whatever was actually returned
-    [self setState:S3OperationDone];
+    if (statusCode >= 400) {
+        [self setState:S3OperationError];
+    } else {
+        [self setState:S3OperationDone];        
+    }
+    
     [rateCalculator stopTransferRateCalculator];
     
     CFRelease(httpOperationReadStream);
