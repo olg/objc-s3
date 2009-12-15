@@ -561,11 +561,14 @@ static void myReleaseCallback(void *info) {
     // Close filestream if available.
     [[self responseFileHandle] closeFile];
     
-    // TODO: correctly set state of the operation from whatever was actually returned
-    if (statusCode >= 400) {
-        [self setState:S3OperationError];
-    } else {
-        [self setState:S3OperationDone];        
+    if ([self didInterpretStateForStreamHavingEndEncountered] == NO) {
+        if (statusCode >= 400) {
+            [self setState:S3OperationError];
+        } else if (statusCode >= 300 && statusCode < 400) {
+            [self setState:S3OperationRequiresRedirect];
+        } else {
+            [self setState:S3OperationDone];            
+        }
     }
     
     [rateCalculator stopTransferRateCalculator];
@@ -677,6 +680,11 @@ static void myReleaseCallback(void *info) {
     } else if ([keyPath isEqualToString:@"informationalSubStatus"] == YES) {
         [delegate operationInformationalSubStatusDidChange:self];
     }
+}
+
+- (BOOL)didInterpretStateForStreamHavingEndEncountered
+{
+    return NO;
 }
 
 @end

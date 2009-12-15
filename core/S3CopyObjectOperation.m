@@ -74,4 +74,18 @@
     return [[self destinationObject] key];
 }
 
+- (BOOL)didInterpretStateForStreamHavingEndEncountered
+{
+    if ([[self responseStatusCode] isEqual:[NSNumber numberWithInt:200]]) {
+        NSError *aError = nil;
+        NSXMLDocument *d = [[[NSXMLDocument alloc] initWithData:[self responseData] options:NSXMLDocumentTidyXML error:&aError] autorelease];
+        NSXMLElement *e = [d rootElement];
+        if ([[e localName] isEqualToString:@"Error"]) {
+            [self setState:S3OperationError];
+            return YES;
+        }
+    }
+    
+    return NO;
+}
 @end

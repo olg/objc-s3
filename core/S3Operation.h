@@ -138,6 +138,11 @@ typedef enum _S3OperationState {
 - (NSString *)responseBodyContentFilePath;
 - (long long)responseBodyContentExepctedLength;
 
+// -didInterpretStateForStreamHavingEndEncountered is implemented in rare instances
+// by the subclass when the operation requires special knowledge to set the operation
+// state. If the subclass does set the state then YES should be returned returned.
+// Returns NO by default by the base class.
+- (BOOL)didInterpretStateForStreamHavingEndEncountered;
 @end
 
 
