@@ -372,28 +372,19 @@ static void myReleaseCallback(void *info) {
         
         NSFileHandle *fileHandle = nil;
         BOOL fileCreated = [[NSFileManager defaultManager] createFileAtPath:[self responseBodyContentFilePath] contents:nil attributes:nil];
-        BOOL fileExists = NO;
-        BOOL isDirectory = NO;
         
         if (fileCreated == YES) {
-            fileExists = NO;
             fileHandle = [NSFileHandle fileHandleForWritingAtPath:[self responseBodyContentFilePath]];
         } else {
-            fileExists = [[NSFileManager defaultManager] fileExistsAtPath:[self responseBodyContentFilePath] isDirectory:&isDirectory];
-        }
-        
-        if (fileExists == YES) {
-            if (isDirectory == YES) {
-                [self setState:S3OperationError];
-                return;
+            BOOL isDirectory = NO;
+            BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:[self responseBodyContentFilePath] isDirectory:&isDirectory];
+            if (fileExists == YES && isDirectory == NO) {
+                if ([[NSFileManager defaultManager] isWritableFileAtPath:[self responseBodyContentFilePath]] == YES) {
+                    fileHandle = [NSFileHandle fileHandleForWritingAtPath:[self responseBodyContentFilePath]];
+                }
             }
-            if ([[NSFileManager defaultManager] isWritableFileAtPath:[self responseBodyContentFilePath]] == NO) {
-                [self setState:S3OperationError];
-                return;                
-            }
-            fileHandle = [NSFileHandle fileHandleForWritingAtPath:[self responseBodyContentFilePath]];
         }
-        
+                
         if (fileHandle == nil) {
             [self setState:S3OperationError];
             return;                
@@ -557,10 +548,7 @@ static void myReleaseCallback(void *info) {
         CFRelease(headerMessage);
         headerMessage = NULL;
     }
-    
-    // Close filestream if available.
-    [[self responseFileHandle] closeFile];
-    
+        
     if ([self didInterpretStateForStreamHavingEndEncountered] == NO) {
         if (statusCode >= 400) {
             [self setState:S3OperationError];
@@ -570,7 +558,10 @@ static void myReleaseCallback(void *info) {
             [self setState:S3OperationDone];            
         }
     }
-    
+
+    // Close filestream if available.
+    [[self responseFileHandle] closeFile];
+
     [rateCalculator stopTransferRateCalculator];
     
     CFRelease(httpOperationReadStream);
