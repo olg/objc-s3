@@ -361,8 +361,10 @@ static void myReleaseCallback(void *info) {
     
     // Close filestream if available.
     [[self responseFileHandle] closeFile];
+    [self setResponseFileHandle:nil];
     
-	[self setState:S3OperationCanceled];
+    [self setState:S3OperationCanceled];
+    
     [rateCalculator stopTransferRateCalculator];    
 }
 
@@ -374,7 +376,7 @@ static void myReleaseCallback(void *info) {
         BOOL fileCreated = [[NSFileManager defaultManager] createFileAtPath:[self responseBodyContentFilePath] contents:nil attributes:nil];
         
         if (fileCreated == YES) {
-            fileHandle = [NSFileHandle fileHandleForWritingAtPath:[self responseBodyContentFilePath]];
+            fileHandle = [NSFileHandle fileHandleForUpdatingAtPath:[self responseBodyContentFilePath]];
         } else {
             BOOL isDirectory = NO;
             BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:[self responseBodyContentFilePath] isDirectory:&isDirectory];
@@ -488,6 +490,7 @@ static void myReleaseCallback(void *info) {
         
         // Close filestream if available.
         [[self responseFileHandle] closeFile];
+        [self setResponseFileHandle:nil];
         
         [self setState:S3OperationError];
         return;
@@ -552,8 +555,18 @@ static void myReleaseCallback(void *info) {
     if ([self didInterpretStateForStreamHavingEndEncountered] == NO) {
         if (statusCode >= 400) {
             [self setState:S3OperationError];
+            if ([self responseFileHandle]) {
+                [[self responseFileHandle] seekToFileOffset:0];
+                NSData *data = [[self responseFileHandle] readDataToEndOfFile];
+                [self setResponseData:data];
+            }
         } else if (statusCode >= 300 && statusCode < 400) {
             [self setState:S3OperationRequiresRedirect];
+            if ([self responseFileHandle]) {
+                [[self responseFileHandle] seekToFileOffset:0];
+                NSData *data = [[self responseFileHandle] readDataToEndOfFile];
+                [self setResponseData:data];
+            }
         } else {
             [self setState:S3OperationDone];            
         }
@@ -561,6 +574,7 @@ static void myReleaseCallback(void *info) {
 
     // Close filestream if available.
     [[self responseFileHandle] closeFile];
+    [self setResponseFileHandle:nil];
 
     [rateCalculator stopTransferRateCalculator];
     
@@ -579,6 +593,7 @@ static void myReleaseCallback(void *info) {
     
     // Close filestream if available.
     [[self responseFileHandle] closeFile];
+    [self setResponseFileHandle:nil];
     
     [self setState:S3OperationError];
     [rateCalculator stopTransferRateCalculator];
