@@ -16,7 +16,6 @@
     NSMutableDictionary *_controllers;
     S3OperationQueue *_queue;
     S3OperationLog *_operationLog;
-    S3ConnectionInfo *_connectionInfo;
     NSMutableDictionary *_authenticationCredentials;
 }
 

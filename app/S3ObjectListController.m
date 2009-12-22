@@ -195,7 +195,7 @@
     
     if ([op isKindOfClass:[S3CopyObjectOperation class]] && [_renameOperations containsObject:op] && [op state] == S3OperationDone) {
         [self setValidList:NO];
-        S3DeleteObjectOperation *deleteOp = [[S3DeleteObjectOperation alloc] initWithConnectionInfo:[self connectionInfo] object:[(S3CopyObjectOperation *)op sourceObject]];
+        S3DeleteObjectOperation *deleteOp = [[S3DeleteObjectOperation alloc] initWithConnectionInfo:[op connectionInfo] object:[(S3CopyObjectOperation *)op sourceObject]];
         [_renameOperations removeObject:op];
         [self addToCurrentOperations:deleteOp];
     }
@@ -237,7 +237,9 @@
 {
     [self setObjects:[NSMutableArray array]];
     [self setValidList:NO];
+        
     S3ListObjectOperation *op = [[S3ListObjectOperation alloc] initWithConnectionInfo:[self connectionInfo] bucket:[self bucket]];
+    
     [self addToCurrentOperations:op];
 }
 
@@ -257,6 +259,7 @@
     
     S3Object *b;
     NSEnumerator *e = [[_objectsController arrangedObjects] objectEnumerator];
+        
     while (b = [e nextObject])
     {
         S3DeleteObjectOperation *op = [[S3DeleteObjectOperation alloc] initWithConnectionInfo:[self connectionInfo] object:b];
@@ -285,7 +288,6 @@
         [alert release];        
     }
     
-    
     NSEnumerator *e = [[_objectsController selectedObjects] objectEnumerator];
     while (b = [e nextObject])
     {
@@ -299,6 +301,7 @@
 {
     S3Object *b;
     NSEnumerator *e = [[_objectsController selectedObjects] objectEnumerator];
+        
     while (b = [e nextObject])
     {
         NSSavePanel *sp = [NSSavePanel savePanel];
@@ -357,7 +360,7 @@
         [metadataDict setObject:size forKey:S3ObjectMetadataContentLengthKey];
     }
     S3Object *objectToAdd = [[S3Object alloc] initWithBucket:[self bucket] key:key userDefinedMetadata:nil metadata:metadataDict dataSourceInfo:dataSourceInfo];
-    
+        
     S3AddObjectOperation *op = [[S3AddObjectOperation alloc] initWithConnectionInfo:[self connectionInfo] object:objectToAdd];
     [objectToAdd release];
 
@@ -472,7 +475,7 @@
     }
     
     S3Object *newObject = [[S3Object alloc] initWithBucket:[self bucket] key:[self renameName]];
-    
+        
     S3CopyObjectOperation *copyOp = [[S3CopyObjectOperation alloc] initWithConnectionInfo:[self connectionInfo] from:source to:newObject];
     [newObject release];
     

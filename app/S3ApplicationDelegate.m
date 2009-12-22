@@ -35,6 +35,8 @@
     [userDefaultsValuesDict setObject:[NSNumber numberWithBool:YES] forKey:@"consolevisible"];
     [userDefaultsValuesDict setObject:@"private" forKey:@"defaultUploadPrivacy"];
     [userDefaultsValuesDict setObject:[NSNumber numberWithBool:NO] forKey:@"useKeychain"];
+    [userDefaultsValuesDict setObject:[NSNumber numberWithBool:YES] forKey:@"useSSL"];
+    [userDefaultsValuesDict setObject:[NSNumber numberWithBool:NO] forKey:@"autologin"];
     [[NSUserDefaults standardUserDefaults] registerDefaults:userDefaultsValuesDict];
 
     // Conversion code for new default
@@ -53,7 +55,6 @@
     
     S3FileSizeTransformer *fileSizeTransformer = [[[S3FileSizeTransformer alloc] init] autorelease];
     [NSValueTransformer setValueTransformer:fileSizeTransformer forName:@"S3FileSizeTransformer"];
-    
 }
 
 - (id)init
@@ -75,7 +76,6 @@
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:NSApplicationDidFinishLaunchingNotification object:NSApp];
 
-    [_connectionInfo release];
     [_queue release];
     [_operationLog release];
     [_controllers release];
@@ -86,8 +86,15 @@
 - (IBAction)openConnection:(id)sender
 {    
 	S3LoginController *c = [[[S3LoginController alloc] initWithWindowNibName:@"Authentication"] autorelease];
-	[c setConnectionInfo:_connectionInfo];
-	[c showWindow:self];
+
+    NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
+    NSNumber *useSSL = [standardUserDefaults objectForKey:@"useSSL"];
+    
+    S3ConnectionInfo *connectionInfo = [[S3ConnectionInfo alloc] initWithDelegate:self userInfo:nil secureConnection:[useSSL boolValue]];
+    [c setConnectionInfo:connectionInfo];
+    [connectionInfo release];        
+	
+    [c showWindow:self];
 	[c retain];
 }
 
@@ -99,22 +106,25 @@
 
 - (void)tryAutoLogin
 {
-    NSString *defaultKey = [self accessKeyForConnectionInfo:_connectionInfo];
-    NSString *accessKey = [self secretAccessKeyForConnectionInfo:_connectionInfo];
-    if (defaultKey != nil && accessKey != nil)
-    {
-        S3BucketListController *c = [[[S3BucketListController alloc] initWithWindowNibName:@"Buckets"] autorelease];
-        [c setConnectionInfo:_connectionInfo];
-        [c showWindow:self];
-        [c refresh:self];
-        [c retain];			
-    }    
+    NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
+    NSNumber *useSSL = [standardUserDefaults objectForKey:@"useSSL"];
+    
+    S3ConnectionInfo *connectionInfo = [[S3ConnectionInfo alloc] initWithDelegate:self userInfo:nil secureConnection:[useSSL boolValue]];
+    
+    S3LoginController *c = [[[S3LoginController alloc] initWithWindowNibName:@"Authentication"] autorelease];
+    [c setConnectionInfo:connectionInfo];
+	
+    [c showWindow:self];
+    [c retain];
+        
+    [c connect:self];
+
+    [connectionInfo release];
 }
 
 - (void)finishedLaunching
 {
-    _connectionInfo = [[S3ConnectionInfo alloc] initWithDelegate:self];
-    
+   
 	S3OperationController *c = [[[S3OperationController alloc] initWithWindowNibName:@"Operations"] autorelease];
 	[_controllers setObject:c forKey:@"Console"];
     

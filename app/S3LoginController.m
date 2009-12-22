@@ -11,7 +11,6 @@
 #import "S3BucketListController.h"
 #import "S3ListBucketOperation.h"
 #import "S3OperationQueue.h"
-#import "S3MutableConnectionInfo.h"
 
 // C-string, as it is only used in Keychain Services
 #define S3_BROWSER_KEYCHAIN_SERVICE "S3 Browser"
@@ -90,7 +89,9 @@
         }
         
         S3BucketListController *c = [[[S3BucketListController alloc] initWithWindowNibName:@"Buckets"] autorelease];
+        
         [c setConnectionInfo:[self connectionInfo]];
+        
         [c showWindow:self];
         [c retain];			
         [c setBuckets:[(S3ListBucketOperation *)operation bucketList]];
@@ -104,15 +105,20 @@
 #pragma mark Actions
 
 - (IBAction)connect:(id)sender
-{  
+{
+    if (accessKeyID == nil && secretAccessKeyID == nil) {
+        return;
+    }
     [accessKeyID release];
     accessKeyID = [[[NSUserDefaults standardUserDefaults] stringForKey:DEFAULT_USER] retain];
     
     NSDictionary *authDict = [NSDictionary dictionaryWithObjectsAndKeys:accessKeyID, @"accessKey", secretAccessKeyID, @"secretAccessKey", nil]; 
+    
     [[NSApp delegate] setAuthenticationCredentials:authDict forConnectionInfo:[self connectionInfo]];
     
 	S3ListBucketOperation *op = [[S3ListBucketOperation alloc] initWithConnectionInfo:[self connectionInfo]];
-	[self addToCurrentOperations:op];
+
+    [self addToCurrentOperations:op];
 }
 
 - (IBAction)openHelpPage:(id)sender

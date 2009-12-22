@@ -165,6 +165,7 @@ enum {
 
     S3Bucket *b;
     NSEnumerator *e = [[_bucketsController selectedObjects] objectEnumerator];
+    
     while (b = [e nextObject]) {
         S3DeleteBucketOperation *op = [[S3DeleteBucketOperation alloc] initWithConnectionInfo:[self connectionInfo] bucket:b];
         [self addToCurrentOperations:op];
@@ -174,6 +175,7 @@ enum {
 - (IBAction)refresh:(id)sender
 {
 	S3ListBucketOperation *op = [[S3ListBucketOperation alloc] initWithConnectionInfo:[self connectionInfo]];
+    
     [self addToCurrentOperations:op];
 }
 
@@ -192,7 +194,9 @@ enum {
         } else if (_location == EUIrelandLocation) {
             bucketLocation = S3BucketEUIrelandLocationKey;
         }
+                
         S3AddBucketOperation *op = [[S3AddBucketOperation alloc] initWithConnectionInfo:[self connectionInfo] bucket:newBucket location:bucketLocation];
+        
         [self addToCurrentOperations:op];
     }
 }
@@ -216,7 +220,9 @@ enum {
         } else {
             c = [[S3ObjectListController alloc] initWithWindowNibName:@"Objects"];
             [c setBucket:b];
+
             [c setConnectionInfo:[self connectionInfo]];
+            
             [c showWindow:self];            
             [_bucketListControllerCache setObject:c forKey:b];
         }

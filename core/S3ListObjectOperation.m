@@ -159,7 +159,7 @@
     
     if (nm==nil)
         return nil;
-    
+        
     S3ListObjectOperation *op = [[[S3ListObjectOperation alloc] initWithConnectionInfo:[self connectionInfo] bucket:[self bucket] marker:nm] autorelease];
     
     return op;

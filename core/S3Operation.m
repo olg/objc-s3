@@ -243,9 +243,7 @@ static void myReleaseCallback(void *info) {
 
 - (NSString *)host
 {
-    if ([self isRequestOnService] == YES) {
-        return [[self connectionInfo] hostEndpoint];
-    } else if ([[self connectionInfo] virtuallyHosted] == YES && [self bucketName] != nil) {
+    if ([self isRequestOnService] == NO && [[self connectionInfo] virtuallyHosted] == YES && [self bucketName] != nil) {
         NSString *hostName = [NSString stringWithFormat:@"%@.%@", [self bucketName], [[self connectionInfo] hostEndpoint]];
         return hostName;
     }
@@ -401,7 +399,7 @@ static void myReleaseCallback(void *info) {
     
     // Any headers or information to be included with this HTTP message should have happened before this point!
     
-	CFHTTPMessageRef httpRequest = [connectionInfo createCFHTTPMessageRefFromOperation:self];
+	CFHTTPMessageRef httpRequest = [[self connectionInfo] createCFHTTPMessageRefFromOperation:self];
     if (httpRequest == NULL) {
         [self setState:S3OperationError];
         return;
@@ -423,6 +421,16 @@ static void myReleaseCallback(void *info) {
         // When we are not doing a streamed request we can auto redirect!
         httpOperationReadStream = CFReadStreamCreateForHTTPRequest(kCFAllocatorDefault, httpRequest);
         CFReadStreamSetProperty(httpOperationReadStream, kCFStreamPropertyHTTPShouldAutoredirect, kCFBooleanTrue);
+    }
+    
+    if ([[self connectionInfo] secureConnection] && [self isRequestOnService] == NO && [[self connectionInfo] virtuallyHosted] == YES && [self bucketName] != nil) {
+        // Set the kCFStreamSSLPeerName to a single character subdomain plus the hostEndpoint.
+        // This prevents virtual buckets having names contain periods will not foul up the SSL validity checking.
+        // I wish we could simply use the endpoint but Amazon's wildcard certificate does not include
+        // the 'Subject Alternative Name' extension including the base endpoint host on their certificates.
+        NSString *peerName = [NSString stringWithFormat:@"a.%@", [[self connectionInfo] hostEndpoint]];
+        NSDictionary *streamPropertySSLSettingsDictionary = [NSDictionary dictionaryWithObject:peerName forKey:(NSString *)kCFStreamSSLPeerName];
+        CFReadStreamSetProperty(httpOperationReadStream, kCFStreamPropertySSLSettings, (CFDictionaryRef)streamPropertySSLSettingsDictionary);        
     }
     
     [self setRequestHeaders:[(NSDictionary *)CFHTTPMessageCopyAllHeaderFields(httpRequest) autorelease]];
