@@ -8,7 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "S3Operation.h";
+#import "S3Operation.h"
 
 @interface S3OperationQueue : NSObject <S3OperationDelegate> {
     id _delegate;
