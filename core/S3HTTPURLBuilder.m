@@ -85,6 +85,7 @@
     NSString *encodedPath = @"";
     if ([key length] > 0) {
         encodedPath = (NSString *)CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef)key, NULL, (CFStringRef)@"[]#%?,$+=&@:;()'*!", kCFStringEncodingUTF8);        
+        [encodedPath autorelease];
     }
 
     NSDictionary *queryItems = nil;

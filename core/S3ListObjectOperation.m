@@ -106,7 +106,7 @@ static NSString *S3OperationInfoListObjectOperationMarkerKey = @"S3OperationInfo
 	NSEnumerator *e = [[root nodesForXPath:@"//Contents" error:&_error] objectEnumerator];
     NSMutableArray *result = [NSMutableArray array];
     while (n = [e nextObject]) {        
-        NSMutableDictionary *metadata = [[NSMutableDictionary alloc] init];
+        NSMutableDictionary *metadata = [NSMutableDictionary dictionary];
         
         NSString *resultEtag = [[n elementForName:@"ETag"] stringValue];
         if (resultEtag != nil) {
