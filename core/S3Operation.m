@@ -100,8 +100,6 @@ static void myReleaseCallback(void *info) {
 @synthesize error;
 @synthesize queuePosition;
 
-@dynamic state;
-
 + (BOOL)accessInstanceVariablesDirectly
 {
     return NO;
