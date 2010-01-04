@@ -209,8 +209,7 @@
 	char *base64Pointer;
     long base64Length = BIO_get_mem_data(mem, &base64Pointer);
 		
-	NSString *base64String = [NSString stringWithCString:base64Pointer
-													   length:base64Length];
+	NSString *base64String = [[[NSString alloc] initWithBytes:base64Pointer length:base64Length encoding:NSASCIIStringEncoding] autorelease];
 		
 	BIO_free_all(mem);
     return base64String;
