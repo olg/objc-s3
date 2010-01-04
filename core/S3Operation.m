@@ -632,8 +632,6 @@ static void myReleaseCallback(void *info) {
     [self setResponseFileHandle:nil];
 
     [rateCalculator stopTransferRateCalculator];
-    S3PersistentCFReadStreamPool *sharedPool = [S3PersistentCFReadStreamPool sharedPersistentCFReadStreamPool];
-    [sharedPool removeOpenedPersistentCFReadStream:httpOperationReadStream];
     
     CFRelease(httpOperationReadStream);
     httpOperationReadStream = NULL;
@@ -642,11 +640,11 @@ static void myReleaseCallback(void *info) {
 - (void)handleStreamErrorOccurred
 {
 //    NSLog(@"handleStreamErrorOccurred");
-
-    CFErrorRef errorRef = CFReadStreamCopyError(httpOperationReadStream);
-    if (errorRef) {
-        CFRelease(errorRef);
-    }
+//
+//    CFErrorRef errorRef = CFReadStreamCopyError(httpOperationReadStream);
+//    if (errorRef) {
+//        CFRelease(errorRef);
+//    }
     CFReadStreamSetClient(httpOperationReadStream, 0, NULL, NULL);
     CFReadStreamUnscheduleFromRunLoop(httpOperationReadStream, CFRunLoopGetMain(), kCFRunLoopCommonModes);
     S3PersistentCFReadStreamPool *sharedPool = [S3PersistentCFReadStreamPool sharedPersistentCFReadStreamPool];
