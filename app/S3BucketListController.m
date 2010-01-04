@@ -7,6 +7,7 @@
 //
 
 #import "S3BucketListController.h"
+#import "AWSRegion.h"
 #import "S3Owner.h"
 #import "S3Bucket.h"
 #import "S3Extensions.h"
@@ -188,14 +189,17 @@ enum {
         if (newBucket == nil) {
             return;
         }
-        NSString *bucketLocation = nil;
+        
+        AWSRegion *bucketRegion = nil;
         if (_location == USWestLocation) {
-            bucketLocation = S3BucketUSWestLocationKey;
+            bucketRegion = [AWSRegion regionWithKey:AWSRegionUSWestKey];
         } else if (_location == EUIrelandLocation) {
-            bucketLocation = S3BucketEUIrelandLocationKey;
+            bucketRegion = [AWSRegion regionWithKey:AWSRegionEUIrelandKey];
+        } else {
+            bucketRegion = [AWSRegion regionWithKey:AWSRegionUSStandardKey];
         }
                 
-        S3AddBucketOperation *op = [[S3AddBucketOperation alloc] initWithConnectionInfo:[self connectionInfo] bucket:newBucket location:bucketLocation];
+        S3AddBucketOperation *op = [[S3AddBucketOperation alloc] initWithConnectionInfo:[self connectionInfo] bucket:newBucket region:bucketRegion];
         
         [self addToCurrentOperations:op];
     }

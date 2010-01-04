@@ -12,25 +12,37 @@
 #import "S3Bucket.h"
 #import "S3Object.h"
 
-@interface S3DeleteObjectOperation ()
-
-@property(readwrite, retain) S3Object *object;
-
-@end
+static NSString *S3OperationInfoDeleteObjectOperationObjectKey = @"S3OperationInfoDeleteObjectOperationObjectKey";
 
 @implementation S3DeleteObjectOperation
 
-@synthesize object = _object;
-
 - (id)initWithConnectionInfo:(S3ConnectionInfo *)c object:(S3Object *)o
 {
-    self = [super initWithConnectionInfo:c];
-    
-    if (self != nil) {
-        [self setObject:o];
+    NSMutableDictionary *theOperationInfo = [[NSMutableDictionary alloc] init];
+    if (o) {
+        [theOperationInfo setObject:o forKey:S3OperationInfoDeleteObjectOperationObjectKey];
     }
     
-    return self;
+    self = [super initWithConnectionInfo:c operationInfo:theOperationInfo];
+    
+    [theOperationInfo release];
+    
+    if (self != nil) {
+        
+    }
+    
+	return self;
+}
+
+- (S3Object *)object 
+{
+    NSDictionary *theOperationInfo = [self operationInfo];
+    return [theOperationInfo objectForKey:S3OperationInfoDeleteObjectOperationObjectKey];
+}
+
+- (NSString *)kind
+{
+	return @"Object deletion";
 }
 
 - (NSString *)requestHTTPVerb
@@ -40,18 +52,16 @@
 
 - (NSString *)bucketName
 {
-    return [[[self object] bucket] name];
+    S3Object *object = [self object];
+
+    return [[object bucket] name];
 }
 
 - (NSString *)key
 {
-    return [[self object] key];
-}
+    S3Object *object = [self object];
 
-- (NSString *)kind
-{
-	return @"Object deletion";
+    return [object key];
 }
-
 
 @end

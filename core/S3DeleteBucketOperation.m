@@ -8,23 +8,39 @@
 
 #import "S3DeleteBucketOperation.h"
 
-@interface S3DeleteBucketOperation ()
-@property(readwrite, retain) S3Bucket *bucket;
-@end
+static NSString *S3OperationInfoDeleteBucketOperationBucketKey = @"S3OperationInfoDeleteBucketOperationBucketKey";
 
 @implementation S3DeleteBucketOperation
 
-@synthesize bucket = _bucket;
+@dynamic bucket;
 
 - (id)initWithConnectionInfo:(S3ConnectionInfo *)theConnectionInfo bucket:(S3Bucket *)b
 {
-    self = [super initWithConnectionInfo:theConnectionInfo];
-    
-    if (self != nil) {
-        [self setBucket:b];
+    NSMutableDictionary *theOperationInfo = [[NSMutableDictionary alloc] init];
+    if (b) {
+        [theOperationInfo setObject:b forKey:S3OperationInfoDeleteBucketOperationBucketKey];
     }
     
-    return self;
+    self = [super initWithConnectionInfo:theConnectionInfo operationInfo:theOperationInfo];
+    
+    [theOperationInfo release];
+    
+    if (self != nil) {
+        
+    }
+    
+	return self;
+}
+
+- (S3Bucket *)bucket
+{
+    NSDictionary *theOperationInfo = [self operationInfo];
+    return [theOperationInfo objectForKey:S3OperationInfoDeleteBucketOperationBucketKey];
+}
+
+- (NSString*)kind
+{
+	return @"Bucket deletion";
 }
 
 - (NSString *)requestHTTPVerb
@@ -36,11 +52,5 @@
 {
     return [[self bucket] name];
 }
-
-- (NSString*)kind
-{
-	return @"Bucket deletion";
-}
-
 
 @end

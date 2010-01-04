@@ -17,12 +17,13 @@
 
 typedef enum _S3OperationState {
     S3OperationPending = 0,
-    S3OperationPendingRetry = 2,
-    S3OperationActive = 3,
-    S3OperationCanceled = 4,
+    S3OperationPendingRetry = 1,
+    S3OperationActive = 2,
+    S3OperationCanceled = 3,
+    S3OperationDone = 4,
     S3OperationRequiresRedirect = 5,
-    S3OperationDone = 6,
-    S3OperationError = 7
+    S3OperationError = 6,
+    S3OperationRequiresVirtualHostingEnabled = 7,
 } S3OperationState;
 
 @class S3ConnectionInfo;
@@ -43,11 +44,12 @@ typedef enum _S3OperationState {
 
 @interface S3Operation : NSObject {
     NSObject <S3OperationDelegate> *delegate;
+
+    NSDictionary *operationInfo;
     
     S3ConnectionInfo *connectionInfo;
     
     NSCalendarDate *_date;
-    
     
     CFReadStreamRef httpOperationReadStream;
     
@@ -70,25 +72,29 @@ typedef enum _S3OperationState {
     NSError *error;
 }
 
+- (id)initWithConnectionInfo:(S3ConnectionInfo *)aConnectionInfo operationInfo:(NSDictionary *)anOperationInfo;
 - (id)initWithConnectionInfo:(S3ConnectionInfo *)aConnectionInfo;
 
-@property(nonatomic, assign) id delegate;
-@property(nonatomic, assign) BOOL allowsRetry;
+@property(readwrite, nonatomic, assign) id delegate;
 
-@property(nonatomic, assign, readwrite) S3OperationState state;
-@property(nonatomic, retain, readwrite) S3ConnectionInfo *connectionInfo;
-@property(nonatomic, retain, readwrite) NSString *informationalStatus;
-@property(nonatomic, retain, readwrite) NSString *informationalSubStatus;
+// Connection information used by the operation.
+@property(readonly, nonatomic, copy) S3ConnectionInfo *connectionInfo;
 
-@property(nonatomic, retain, readwrite) NSDictionary *requestHeaders;
+// operationInfo is used by subclasses to store their inital state
+// information and therefore allows 'copying' the operation by:
+// S3OperationSubclass *originalOperation;
+// [[originalOperation class] initWithConnectionInfo:newConnectionInfo operationInfo:[originalOperation operationInfo]];
+@property(readonly, nonatomic, copy) NSDictionary *operationInfo;
 
-@property(nonatomic, copy, readwrite) NSCalendarDate *date;
-@property(nonatomic, copy, readwrite) NSDictionary *responseHeaders;
-@property(nonatomic, copy, readwrite) NSNumber *responseStatusCode;
-@property(nonatomic, copy, readwrite) NSData *responseData;
-@property(nonatomic, retain, readwrite) NSFileHandle *responseFileHandle;
-@property(nonatomic, copy, readwrite) NSError *error;
-@property(nonatomic, assign, readwrite) NSInteger queuePosition;
+@property(readonly, nonatomic, assign) S3OperationState state;
+@property(readonly, nonatomic, copy) NSString *informationalStatus;
+@property(readonly, nonatomic, copy) NSString *informationalSubStatus;
+
+@property(readonly, nonatomic, copy) NSCalendarDate *date;
+@property(readonly, nonatomic, copy) NSDictionary *requestHeaders;
+@property(readonly, nonatomic, copy) NSDictionary *responseHeaders;
+@property(readonly, nonatomic, copy) NSNumber *responseStatusCode;
+@property(readonly, nonatomic, copy) NSData *responseData;
 
 - (BOOL)isRequestOnService;
 
@@ -102,7 +108,8 @@ typedef enum _S3OperationState {
 
 - (NSError*)errorFromHTTPRequestStatus:(int)status data:(NSData*)data;
 
-// This method must be implemented by subclasses.
+// These methods must be implemented by subclasses.
+- (NSString *)kind; // A short human readable description of the operation.
 - (NSString *)requestHTTPVerb; // May NOT return nil. Must comply with HTTP 1.1 available verbs in rfc 2616 Sec 5.1.1
 
 
@@ -140,9 +147,10 @@ typedef enum _S3OperationState {
 
 // -didInterpretStateForStreamHavingEndEncountered is implemented in rare instances
 // by the subclass when the operation requires special knowledge to set the operation
-// state. If the subclass does set the state then YES should be returned returned.
+// state. If the subclass wishes to set the state then it should dereference the state
+// and set its value to what the new state value should be and YES should be returned.
 // Returns NO by default by the base class.
-- (BOOL)didInterpretStateForStreamHavingEndEncountered;
+- (BOOL)didInterpretStateForStreamHavingEndEncountered:(S3OperationState *)theState;
 @end
 
 

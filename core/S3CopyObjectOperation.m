@@ -13,28 +13,42 @@
 #import "S3Object.h"
 #import "S3Extensions.h"
 
-@interface S3CopyObjectOperation ()
-
-@property(readwrite, retain) S3Object *sourceObject;
-@property(readwrite, retain) S3Object *destinationObject;
-
-@end
+static NSString *S3OperationInfoCopyObjectOperationSourceObjectKey = @"S3OperationInfoCopyObjectOperationSourceObjectKey";
+static NSString *S3OperationInfoCopyObjectOperationDestinationObjectKey = @"S3OperationInfoCopyObjectOperationDestinationObjectKey";
 
 @implementation S3CopyObjectOperation
 
-@synthesize sourceObject = _sourceObject;
-@synthesize destinationObject = _destinationObject;
-
 - (id)initWithConnectionInfo:(S3ConnectionInfo *)c from:(S3Object *)source to:(S3Object *)destination
 {
-    self = [super initWithConnectionInfo:c];
+    NSMutableDictionary *theOperationInfo = [[NSMutableDictionary alloc] init];
+    if (source) {
+        [theOperationInfo setObject:source forKey:S3OperationInfoCopyObjectOperationSourceObjectKey];
+    }
+    if (destination) {
+        [theOperationInfo setObject:destination forKey:S3OperationInfoCopyObjectOperationDestinationObjectKey];
+    }
+    
+    self = [super initWithConnectionInfo:c operationInfo:theOperationInfo];
+    
+    [theOperationInfo release];
     
     if (self != nil) {
-        [self setSourceObject:source];
-        [self setDestinationObject:destination];
+        
     }
     
 	return self;
+}
+
+- (S3Object *)sourceObject
+{
+    NSDictionary *theOperationInfo = [self operationInfo];
+    return [theOperationInfo objectForKey:S3OperationInfoCopyObjectOperationSourceObjectKey];
+}
+
+- (S3Object *)destinationObject
+{
+    NSDictionary *theOperationInfo = [self operationInfo];
+    return [theOperationInfo objectForKey:S3OperationInfoCopyObjectOperationDestinationObjectKey];
 }
 
 - (NSString *)kind
@@ -49,15 +63,18 @@
 
 - (NSDictionary *)additionalHTTPRequestHeaders
 {
-    NSDictionary *destinationUserMetadata = [[self destinationObject] userDefinedMetadata];
+    S3Object *sourceObject = [self sourceObject];
+    S3Object *destinationObject = [self destinationObject];
+    
+    NSDictionary *destinationUserMetadata = [destinationObject userDefinedMetadata];
     NSMutableDictionary *additionalMetadata = [NSMutableDictionary dictionary];
     
     if ([destinationUserMetadata count]) {
         [additionalMetadata setObject:@"REPLACE" forKey:@"x-amz-metadata-directive"];
-        [additionalMetadata addEntriesFromDictionary:[[self destinationObject] metadata]];
+        [additionalMetadata addEntriesFromDictionary:[destinationObject metadata]];
     }
     
-    NSString *copySource = [NSString stringWithFormat:@"/%@/%@", [[[self sourceObject] bucket] name], [[self sourceObject] key]];
+    NSString *copySource = [NSString stringWithFormat:@"/%@/%@", [[sourceObject bucket] name], [sourceObject key]];
     NSString *copySourceURLEncoded = [(NSString *)CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef)copySource, NULL, (CFStringRef)@"[]#%?,$+=&@:;()'*!", kCFStringEncodingUTF8) autorelease];
     [additionalMetadata setObject:copySourceURLEncoded forKey:@"x-amz-copy-source"];
     
@@ -66,22 +83,26 @@
 
 - (NSString *)bucketName
 {
-    return [[[self destinationObject] bucket] name];
+    S3Object *destinationObject = [self destinationObject];
+    
+    return [[destinationObject bucket] name];
 }
 
 - (NSString *)key
 {
-    return [[self destinationObject] key];
+    S3Object *destinationObject = [self destinationObject];
+    
+    return [destinationObject key];
 }
 
-- (BOOL)didInterpretStateForStreamHavingEndEncountered
+- (BOOL)didInterpretStateForStreamHavingEndEncountered:(S3OperationState *)theState
 {
     if ([[self responseStatusCode] isEqual:[NSNumber numberWithInt:200]]) {
         NSError *aError = nil;
         NSXMLDocument *d = [[[NSXMLDocument alloc] initWithData:[self responseData] options:NSXMLDocumentTidyXML error:&aError] autorelease];
         NSXMLElement *e = [d rootElement];
         if ([[e localName] isEqualToString:@"Error"]) {
-            [self setState:S3OperationError];
+            *theState = S3OperationError;
             return YES;
         }
     }

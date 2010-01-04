@@ -11,6 +11,7 @@
 #import "S3ObjectListController.h"
 #import "S3Extensions.h"
 #import "S3ConnectionInfo.h"
+#import "S3MutableConnectionInfo.h"
 #import "S3Bucket.h"
 #import "S3Object.h"
 #import "S3ApplicationDelegate.h"
@@ -64,6 +65,7 @@
     [[[[[[self window] contentView] viewWithTag:10] tableColumnWithIdentifier:@"lastModified"] dataCell] setFormatter:dateFormatter];
 
     _renameOperations = [[NSMutableArray alloc] init];
+    _redirectConnectionInfoMappings = [[NSMutableDictionary alloc] init];
     
     [_objectsController setFileOperationsDelegate:self];
     
@@ -195,9 +197,11 @@
     
     if ([op isKindOfClass:[S3CopyObjectOperation class]] && [_renameOperations containsObject:op] && [op state] == S3OperationDone) {
         [self setValidList:NO];
-        S3DeleteObjectOperation *deleteOp = [[S3DeleteObjectOperation alloc] initWithConnectionInfo:[op connectionInfo] object:[(S3CopyObjectOperation *)op sourceObject]];
+        S3Object *sourceObject = [[op operationInfo] objectForKey:@"sourceObject"];
+        S3DeleteObjectOperation *deleteOp = [[S3DeleteObjectOperation alloc] initWithConnectionInfo:[op connectionInfo] object:sourceObject];
         [_renameOperations removeObject:op];
         [self addToCurrentOperations:deleteOp];
+        [deleteOp release];
     }
     
     if (([op isKindOfClass:[S3AddObjectOperation class]] || [op isKindOfClass:[S3DeleteObjectOperation class]]) && [op state] == S3OperationDone) {
@@ -621,6 +625,7 @@
     [[[NSApp delegate] queue] removeQueueListener:self];
     
     [_renameOperations release];
+    [_redirectConnectionInfoMappings release];
     
     [self setObjects:nil];
     [self setObjectsInfo:nil];

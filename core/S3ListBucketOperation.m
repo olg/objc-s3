@@ -24,6 +24,11 @@
     return self;
 }
 
+- (NSString *)kind
+{
+	return @"Bucket list";
+}
+
 - (NSString *)requestHTTPVerb
 {
     return @"GET";
@@ -33,11 +38,6 @@
 {
     NSLog(@"%@", akey);
     return nil;
-}
-
-- (NSString *)kind
-{
-	return @"Bucket list";
 }
 
 - (S3Owner *)owner

@@ -13,25 +13,32 @@
 #import "S3Object.h"
 #import "S3Extensions.h"
 
-@interface S3AddObjectOperation ()
-
-@property(readwrite, retain) S3Object *object;
-
-@end
+static NSString *S3OperationInfoAddObjectOperationObjectKey = @"S3OperationInfoAddObjectOperationObjectKey";
 
 @implementation S3AddObjectOperation
 
-@synthesize object = _object;
-
 - (id)initWithConnectionInfo:(S3ConnectionInfo *)c object:(S3Object *)o
 {
-    self = [super initWithConnectionInfo:c];
+    NSMutableDictionary *theOperationInfo = [[NSMutableDictionary alloc] init];
+    if (o) {
+        [theOperationInfo setObject:o forKey:S3OperationInfoAddObjectOperationObjectKey];
+    }
+    
+    self = [super initWithConnectionInfo:c operationInfo:theOperationInfo];
+    
+    [theOperationInfo release];
     
     if (self != nil) {
-        [self setObject:o];
+        
     }
     
 	return self;
+}
+
+- (S3Object *)object
+{
+    NSDictionary *theOperationInfo = [self operationInfo];
+    return [theOperationInfo objectForKey:S3OperationInfoAddObjectOperationObjectKey];
 }
 
 - (NSString *)kind
@@ -46,17 +53,23 @@
 
 - (NSDictionary *)additionalHTTPRequestHeaders
 {
-    return [[self object] metadata];
+    S3Object *object = [self object];
+        
+    return [object metadata];
 }
 
 - (NSString *)bucketName
 {
-    return [[[self object] bucket] name];
+    S3Object *object = [self object];
+    
+    return [[object bucket] name];
 }
 
 - (NSString *)key
 {
-    return [[self object] key];
+    S3Object *object = [self object];
+    
+    return [object key];
 }
 
 - (NSDictionary *)requestQueryItems
@@ -66,27 +79,37 @@
 
 - (NSString *)requestBodyContentMD5
 {
-    return [[[self object] metadata] objectForKey:S3ObjectMetadataContentMD5Key];
+    S3Object *object = [self object];
+    
+    return [[object metadata] objectForKey:S3ObjectMetadataContentMD5Key];
 }
 
 - (NSData *)requestBodyContentData
 {
-    return [[[self object] dataSourceInfo] objectForKey:S3ObjectNSDataSourceKey];
+    S3Object *object = [self object];
+    
+    return [[object dataSourceInfo] objectForKey:S3ObjectNSDataSourceKey];
 }
 
 - (NSString *)requestBodyContentFilePath
 {
-    return [[[self object] dataSourceInfo] objectForKey:S3ObjectFilePathDataSourceKey];
+    S3Object *object = [self object];
+    
+    return [[object dataSourceInfo] objectForKey:S3ObjectFilePathDataSourceKey];
 }
 
 - (NSString *)requestBodyContentType
 {
-    return [[[self object] metadata] objectForKey:S3ObjectMetadataContentTypeKey];
+    S3Object *object = [self object];
+    
+    return [[object metadata] objectForKey:S3ObjectMetadataContentTypeKey];
 }
 
 - (long long)requestBodyContentLength
 {
-    NSNumber *length = [[[self object] metadata] objectForKey:S3ObjectMetadataContentLengthKey];
+    S3Object *object = [self object];
+    
+    NSNumber *length = [[object metadata] objectForKey:S3ObjectMetadataContentLengthKey];
     if (length != nil) {
         return [length unsignedIntegerValue];
     }

@@ -18,10 +18,7 @@ namespace for bucket names is global, each developer is limited to owning 100 bu
 
 @class S3ListBucketOperation;
 
-extern NSString *S3BucketUSWestLocationKey;
-extern NSString *S3BucketEUIrelandLocationKey;
-
-@interface S3Bucket : NSObject <NSCopying, NSMutableCopying> {
+@interface S3Bucket : NSObject <NSCopying> {
 	NSString *_name;
 	NSDate *_creationDate;
 }

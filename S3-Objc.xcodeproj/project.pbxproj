@@ -73,6 +73,7 @@
 		EC8A58DA0EE312A900C701C3 /* S3DownloadObjectOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = EC8A58D90EE312A900C701C3 /* S3DownloadObjectOperation.m */; };
 		ECB4A4FC0BA8815A0056558D /* S3TransferRateCalculator.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = ECB4A4FA0BA881590056558D /* S3TransferRateCalculator.h */; };
 		ECB4A4FD0BA8815A0056558D /* S3TransferRateCalculator.m in Sources */ = {isa = PBXBuildFile; fileRef = ECB4A4FB0BA881590056558D /* S3TransferRateCalculator.m */; };
+		ECB6314810E8E7AC008ED3C4 /* AWSRegion.m in Sources */ = {isa = PBXBuildFile; fileRef = ECB6314710E8E7AC008ED3C4 /* AWSRegion.m */; };
 		ECB860440ED452080044CEBE /* S3ListObjectOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = ECB860430ED452080044CEBE /* S3ListObjectOperation.m */; };
 		ECB94CB60E67356800EAFD27 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ECB94CB50E67356800EAFD27 /* CoreFoundation.framework */; };
 		ECB94CC80E6737A500EAFD27 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ECB94CC70E6737A500EAFD27 /* CoreServices.framework */; };
@@ -183,6 +184,8 @@
 		EC8A58D90EE312A900C701C3 /* S3DownloadObjectOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3DownloadObjectOperation.m; sourceTree = "<group>"; };
 		ECB4A4FA0BA881590056558D /* S3TransferRateCalculator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3TransferRateCalculator.h; sourceTree = "<group>"; };
 		ECB4A4FB0BA881590056558D /* S3TransferRateCalculator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3TransferRateCalculator.m; sourceTree = "<group>"; };
+		ECB6314610E8E7AC008ED3C4 /* AWSRegion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AWSRegion.h; sourceTree = "<group>"; };
+		ECB6314710E8E7AC008ED3C4 /* AWSRegion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AWSRegion.m; sourceTree = "<group>"; };
 		ECB860420ED452080044CEBE /* S3ListObjectOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = S3ListObjectOperation.h; sourceTree = "<group>"; };
 		ECB860430ED452080044CEBE /* S3ListObjectOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = S3ListObjectOperation.m; sourceTree = "<group>"; };
 		ECB94CB50E67356800EAFD27 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = SDKs/MacOSX10.5.sdk/System/Library/Frameworks/CoreFoundation.framework; sourceTree = DEVELOPER_DIR; };
@@ -231,8 +234,8 @@
 			isa = PBXGroup;
 			children = (
 				778C8CE90B659F5B006212F9 /* base classes */,
-				778C8CE40B659F2F006212F9 /* objects operations */,
 				778C8CE10B659F13006212F9 /* buckets operations */,
+				778C8CE40B659F2F006212F9 /* objects operations */,
 			);
 			path = core;
 			sourceTree = "<group>";
@@ -399,6 +402,8 @@
 		778C8CE90B659F5B006212F9 /* base classes */ = {
 			isa = PBXGroup;
 			children = (
+				ECB6314610E8E7AC008ED3C4 /* AWSRegion.h */,
+				ECB6314710E8E7AC008ED3C4 /* AWSRegion.m */,
 				7777EB3B09C79E6F00EC8148 /* S3Bucket.h */,
 				7777EB3C09C79E6F00EC8148 /* S3Bucket.m */,
 				7777EB3209C7929900EC8148 /* S3Object.h */,
@@ -578,6 +583,7 @@
 				EC8A58DA0EE312A900C701C3 /* S3DownloadObjectOperation.m in Sources */,
 				ECCA622C0EE4F12A009266B4 /* S3OperationLog.m in Sources */,
 				EC5DB4C010D35A5500E728BA /* S3CopyObjectOperation.m in Sources */,
+				ECB6314810E8E7AC008ED3C4 /* AWSRegion.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

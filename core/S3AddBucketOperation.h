@@ -10,20 +10,16 @@
 
 #import "S3Operation.h"
 
+@class AWSRegion;
 @class S3Bucket;
 
 @interface S3AddBucketOperation : S3Operation {
-    S3Bucket *_bucket;
-    NSString *_location;
-    NSString *_locationConstraint;
 }
 
-- (id)initWithConnectionInfo:(S3ConnectionInfo *)ci bucket:(S3Bucket *)b location:(NSString *)l;
+- (id)initWithConnectionInfo:(S3ConnectionInfo *)ci bucket:(S3Bucket *)b region:(AWSRegion *)r;
 - (id)initWithConnectionInfo:(S3ConnectionInfo *)ci bucket:(S3Bucket *)b;
 
-@property(readonly, retain) S3Bucket *bucket;
-@property(readonly, copy) NSString *location;
-
-- (NSString *)kind;
+@property(readonly, nonatomic, copy) S3Bucket *bucket;
+@property(readonly, nonatomic, copy) AWSRegion *region;
 
 @end

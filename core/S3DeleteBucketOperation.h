@@ -11,11 +11,10 @@
 #import "S3Operation.h"
 
 @interface S3DeleteBucketOperation : S3Operation {
-    S3Bucket *_bucket;
 }
 
 - (id)initWithConnectionInfo:(S3ConnectionInfo *)theConnectionInfo bucket:(S3Bucket *)theBucket;
 
-@property(readonly, retain) S3Bucket *bucket;
+@property(readonly, nonatomic, copy) S3Bucket *bucket;
 
 @end

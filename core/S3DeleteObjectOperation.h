@@ -14,13 +14,8 @@
 @class S3Object;
 
 @interface S3DeleteObjectOperation : S3Operation {
-    S3Object *_object;
 }
 
 - (id)initWithConnectionInfo:(S3ConnectionInfo *)c object:(S3Object *)o;
-
-@property(readonly, retain) S3Object *object;
-
-- (NSString *)kind;
 
 @end

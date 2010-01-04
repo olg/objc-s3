@@ -13,7 +13,6 @@
 @class S3Owner;
 
 @interface S3ListBucketOperation : S3Operation {
-
 }
 
 - (id)initWithConnectionInfo:(S3ConnectionInfo *)connectionInfo;

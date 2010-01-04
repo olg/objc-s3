@@ -7,49 +7,63 @@
 //
 
 #import "S3AddBucketOperation.h"
+
+#import "AWSRegion.h"
 #import "S3Bucket.h"
 
-NSString *S3LocationFormatString = @"<CreateBucketConfiguration><LocationConstraint>%@</LocationConstraint></CreateBucketConfiguration>";
-
-@interface S3AddBucketOperation ()
-@property(readwrite, retain) S3Bucket *bucket;
-@property(readwrite, copy) NSString *location;
-@property(readwrite, copy) NSString *locationConstraint;
-@end
+static NSString *S3OperationInfoAddBucketOperationBucketKey = @"S3OperationInfoAddBucketOperationBucketKey";
+static NSString *S3OperationInfoAddBucketOperationRegionKey = @"S3OperationInfoAddBucketOperationRegionKey";
+static NSString *S3LocationFormatString = @"<CreateBucketConfiguration><LocationConstraint>%@</LocationConstraint></CreateBucketConfiguration>";
 
 @implementation S3AddBucketOperation
 
-@synthesize bucket = _bucket;
-@synthesize location = _location;
-@synthesize locationConstraint = _locationConstraint;
+@dynamic bucket;
+@dynamic region;
 
-- (id)initWithConnectionInfo:(S3ConnectionInfo *)ci bucket:(S3Bucket *)b location:(NSString *)l;
-{
-    self = [super initWithConnectionInfo:ci];
+- (id)initWithConnectionInfo:(S3ConnectionInfo *)ci bucket:(S3Bucket *)b region:(AWSRegion *)r;
+{    
+    NSMutableDictionary *theOperationInfo = [[NSMutableDictionary alloc] init];
+    if (b) {
+        [theOperationInfo setObject:b forKey:S3OperationInfoAddBucketOperationBucketKey];        
+    }
+    if (r) {
+        [theOperationInfo setObject:r forKey:S3OperationInfoAddBucketOperationRegionKey];
+    }
+
+    self = [super initWithConnectionInfo:ci operationInfo:theOperationInfo];
     
+    [theOperationInfo release];
+
     if (self != nil) {
-        [self setBucket:b];
-        [self setLocation:l];
-        if ([self location] != nil) {
-            [self setLocationConstraint:[NSString stringWithFormat:S3LocationFormatString, [self location]]];
-        }
+        if (!([r availableServices] & AWSSimpleStorageService)) {
+            [self release];
+            return nil;
+        }        
     }
     
 	return self;
 }
 
-- (void)dealloc
-{
-    [_bucket release];
-    [_location release];
-    [_locationConstraint release];
-    
-    [super dealloc];
-}
-
 - (id)initWithConnectionInfo:(S3ConnectionInfo *)ci bucket:(S3Bucket *)b
 {
-    return [self initWithConnectionInfo:ci bucket:b location:nil];
+    return [self initWithConnectionInfo:ci bucket:b region:nil];
+}
+
+- (S3Bucket *)bucket
+{
+    NSDictionary *theOperationInfo = [self operationInfo];
+    return [theOperationInfo objectForKey:S3OperationInfoAddBucketOperationBucketKey];
+}
+
+- (AWSRegion *)region
+{
+    NSDictionary *theOperationInfo = [self operationInfo];
+    return [theOperationInfo objectForKey:S3OperationInfoAddBucketOperationRegionKey];
+}
+
+- (NSString *)kind
+{
+	return @"Bucket addition";
 }
 
 - (NSString *)requestHTTPVerb
@@ -64,20 +78,20 @@ NSString *S3LocationFormatString = @"<CreateBucketConfiguration><LocationConstra
 
 - (NSData *)requestBodyContentData
 {
-    if ([self locationConstraint] != nil) {
-        return [[self locationConstraint] dataUsingEncoding:NSASCIIStringEncoding];
-    }
+    AWSRegion *region = [self region];
+    if (region != nil) {
+        return [[NSString stringWithFormat:S3LocationFormatString, [region regionValue]] dataUsingEncoding:NSASCIIStringEncoding];
+    }    
     return nil;
 }
 
 - (long long)requestBodyContentLength
 {
-    return [[self locationConstraint] lengthOfBytesUsingEncoding:NSASCIIStringEncoding];
-}
-
-- (NSString *)kind
-{
-	return @"Bucket addition";
+    NSData *contents = [self requestBodyContentData];
+    if (!contents) {
+        return 0;
+    }
+    return [contents length];
 }
 
 @end

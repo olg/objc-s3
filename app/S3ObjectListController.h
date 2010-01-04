@@ -27,7 +27,7 @@
     IBOutlet NSWindow *renameSheet;
     NSString *_renameName;
     NSMutableArray *_renameOperations;
-    
+        
 	NSString *_uploadACL;
 	NSString *_uploadFilename;
 	NSString *_uploadSize;

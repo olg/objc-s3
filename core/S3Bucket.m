@@ -10,9 +10,6 @@
 #import "S3Extensions.h"
 #import "S3ListBucketOperation.h"
 
-NSString *S3BucketUSWestLocationKey = @"us-west-1";
-NSString *S3BucketEUIrelandLocationKey = @"EU";
-
 @interface S3Bucket (S3BucketPrivateAPI)
 - (void)setCreationDate:(NSDate *)aCreationDate;
 - (void)setName:(NSString *)aName;
@@ -89,7 +86,4 @@ NSString *S3BucketEUIrelandLocationKey = @"EU";
     return [self retain];
 }
 
-- (id)mutableCopyWithZone:(NSZone *)zone {
-    return [self retain];
-}
 @end

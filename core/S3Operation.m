@@ -29,6 +29,28 @@
 
 @end
 
+@interface S3Operation ()
+@property(readwrite, nonatomic, copy) S3ConnectionInfo *connectionInfo;
+@property(readwrite, nonatomic, copy) NSDictionary *operationInfo;
+
+@property(readwrite, nonatomic, assign) BOOL allowsRetry;
+
+@property(readwrite, nonatomic, assign) S3OperationState state;
+@property(readwrite, nonatomic, copy) NSString *informationalStatus;
+@property(readwrite, nonatomic, copy) NSString *informationalSubStatus;
+
+@property(readwrite, nonatomic, copy) NSDictionary *requestHeaders;
+
+@property(readwrite, nonatomic, copy) NSCalendarDate *date;
+@property(readwrite, nonatomic, copy) NSDictionary *responseHeaders;
+@property(readwrite, nonatomic, copy) NSNumber *responseStatusCode;
+@property(readwrite, nonatomic, copy) NSData *responseData;
+@property(readwrite, nonatomic, retain) NSFileHandle *responseFileHandle;
+@property(readwrite, nonatomic, copy) NSError *error;
+@property(readwrite, nonatomic, assign) NSInteger queuePosition;
+
+@end
+
 #pragma mark -
 
 #pragma mark Constants & Globals
@@ -64,6 +86,7 @@ static void myReleaseCallback(void *info) {
 
 @synthesize state;
 @synthesize connectionInfo;
+@synthesize operationInfo;
 @synthesize informationalStatus;
 @synthesize informationalSubStatus;
 
@@ -89,21 +112,28 @@ static void myReleaseCallback(void *info) {
     [self setKeys:[NSArray arrayWithObjects:@"state", nil] triggerChangeNotificationsForDependentKey:@"active"];
 }
 
-- (id)initWithConnectionInfo:(S3ConnectionInfo *)ci
+- (id)initWithConnectionInfo:(S3ConnectionInfo *)aConnectionInfo operationInfo:(NSDictionary *)anOperationInfo
 {
     self = [super init];
     
     if (self != nil) {
-        if (ci == nil) {
+        if (aConnectionInfo == nil) {
             [self release];
             return nil;
         }
-        [self setConnectionInfo:ci];
+        [self setConnectionInfo:aConnectionInfo];
+        [self setOperationInfo:anOperationInfo];
+
         [self addObserver:self forKeyPath:@"informationalStatus" options:0 context:NULL];
         [self addObserver:self forKeyPath:@"informationalSubStatus" options:0 context:NULL];
     }
     
-    return self;
+    return self;    
+}
+
+- (id)initWithConnectionInfo:(S3ConnectionInfo *)aConnectionInfo
+{
+    return [self initWithConnectionInfo:aConnectionInfo operationInfo:nil];
 }
 
 - (void)dealloc
@@ -143,16 +173,22 @@ static void myReleaseCallback(void *info) {
         [self setInformationalStatus:@"Active"];
     } else if (state == S3OperationPendingRetry) {
         [self setInformationalStatus:@"Pending Retry"];
-    } else if (state == S3OperationError) {
+    } else if (state == S3OperationError || state == S3OperationRequiresVirtualHostingEnabled) {
         [self setInformationalStatus:@"Error"];
     } else if (state == S3OperationCanceled) {
         [self setInformationalStatus:@"Canceled"];
-    } else if (state == S3OperationDone) {
+    } else if (state == S3OperationDone || state == S3OperationRequiresRedirect) {
         [self setInformationalStatus:@"Done"];
     }
     [delegate operationInformationalStatusDidChange:self];
     
-    [self setInformationalSubStatus:@""];
+    if (state == S3OperationRequiresRedirect) {
+        [self setInformationalSubStatus:@"Redirect Required"];
+    } else if (state == S3OperationRequiresVirtualHostingEnabled) {
+        [self setInformationalSubStatus:@"Virtual Hosting Required"];
+    } else {
+        [self setInformationalSubStatus:@""];        
+    }
     [delegate operationInformationalSubStatusDidChange:self];
 }
 
@@ -418,21 +454,17 @@ static void myReleaseCallback(void *info) {
         httpOperationReadStream = CFReadStreamCreateForStreamedHTTPRequest(kCFAllocatorDefault, httpRequest, (CFReadStreamRef)inputStream);        
     } else {
         // If there is no body to send there is no need to make a streamed request.
-        // When we are not doing a streamed request we can auto redirect!
         httpOperationReadStream = CFReadStreamCreateForHTTPRequest(kCFAllocatorDefault, httpRequest);
-        CFReadStreamSetProperty(httpOperationReadStream, kCFStreamPropertyHTTPShouldAutoredirect, kCFBooleanTrue);
+
+        // When we are not doing a streamed request and the request is not secure or 
+        // the request is secure and is a request on the service
+        // and the request is virtually hosted and there is a bucket name.
+        if (![[self connectionInfo] secureConnection] || ([[self connectionInfo] secureConnection] && [self isRequestOnService] && ![[self connectionInfo] virtuallyHosted] && ![self bucketName])) {
+//            NSLog(@"auto redirecting!");
+            CFReadStreamSetProperty(httpOperationReadStream, kCFStreamPropertyHTTPShouldAutoredirect, kCFBooleanTrue);
+        }
     }
-    
-    if ([[self connectionInfo] secureConnection] && [self isRequestOnService] == NO && [[self connectionInfo] virtuallyHosted] == YES && [self bucketName] != nil) {
-        // Set the kCFStreamSSLPeerName to a single character subdomain plus the hostEndpoint.
-        // This prevents virtual buckets having names contain periods will not foul up the SSL validity checking.
-        // I wish we could simply use the endpoint but Amazon's wildcard certificate does not include
-        // the 'Subject Alternative Name' extension including the base endpoint host on their certificates.
-        NSString *peerName = [NSString stringWithFormat:@"a.%@", [[self connectionInfo] hostEndpoint]];
-        NSDictionary *streamPropertySSLSettingsDictionary = [NSDictionary dictionaryWithObject:peerName forKey:(NSString *)kCFStreamSSLPeerName];
-        CFReadStreamSetProperty(httpOperationReadStream, kCFStreamPropertySSLSettings, (CFDictionaryRef)streamPropertySSLSettingsDictionary);        
-    }
-    
+        
     [self setRequestHeaders:[(NSDictionary *)CFHTTPMessageCopyAllHeaderFields(httpRequest) autorelease]];
     CFRelease(httpRequest);
     
@@ -481,7 +513,8 @@ static void myReleaseCallback(void *info) {
 
 - (void)handleStreamOpenCompleted
 {
-    
+//    NSLog(@"handleStreamOpenCompleted");
+
     // One should not close a stream once it is added to the S3PersistentCFReadStreamPool
     // S3PersistentCFReadStreamPool will take care of closing a stream so other persistent
     // streams can be enqueued on it.
@@ -490,6 +523,7 @@ static void myReleaseCallback(void *info) {
     // Removing the stream will close the stream.
     S3PersistentCFReadStreamPool *sharedPool = [S3PersistentCFReadStreamPool sharedPersistentCFReadStreamPool];
     if ([sharedPool addOpenedPersistentCFReadStream:httpOperationReadStream inQueuePosition:[self queuePosition]] == NO) {
+//        NSLog(@"Not added");
         CFReadStreamSetClient(httpOperationReadStream, 0, NULL, NULL);
         CFReadStreamUnscheduleFromRunLoop(httpOperationReadStream, CFRunLoopGetMain(), kCFRunLoopCommonModes);
         CFReadStreamClose(httpOperationReadStream);
@@ -509,6 +543,7 @@ static void myReleaseCallback(void *info) {
 
 - (void)handleStreamHavingBytesAvailable
 {
+//    NSLog(@"handleStreamHavingBytesAvailable");
     if (!httpOperationReadStream) {
         return;
     }
@@ -538,6 +573,8 @@ static void myReleaseCallback(void *info) {
 
 - (void)handleStreamHavingEndEncountered
 {
+//    NSLog(@"handleStreamHavingEndEncountered");
+
     CFReadStreamSetClient(httpOperationReadStream, 0, NULL, NULL);
     CFReadStreamUnscheduleFromRunLoop(httpOperationReadStream, CFRunLoopGetMain(), kCFRunLoopCommonModes);
     
@@ -559,8 +596,12 @@ static void myReleaseCallback(void *info) {
         CFRelease(headerMessage);
         headerMessage = NULL;
     }
-        
-    if ([self didInterpretStateForStreamHavingEndEncountered] == NO) {
+
+    S3OperationState customState = 0;
+    BOOL useCustomState = [self didInterpretStateForStreamHavingEndEncountered:&customState];
+    if (useCustomState) {
+        [self setState:customState];
+    } else {
         if (statusCode >= 400) {
             [self setState:S3OperationError];
             if ([self responseFileHandle]) {
@@ -569,7 +610,13 @@ static void myReleaseCallback(void *info) {
                 [self setResponseData:data];
             }
         } else if (statusCode >= 300 && statusCode < 400) {
-            [self setState:S3OperationRequiresRedirect];
+            if (statusCode == 307) {
+                [self setState:S3OperationRequiresRedirect];                
+            } else if (statusCode == 301) {
+                [self setState:S3OperationRequiresVirtualHostingEnabled];
+            } else {
+                [self setState:S3OperationError];                
+            }
             if ([self responseFileHandle]) {
                 [[self responseFileHandle] seekToFileOffset:0];
                 NSData *data = [[self responseFileHandle] readDataToEndOfFile];
@@ -585,6 +632,8 @@ static void myReleaseCallback(void *info) {
     [self setResponseFileHandle:nil];
 
     [rateCalculator stopTransferRateCalculator];
+    S3PersistentCFReadStreamPool *sharedPool = [S3PersistentCFReadStreamPool sharedPersistentCFReadStreamPool];
+    [sharedPool removeOpenedPersistentCFReadStream:httpOperationReadStream];
     
     CFRelease(httpOperationReadStream);
     httpOperationReadStream = NULL;
@@ -592,6 +641,12 @@ static void myReleaseCallback(void *info) {
 
 - (void)handleStreamErrorOccurred
 {
+//    NSLog(@"handleStreamErrorOccurred");
+
+    CFErrorRef errorRef = CFReadStreamCopyError(httpOperationReadStream);
+    if (errorRef) {
+        CFRelease(errorRef);
+    }
     CFReadStreamSetClient(httpOperationReadStream, 0, NULL, NULL);
     CFReadStreamUnscheduleFromRunLoop(httpOperationReadStream, CFRunLoopGetMain(), kCFRunLoopCommonModes);
     S3PersistentCFReadStreamPool *sharedPool = [S3PersistentCFReadStreamPool sharedPersistentCFReadStreamPool];
@@ -631,6 +686,7 @@ static void myReleaseCallback(void *info) {
             break;
             
         default:
+//            NSLog(@"default hit - %d", eventType);
             return;
             break;
     }
@@ -696,9 +752,14 @@ static void myReleaseCallback(void *info) {
     }
 }
 
-- (BOOL)didInterpretStateForStreamHavingEndEncountered
+- (BOOL)didInterpretStateForStreamHavingEndEncountered:(S3OperationState *)theState
 {
     return NO;
+}
+
+- (NSString *)kind
+{
+    return nil;
 }
 
 @end

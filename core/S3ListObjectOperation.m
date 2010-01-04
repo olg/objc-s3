@@ -12,29 +12,52 @@
 #import "S3Bucket.h"
 #import "S3Object.h"
 
-@interface S3ListObjectOperation ()
-@property(readwrite, retain) S3Bucket *bucket;
-@property(readwrite, copy) NSString *marker;
-@end
+static NSString *S3OperationInfoListObjectOperationBucketKey = @"S3OperationInfoListObjectOperationBucketKey";
+static NSString *S3OperationInfoListObjectOperationMarkerKey = @"S3OperationInfoListObjectOperationMarkerKey";
 
 @implementation S3ListObjectOperation
 
-@synthesize bucket = _bucket;
-@synthesize marker = _marker;
-
-- (id)initWithConnectionInfo:(S3ConnectionInfo *)theConnectionInfo bucket:(S3Bucket *)theBucket marker:(NSString *)marker
+- (id)initWithConnectionInfo:(S3ConnectionInfo *)theConnectionInfo bucket:(S3Bucket *)theBucket marker:(NSString *)theMarker
 {
-    self = [super initWithConnectionInfo:theConnectionInfo];
-    if (self != nil) {
-        [self setBucket:theBucket];
-        [self setMarker:marker];
+    NSMutableDictionary *theOperationInfo = [[NSMutableDictionary alloc] init];
+    if (theBucket) {
+        [theOperationInfo setObject:theBucket forKey:S3OperationInfoListObjectOperationBucketKey];
     }
-    return self;
+    if (theMarker) {
+        [theOperationInfo setObject:theMarker forKey:S3OperationInfoListObjectOperationMarkerKey];
+    }
+    
+    self = [super initWithConnectionInfo:theConnectionInfo operationInfo:theOperationInfo];
+    
+    [theOperationInfo release];
+    
+    if (self != nil) {
+        
+    }
+    
+	return self;
 }
 
 - (id)initWithConnectionInfo:(S3ConnectionInfo *)theConnectionInfo bucket:(S3Bucket *)theBucket
 {
     return [self initWithConnectionInfo:theConnectionInfo bucket:theBucket marker:nil];
+}
+
+- (S3Bucket *)bucket
+{
+    NSDictionary *theOperationInfo = [self operationInfo];
+    return [theOperationInfo objectForKey:S3OperationInfoListObjectOperationBucketKey];
+}
+
+- (NSString *)marker
+{
+    NSDictionary *theOperationInfo = [self operationInfo];
+    return [theOperationInfo objectForKey:S3OperationInfoListObjectOperationMarkerKey];
+}
+
+- (NSString *)kind
+{
+	return @"Bucket content";
 }
 
 - (NSString *)requestHTTPVerb
@@ -47,15 +70,11 @@
     return [[self bucket] name];
 }
 
-- (NSString *)kind
-{
-	return @"Bucket content";
-}
-
 - (NSDictionary *)requestQueryItems
 {
-    if ([self marker] != nil) {
-        return [NSDictionary dictionaryWithObjectsAndKeys:[self marker], @"marker", nil];
+    NSString *marker = [self marker];
+    if (marker != nil) {
+        return [NSDictionary dictionaryWithObjectsAndKeys:marker, @"marker", nil];
     }
     return nil;
 }
@@ -133,7 +152,8 @@
         
         NSString *resultKey = [[n elementForName:@"Key"] stringValue];
         
-        S3Object *newObject = [[S3Object alloc] initWithBucket:[self bucket] key:resultKey userDefinedMetadata:nil metadata:metadata dataSourceInfo:nil];
+        S3Bucket *bucket = [self bucket];
+        S3Object *newObject = [[S3Object alloc] initWithBucket:bucket key:resultKey userDefinedMetadata:nil metadata:metadata dataSourceInfo:nil];
         
         if (newObject != nil) {
             [result addObject:newObject];
@@ -159,8 +179,9 @@
     
     if (nm==nil)
         return nil;
-        
-    S3ListObjectOperation *op = [[[S3ListObjectOperation alloc] initWithConnectionInfo:[self connectionInfo] bucket:[self bucket] marker:nm] autorelease];
+    
+    S3Bucket *bucket = [self bucket];
+    S3ListObjectOperation *op = [[[S3ListObjectOperation alloc] initWithConnectionInfo:[self connectionInfo] bucket:bucket marker:nm] autorelease];
     
     return op;
 }

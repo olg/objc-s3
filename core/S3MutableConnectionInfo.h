@@ -45,6 +45,6 @@
 // Amazon S3 clone API.
 // This is not to be used to make 
 // virtually hosted buckets.
-- (void)setHost:(NSString *)host;
+- (void)setHostEndpoint:(NSString *)host;
 
 @end

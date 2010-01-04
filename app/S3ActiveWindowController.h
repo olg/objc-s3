@@ -16,6 +16,7 @@
 @interface S3ActiveWindowController : NSWindowController {
 	S3ConnectionInfo *_connectionInfo;
     NSMutableArray *_operations;
+    NSMutableDictionary *_redirectConnectionInfoMappings;
 }
 
 - (S3ConnectionInfo *)connectionInfo;

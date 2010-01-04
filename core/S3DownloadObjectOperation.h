@@ -14,14 +14,9 @@
 @class S3Object;
 
 @interface S3DownloadObjectOperation : S3Operation {
-    S3Object *_object;
-    NSString *_filePath;
 }
 
 - (id)initWithConnectionInfo:(S3ConnectionInfo *)c object:(S3Object *)o saveTo:(NSString *)filePath;
 - (id)initWithConnectionInfo:(S3ConnectionInfo *)c object:(S3Object *)o;
-
-@property(readonly, retain) S3Object *object;
-@property(readonly, copy) NSString *filePath;
 
 @end
