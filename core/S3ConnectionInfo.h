@@ -37,7 +37,7 @@
 
 // Create a CFHTTPMessageRef from an operation; object returned has a retain count of 1
 // and must be released by the caller when finished using the object.
-- (CFHTTPMessageRef)createCFHTTPMessageRefFromOperation:(S3Operation *)operation;
+- (CFHTTPMessageRef)newCFHTTPMessageRefFromOperation:(S3Operation *)operation;
 
 @end
 

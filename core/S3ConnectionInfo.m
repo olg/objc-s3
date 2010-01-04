@@ -177,7 +177,7 @@ NSString *S3HeaderPrefixString = @"x-amz";
 
 // Create a CFHTTPMessageRef from an operation; object returned has a retain count of 1
 // and must be released by the receiver when finished using the object.
-- (CFHTTPMessageRef)createCFHTTPMessageRefFromOperation:(S3Operation *)operation
+- (CFHTTPMessageRef)newCFHTTPMessageRefFromOperation:(S3Operation *)operation
 {
     // This process can not go forward without a delegate
     if ([self delegate] == nil) {

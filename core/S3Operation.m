@@ -433,7 +433,7 @@ static void myReleaseCallback(void *info) {
     
     // Any headers or information to be included with this HTTP message should have happened before this point!
     
-	CFHTTPMessageRef httpRequest = [[self connectionInfo] createCFHTTPMessageRefFromOperation:self];
+	CFHTTPMessageRef httpRequest = [[self connectionInfo] newCFHTTPMessageRefFromOperation:self];
     if (httpRequest == NULL) {
         [self setState:S3OperationError];
         return;
