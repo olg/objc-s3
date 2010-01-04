@@ -105,7 +105,7 @@ static NSString *S3OperationInfoAddObjectOperationObjectKey = @"S3OperationInfoA
     return [[object metadata] objectForKey:S3ObjectMetadataContentTypeKey];
 }
 
-- (long long)requestBodyContentLength
+- (NSUInteger)requestBodyContentLength
 {
     S3Object *object = [self object];
     

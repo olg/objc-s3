@@ -85,7 +85,7 @@ static NSString *S3LocationFormatString = @"<CreateBucketConfiguration><Location
     return nil;
 }
 
-- (long long)requestBodyContentLength
+- (NSUInteger)requestBodyContentLength
 {
     NSData *contents = [self requestBodyContentData];
     if (!contents) {
