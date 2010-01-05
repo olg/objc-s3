@@ -114,10 +114,10 @@ typedef enum _S3OperationState {
 
 
 // All the following methods are optionally implemented by subclasses
-
 - (NSString *)bucketName; // May return nil.
 - (NSString *)key; // May return nil.
 - (NSDictionary *)requestQueryItems; // May return nil.
+- (BOOL)virtuallyHostedCapable;
 
 // -additionalHTTPRequestHeaders: is for subclassers to add additional
 // HTTP headers to the request than is normally generated.

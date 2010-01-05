@@ -48,6 +48,11 @@ static NSString *S3OperationInfoDeleteBucketOperationBucketKey = @"S3OperationIn
     return @"DELETE";
 }
 
+- (BOOL)virtuallyHostedCapable
+{
+	return [[self bucket] virtuallyHostedCapable];
+}
+
 - (NSString *)bucketName
 {
     return [[self bucket] name];

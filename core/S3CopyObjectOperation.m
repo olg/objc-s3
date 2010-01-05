@@ -81,6 +81,11 @@ static NSString *S3OperationInfoCopyObjectOperationDestinationObjectKey = @"S3Op
     return additionalMetadata;
 }
 
+- (BOOL)virtuallyHostedCapable
+{
+	return [[[self destinationObject] bucket] virtuallyHostedCapable];
+}
+
 - (NSString *)bucketName
 {
     S3Object *destinationObject = [self destinationObject];

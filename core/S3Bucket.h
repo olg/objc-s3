@@ -21,6 +21,7 @@ namespace for bucket names is global, each developer is limited to owning 100 bu
 @interface S3Bucket : NSObject <NSCopying> {
 	NSString *_name;
 	NSDate *_creationDate;
+	BOOL _virtuallyHostedCapable;
 }
 
 - (id)initWithName:(NSString *)name creationDate:(NSDate *)date;
@@ -28,5 +29,6 @@ namespace for bucket names is global, each developer is limited to owning 100 bu
 
 - (NSDate *)creationDate;
 - (NSString *)name;
+- (BOOL)virtuallyHostedCapable;
 
 @end

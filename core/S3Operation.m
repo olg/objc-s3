@@ -277,7 +277,7 @@ static void myReleaseCallback(void *info) {
 
 - (NSString *)host
 {
-    if ([self isRequestOnService] == NO && [[self connectionInfo] virtuallyHosted] == YES && [self bucketName] != nil) {
+    if ([self isRequestOnService] == NO && [[self connectionInfo] virtuallyHosted] && [self virtuallyHostedCapable] && [self bucketName] != nil) {
         NSString *hostName = [NSString stringWithFormat:@"%@.%@", [self bucketName], [[self connectionInfo] hostEndpoint]];
         return hostName;
     }
@@ -286,7 +286,7 @@ static void myReleaseCallback(void *info) {
 
 - (NSString *)operationKey
 {
-    if ([self isRequestOnService] == NO && [[self connectionInfo] virtuallyHosted] == NO && [self bucketName] != nil) {
+    if ([self isRequestOnService] == NO && (([[self connectionInfo] virtuallyHosted] == NO) || ([self virtuallyHostedCapable] == NO)) && [self bucketName] != nil) {
         NSString *keyString = nil;
         if ([self key] != nil) {
             keyString = [NSString stringWithFormat:@"%@/%@", [self bucketName], [self key]];
@@ -311,6 +311,11 @@ static void myReleaseCallback(void *info) {
 - (NSDictionary *)additionalHTTPRequestHeaders
 {
     return nil;
+}
+
+- (BOOL)virtuallyHostedCapable
+{
+	return true;
 }
 
 - (NSString *)bucketName
@@ -457,7 +462,7 @@ static void myReleaseCallback(void *info) {
         // When we are not doing a streamed request and the request is not secure or 
         // the request is secure and is a request on the service
         // and the request is virtually hosted and there is a bucket name.
-        if (![[self connectionInfo] secureConnection] || ([[self connectionInfo] secureConnection] && [self isRequestOnService] && ![[self connectionInfo] virtuallyHosted] && ![self bucketName])) {
+        if (![[self connectionInfo] secureConnection] || ([[self connectionInfo] secureConnection] && [self isRequestOnService] && ![[self connectionInfo] virtuallyHosted] && [self virtuallyHostedCapable] && ![self bucketName])) {
 //            NSLog(@"auto redirecting!");
             CFReadStreamSetProperty(httpOperationReadStream, kCFStreamPropertyHTTPShouldAutoredirect, kCFBooleanTrue);
         }

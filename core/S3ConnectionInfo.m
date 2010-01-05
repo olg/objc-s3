@@ -236,7 +236,7 @@ NSString *S3HeaderPrefixString = @"x-amz";
         requestPath = [NSString stringWithFormat:@"%@/", requestPath];
     }
     
-    if (([operation isRequestOnService] == NO) && ([self virtuallyHosted] == YES)) {
+    if (([operation isRequestOnService] == NO) && ([self virtuallyHosted] == YES) && [operation virtuallyHostedCapable]) {
         requestPath = [NSString stringWithFormat:@"/%@%@", [operation bucketName], requestPath];
     }
     
